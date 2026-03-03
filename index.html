@@ -5,176 +5,286 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Will Easton Play?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { min-height: 100%; }
-    body { font-family:'Barlow',sans-serif; color:#e2e8f0; background:#0a0a0f; }
-    select, input { color-scheme: dark; }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.65); cursor:pointer; }
-    ::-webkit-scrollbar { width:5px; }
-    ::-webkit-scrollbar-track { background:#111; }
-    ::-webkit-scrollbar-thumb { background:#2a3a4a; border-radius:3px; }
-    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes spin    { to{transform:rotate(360deg)} }
-    @keyframes popIn   { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.3)} 100%{transform:scale(1);opacity:1} }
-    .result-enter { animation:slideUp 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+  :root {
+    --navy:       #0b1929;
+    --navy-2:     #122035;
+    --navy-3:     #1a2d47;
+    --navy-4:     #1f3554;
+    --navy-5:     #263f63;
+    --green:      #00c853;
+    --green-d:    #00a846;
+    --green-glow: rgba(0,200,83,0.15);
+    --blue-acc:   #2196f3;
+    --yellow:     #ffd600;
+    --red:        #ff3d57;
+    --text-1:     #0b1929;
+    --text-2:     #1e3a5f;
+    --text-3:     #475569;
+    --text-4:     #94a3b8;
+    --border:     #e2e8f0;
+    --border-2:   #cbd5e1;
+    --radius:     12px;
+    --radius-sm:  8px;
+    --shadow:     0 4px 24px rgba(0,0,0,0.35);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  html, body { min-height:100%; }
+  body { font-family:'Outfit',sans-serif; color:#0b1929; background:#f0f4f8; }
+  select, input { color-scheme:light; }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.4); cursor:pointer; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
 
-    #nav { padding:18px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #1a1f28; background:#0a0a0f; }
-    .logo-a { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#38bdf8; }
-    .logo-b { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#4a6478; }
-    .nav-sub { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; }
-    #feedback-btn { margin-left:12px; padding:6px 12px; border-radius:20px; border:1px solid #1e3a50; background:rgba(56,189,248,0.07); color:#38bdf8; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.05em; cursor:pointer; transition:all .15s; white-space:nowrap; }
-    #feedback-btn:hover { background:rgba(56,189,248,0.15); border-color:#38bdf8; }
-    #main { max-width:700px; margin:0 auto; padding:36px 20px 60px; }
-    #hero { margin-bottom:32px; text-align:center; }
-    #hero h1 { font-family:'Bebas Neue',cursive; font-size:clamp(40px,8vw,66px); letter-spacing:.03em; line-height:.95; color:#f1f5f9; }
-    #hero h1 span { color:#38bdf8; }
-    #hero p { margin-top:12px; color:#6a8499; font-size:15px; font-weight:300; }
-    #form-card { background:#111318; border:1px solid #1e2530; border-radius:14px; padding:24px 24px 20px; }
-    .lbl { display:block; font-family:'DM Mono',monospace; font-size:10px; color:#4a6880; letter-spacing:.12em; margin-bottom:8px; }
-    .dt-row { display:flex; gap:12px; margin-bottom:20px; }
-    .dt-row > div { flex:1; }
-    input[type="date"], select.time-sel, select.state-sel {
-      width:100%; padding:10px 13px; background:#0d1017; border:1px solid #1e2a36;
-      border-radius:8px; color:#d4e4f0; font-size:14px; font-family:'Barlow',sans-serif; cursor:pointer;
-    }
-    input[type="date"]:focus, select.time-sel:focus, select.state-sel:focus { outline:2px solid rgba(56,189,248,0.4); outline-offset:2px; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin    { to{transform:rotate(360deg)} }
+  @keyframes popIn   { 0%{transform:scale(0.6);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  .result-enter { animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
 
-    /* Surface */
-    #surface-wrap { margin-bottom:20px; }
-    #surface-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
-    .surf-btn { padding:10px 12px; border-radius:8px; cursor:pointer; text-align:left; border:1px solid #1e2530; background:#0d1017; transition:border-color .12s,background .12s; }
-    .surf-btn:hover { background:#131a22; border-color:#2a3d50; }
-    .surf-btn.active { background:#0d1a24; border-color:#38bdf8; }
-    .surf-btn .sn { font-size:13px; font-weight:600; color:#b0c8dc; display:flex; align-items:center; gap:6px; line-height:1.2; }
-    .surf-btn.active .sn { color:#38bdf8; }
-    .surf-btn .sd { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; margin-top:3px; }
-    .sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  /* ── Nav ── */
+  #nav {
+    padding:0 20px;
+    height:56px;
+    display:flex; align-items:center; gap:10px;
+    background:#ffffff;
+    border-bottom:1px solid #e2e8f0;
+    position:sticky; top:0; z-index:100;
+  }
+  .logo-icon { font-size:22px; }
+  .logo-a { font-family:'Outfit',sans-serif; font-weight:800; font-size:17px; letter-spacing:-.02em; color:#0b1929; }
+  .logo-a span { color:var(--green); }
+  .nav-sub { margin-left:auto; font-size:11px; font-weight:500; color:var(--text-4); letter-spacing:.04em; text-transform:uppercase; }
+  #feedback-btn {
+    margin-left:12px; padding:6px 14px; border-radius:20px;
+    border:1px solid #e2e8f0; background:#f8fafc;
+    color:#475569; font-family:'Outfit',sans-serif; font-size:12px;
+    font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap;
+    letter-spacing:.01em;
+  }
+  #feedback-btn:hover { background:#f1f5f9; border-color:#cbd5e1; color:#0b1929; }
 
-    /* 3-Tier Filter */
-    #filter-wrap { margin-bottom:16px; }
-    .filter-row { margin-bottom:12px; }
-    .chip-row { display:flex; flex-wrap:wrap; gap:5px; }
-    .fchip { padding:5px 11px; border-radius:20px; cursor:pointer; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.05em; border:1px solid #1e2530; background:#0d1017; color:#5a7a90; transition:all .12s; white-space:nowrap; }
-    .fchip:hover { background:#131a22; border-color:#2a3d50; color:#7aaccf; }
-    .fchip.active { background:#0d1a24; border-color:#38bdf8; color:#38bdf8; }
-    .fchip.type-hs.active  { background:rgba(251,191,36,0.08);  border-color:rgba(251,191,36,0.55);  color:#fbbf24; }
-    .fchip.type-col.active { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.55); color:#a78bfa; }
-    .fchip.type-yr.active  { background:rgba(52,211,153,0.08);  border-color:rgba(52,211,153,0.55);  color:#34d399; }
+  /* ── Layout ── */
+  #main { max-width:680px; margin:0 auto; padding:28px 16px 72px; }
 
-    /* Park grid header */
-    .grid-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; margin-top:4px; }
-    .chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; padding:3px 9px; border-radius:20px; }
-    .chip.fav { color:#fbbf24; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.22); }
-    .chip.all { color:#4a6880; background:rgba(255,255,255,0.03); border:1px solid #1e2530; }
-    #park-count { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; }
+  /* ── Hero ── */
+  #hero { margin-bottom:24px; text-align:center; }
+  #hero h1 {
+    font-family:'Outfit',sans-serif; font-weight:800;
+    font-size:clamp(32px,7vw,54px);
+    letter-spacing:-.03em; line-height:1.05; color:#0b1929;
+  }
+  #hero h1 span { color:var(--green); }
+  #hero p { margin-top:10px; color:#475569; font-size:14px; font-weight:400; }
 
-    /* Fav strip */
-    #fav-section { margin-bottom:12px; }
-    #fav-section.hidden { display:none; }
-    #fav-grid { display:flex; gap:7px; overflow-x:auto; padding-bottom:5px; }
+  /* ── Card ── */
+  .gc-card {
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
 
-    /* Park grid */
-    #field-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; max-height:320px; overflow-y:auto; padding-right:3px; }
-    #no-results { display:none; padding:20px; text-align:center; font-family:'DM Mono',monospace; font-size:11px; color:#2a3d50; }
+  /* ── Section labels ── */
+  .sec-label {
+    display:block; font-size:11px; font-weight:700;
+    color:var(--text-3); letter-spacing:.08em;
+    text-transform:uppercase; margin-bottom:10px;
+  }
 
-    /* Field button */
-    .field-btn { position:relative; padding:9px 32px 9px 12px; border-radius:8px; border:1px solid #1e2530; background:#0d1017; cursor:pointer; text-align:left; transition:background .12s,border-color .12s; }
-    .field-btn:hover { background:#131a22; border-color:#2a3d50; }
-    .field-btn.selected { background:#0d1a24 !important; border-color:#38bdf8 !important; }
-    .field-btn .fn { font-size:13px; font-weight:600; color:#a8c4d8; line-height:1.25; }
-    .field-btn.selected .fn { color:#38bdf8; }
-    .field-btn .fc { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; margin-top:2px; }
-    .field-btn .ft { font-family:'DM Mono',monospace; font-size:9px; margin-top:2px; letter-spacing:.04em; }
-    .ft-hs  { color:#a07818; }
-    .ft-col { color:#7a60c0; }
-    .ft-yr  { color:#267a60; }
-    #fav-grid .field-btn { min-width:160px; max-width:160px; flex-shrink:0; border-color:rgba(251,191,36,0.2); background:rgba(251,191,36,0.03); }
-    #fav-grid .field-btn:hover { background:rgba(251,191,36,0.07); border-color:rgba(251,191,36,0.4); }
-    .star-btn { position:absolute; top:7px; right:7px; background:none; border:none; padding:2px; font-size:14px; line-height:1; cursor:pointer; color:#243444; transition:color .12s,transform .12s; }
-    .star-btn:hover { color:#fbbf24; transform:scale(1.2); }
-    .field-btn.favorited .star-btn { color:#fbbf24; }
+  /* ── Date + Time ── */
+  .dt-row { display:flex; gap:10px; margin-bottom:20px; }
+  .dt-row > div { flex:1; }
+  input[type="date"], select.time-sel, select.state-sel {
+    width:100%; padding:11px 14px;
+    background:#f8fafc; border:1px solid #cbd5e1;
+    border-radius:var(--radius-sm); color:#0b1929;
+    font-size:14px; font-family:'Outfit',sans-serif;
+    font-weight:500; cursor:pointer; transition:border-color .15s;
+    position:relative; z-index:1;
+  }
+  input[type="date"]:focus, select.time-sel:focus, select.state-sel:focus {
+    outline:none; border-color:var(--green);
+    box-shadow:0 0 0 3px rgba(0,200,83,0.15);
+  }
 
-    /* Submit */
-    #submit-btn { margin-top:18px; width:100%; padding:13px; border:none; border-radius:10px; font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:.1em; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px; }
-    #submit-btn:disabled { background:#111318; color:#2a3d50; cursor:not-allowed; }
-    #submit-btn:not(:disabled) { background:linear-gradient(135deg,#0ea5e9,#1d4ed8); color:#fff; box-shadow:0 4px 20px rgba(14,165,233,0.22); }
-    .spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+  /* ── Surface selector ── */
+  #surface-wrap { margin-bottom:22px; }
+  #surface-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .surf-btn {
+    padding:11px 13px; border-radius:var(--radius-sm); cursor:pointer;
+    text-align:left; border:1px solid #e2e8f0;
+    background:#f8fafc; transition:all .15s;
+  }
+  .surf-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .surf-btn.active { background:rgba(0,200,83,0.1); border-color:var(--green); }
+  .surf-btn .sn { font-size:13px; font-weight:700; color:#334155; display:flex; align-items:center; gap:7px; line-height:1.2; }
+  .surf-btn.active .sn { color:var(--green); }
+  .surf-btn .sd { font-size:11px; color:var(--text-4); margin-top:3px; font-weight:400; }
+  .sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
-    #error-box { display:none; margin-top:12px; padding:13px 16px; background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.2); border-radius:9px; color:#f87171; font-family:'DM Mono',monospace; font-size:12px; }
+  /* ── 3-Tier Filter ── */
+  #filter-wrap { margin-bottom:16px; }
+  .filter-row { margin-bottom:13px; }
+  .chip-row { display:flex; flex-wrap:wrap; gap:6px; }
+  .fchip {
+    padding:6px 13px; border-radius:20px; cursor:pointer;
+    font-size:12px; font-weight:600; letter-spacing:.01em;
+    border:1px solid #e2e8f0; background:#f8fafc;
+    color:#64748b; transition:all .15s; white-space:nowrap;
+  }
+  .fchip:hover { background:#f1f5f9; color:#334155; border-color:#cbd5e1; }
+  .fchip.active { background:rgba(33,150,243,0.15); border-color:var(--blue-acc); color:var(--blue-acc); }
+  .fchip.type-hs.active  { background:rgba(255,214,0,0.1);   border-color:rgba(255,214,0,0.6);   color:var(--yellow); }
+  .fchip.type-col.active { background:rgba(33,150,243,0.1);  border-color:rgba(33,150,243,0.6);  color:var(--blue-acc); }
+  .fchip.type-yr.active  { background:rgba(0,200,83,0.1);    border-color:rgba(0,200,83,0.6);    color:var(--green); }
 
-    /* Result card */
-    #result-card { display:none; margin-top:20px; border-radius:14px; overflow:hidden; }
-    #result-header { padding:16px 20px 13px; border-bottom:1px solid #1a1f28; display:flex; align-items:center; justify-content:space-between; }
-    .rh-field { font-family:'DM Mono',monospace; font-size:11px; color:#7eb5d4; letter-spacing:.08em; margin-bottom:5px; }
-    .rh-date  { font-family:'DM Mono',monospace; font-size:11px; color:#6a96b0; }
-    #wx-icon  { font-size:34px; }
-    #result-body { padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
-    #gauge-svg text { font-family:'Bebas Neue',cursive; }
-    #verdict-wrap { flex:1; min-width:175px; }
-    #verdict-label { font-family:'Bebas Neue',cursive; font-size:clamp(26px,5.5vw,40px); line-height:1; margin-bottom:5px; }
-    #verdict-sub   { font-size:13px; font-weight:300; margin-bottom:13px; color:#8ab8d0; }
-    #stat-pills { display:flex; gap:7px; flex-wrap:wrap; }
-    .stat-pill { display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 12px; border-radius:9px; flex:1; min-width:68px; border:1px solid #253545; background:#0d1017; }
-    .stat-pill.warn { background:rgba(248,113,113,0.09); border-color:rgba(248,113,113,0.3); }
-    .stat-pill .sp-icon  { font-size:17px; }
-    .stat-pill .sp-value { font-family:'Bebas Neue',cursive; font-size:21px; color:#eaf3fb; line-height:1; }
-    .stat-pill.warn .sp-value { color:#f87171; }
-    .stat-pill .sp-label { font-family:'DM Mono',monospace; font-size:9px; color:#6a96b0; letter-spacing:.05em; text-align:center; }
-    #result-footer { padding:0 20px 14px; }
-    #result-footer p { font-family:'DM Mono',monospace; font-size:10px; color:#4a6880; line-height:1.8; white-space:pre-wrap; }
+  /* ── Grid header ── */
+  .grid-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  #park-count { font-size:12px; font-weight:600; color:#94a3b8; }
+  .hint-text  { font-size:11px; color:#94a3b8; }
 
-    @media(max-width:520px) {
-      .dt-row { flex-direction:column; }
-      #field-grid { grid-template-columns:1fr; }
-      #result-body { flex-direction:column; align-items:flex-start; }
-    }
-  </style>
+  /* ── Badge chips ── */
+  .chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
+  .chip.fav   { color:var(--yellow); background:rgba(255,214,0,0.1); border:1px solid rgba(255,214,0,0.25); }
+  .chip.all   { color:#64748b; background:#f8fafc; border:1px solid #e2e8f0; }
+
+  /* ── Fav strip ── */
+  #fav-section { margin-bottom:14px; }
+  #fav-section.hidden { display:none; }
+  #fav-grid { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; }
+
+  /* ── Park grid ── */
+  #field-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-height:340px; overflow-y:auto; padding-right:2px; }
+  #no-results { display:none; padding:28px; text-align:center; font-size:13px; color:#94a3b8; }
+
+  /* ── Field button ── */
+  .field-btn {
+    position:relative; padding:11px 34px 11px 13px;
+    border-radius:var(--radius-sm); border:1px solid var(--border);
+    background:#f8fafc; cursor:pointer; text-align:left;
+    transition:background .12s, border-color .12s;
+  }
+  .field-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .field-btn.selected { background:rgba(0,200,83,0.08) !important; border-color:var(--green) !important; }
+  .field-btn .fn { font-size:13px; font-weight:700; color:#1e3a5f; line-height:1.3; }
+  .field-btn.selected .fn { color:var(--green-d); }
+  .field-btn .fc { font-size:11px; color:#94a3b8; margin-top:2px; font-weight:500; }
+  .field-btn .ft { font-size:10px; font-weight:700; margin-top:3px; letter-spacing:.04em; text-transform:uppercase; }
+  .ft-hs  { color:#c9a800; }
+  .ft-col { color:#5b9bd5; }
+  .ft-yr  { color:#00a846; }
+  #fav-grid .field-btn { min-width:158px; max-width:158px; flex-shrink:0; border-color:rgba(202,138,4,0.3); background:rgba(254,249,195,0.5); }
+  #fav-grid .field-btn:hover { background:rgba(254,249,195,0.8); border-color:rgba(202,138,4,0.5); }
+
+  /* ── Star ── */
+  .star-btn { position:absolute; top:8px; right:8px; background:none; border:none; padding:2px; font-size:14px; line-height:1; cursor:pointer; color:#cbd5e1; transition:color .12s,transform .12s; }
+  .star-btn:hover { color:var(--yellow); transform:scale(1.2); }
+  .field-btn.favorited .star-btn { color:var(--yellow); }
+
+  /* ── Form card inner padding ── */
+  #form-inner { padding:20px; }
+
+  /* ── Submit ── */
+  #submit-btn {
+    margin-top:20px; width:100%; padding:14px;
+    border:none; border-radius:var(--radius-sm);
+    font-family:'Outfit',sans-serif; font-size:16px; font-weight:800;
+    letter-spacing:.02em; cursor:pointer; transition:all .2s;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  #submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
+  #submit-btn:not(:disabled) {
+    background:var(--green); color:#002010;
+    box-shadow:0 4px 20px rgba(0,200,83,0.3);
+  }
+  #submit-btn:not(:disabled):hover { background:var(--green-d); box-shadow:0 6px 28px rgba(0,200,83,0.4); transform:translateY(-1px); }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#002010; border-radius:50%; animation:spin .7s linear infinite; }
+
+  /* ── Error ── */
+  #error-box { display:none; margin-top:12px; padding:14px 16px; background:#fff5f5; border:1px solid #fecaca; border-radius:var(--radius-sm); color:#dc2626; font-size:13px; font-weight:500; }
+
+  /* ── Result card ── */
+  #result-card { display:none; margin-top:16px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+  #result-header { padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .rh-field { font-size:14px; font-weight:700; color:#0b1929; margin-bottom:3px; }
+  .rh-date  { font-size:12px; font-weight:500; color:#64748b; }
+  #wx-icon  { font-size:36px; }
+  #result-body { padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  #gauge-svg text { font-family:'Outfit',sans-serif; }
+  #verdict-wrap { flex:1; min-width:175px; }
+  #verdict-label { font-family:'Outfit',sans-serif; font-weight:800; font-size:clamp(24px,5vw,36px); line-height:1.1; margin-bottom:4px; letter-spacing:-.02em; }
+  #verdict-sub   { font-size:13px; font-weight:500; margin-bottom:14px; color:#475569; }
+
+  /* ── Stat pills ── */
+  #stat-pills { display:flex; gap:7px; flex-wrap:wrap; }
+  .stat-pill { display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 11px; border-radius:var(--radius-sm); flex:1; min-width:64px; border:1px solid #e2e8f0; background:#f8fafc; }
+  .stat-pill.warn { background:rgba(255,61,87,0.08); border-color:rgba(255,61,87,0.3); }
+  .stat-pill.cold { background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.3); }
+  .stat-pill .sp-icon  { font-size:16px; }
+  .stat-pill .sp-value { font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; color:#0b1929; line-height:1; }
+  .stat-pill.warn .sp-value { color:#ff3d57; }
+  .stat-pill.cold .sp-value { color:#3b82f6; }
+  .stat-pill .sp-label { font-size:9px; font-weight:700; color:var(--text-4); letter-spacing:.06em; text-transform:uppercase; text-align:center; }
+
+  /* ── Result footer ── */
+  #result-footer { padding:0 20px 16px; }
+  #result-footer p { font-size:11px; color:#94a3b8; line-height:1.8; white-space:pre-wrap; font-weight:400; }
+
+  @media(max-width:520px){
+    .dt-row { flex-direction:column; }
+    #field-grid { grid-template-columns:1fr; }
+    #result-body { flex-direction:column; align-items:flex-start; }
+  }
+</style>
 </head>
 <body>
 <div id="nav">
-  <span class="logo-a">&#9918; WILL EASTON</span>
-  <span class="logo-b">PLAY?</span>
-  <span class="nav-sub">OKLAHOMA &amp; SURROUNDING STATES</span>
+  <span class="logo-icon">⚾</span>
+  <span class="logo-a">Will Easton <span>Play?</span></span>
+  <span class="nav-sub">Oklahoma &amp; Region</span>
   <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
 </div>
 <div id="main">
   <div id="hero">
     <h1>WILL YOUR<br><span>GAME</span> BE PLAYED?</h1>
-    <p>Enter your game details for a real-time weather-based play probability.</p>
+    <p>Real-time weather probability for your next game.</p>
   </div>
-  <div id="form-card">
+  <div id="form-card" class="gc-card">
+  <div id="form-inner">
     <div class="dt-row">
-      <div><label class="lbl" for="date-input">GAME DATE</label><input type="date" id="date-input" /></div>
-      <div><label class="lbl" for="time-sel">GAME TIME</label><select class="time-sel" id="time-sel"></select></div>
+      <div><label class="sec-label" for="date-input">Game Date</label><input type="date" id="date-input" /></div>
+      <div><label class="sec-label" for="time-sel">Game Time</label><select class="time-sel" id="time-sel"></select></div>
     </div>
     <div id="surface-wrap">
-      <label class="lbl">PLAYING SURFACE</label>
+      <label class="sec-label">Playing Surface</label>
       <div id="surface-grid">
-        <button type="button" class="surf-btn active" data-surface="standard"><div class="sn"><span class="sdot" style="background:#5a8a5a"></span>Standard</div><div class="sd">Grass outfield / Dirt infield</div></button>
-        <button type="button" class="surf-btn" data-surface="allDirt"><div class="sn"><span class="sdot" style="background:#8a6030"></span>All Dirt Infield</div><div class="sd">Grass outfield / Full dirt infield</div></button>
-        <button type="button" class="surf-btn" data-surface="infieldTurf"><div class="sn"><span class="sdot" style="background:#2a7a6a"></span>Infield Turf</div><div class="sd">Grass outfield / Turf infield</div></button>
-        <button type="button" class="surf-btn" data-surface="fullTurf"><div class="sn"><span class="sdot" style="background:#1a6a9a"></span>Full Turf</div><div class="sd">100% artificial turf surface</div></button>
+        <button type="button" class="surf-btn active" data-surface="standard"><div class="sn"><span class="sdot" style="background:#22c55e"></span>Standard</div><div class="sd">Grass outfield / Dirt infield</div></button>
+        <button type="button" class="surf-btn" data-surface="allDirt"><div class="sn"><span class="sdot" style="background:#a16207"></span>All Dirt Infield</div><div class="sd">Grass outfield / Full dirt infield</div></button>
+        <button type="button" class="surf-btn" data-surface="infieldTurf"><div class="sn"><span class="sdot" style="background:#0891b2"></span>Infield Turf</div><div class="sd">Grass outfield / Turf infield</div></button>
+        <button type="button" class="surf-btn" data-surface="fullTurf"><div class="sn"><span class="sdot" style="background:#2563eb"></span>Full Turf</div><div class="sd">100% artificial turf surface</div></button>
       </div>
     </div>
     <div id="filter-wrap">
-      <div class="filter-row"><label class="lbl">STATE</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas (DFW)</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
-      <div class="filter-row"><label class="lbl">REGION</label><div class="chip-row" id="region-chips"></div></div>
-      <div class="filter-row"><label class="lbl">FACILITY TYPE</label><div class="chip-row" id="type-chips"></div></div>
+      <div class="filter-row"><label class="sec-label">State</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas (DFW)</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
+      <div class="filter-row"><label class="sec-label">Region</label><div class="chip-row" id="region-chips"></div></div>
+      <div class="filter-row"><label class="sec-label">Facility Type</label><div class="chip-row" id="type-chips"></div></div>
     </div>
     <div class="grid-hdr">
-      <div style="display:flex;align-items:center;gap:8px;"><span class="lbl" style="margin-bottom:0">SELECT BALLPARK</span><span id="park-count"></span></div>
-      <span style="font-family:'DM Mono',monospace;font-size:10px;color:#243444">tap &#9734; to pin favorites</span>
+      <div style="display:flex;align-items:center;gap:8px;"><span class="sec-label" style="margin-bottom:0">Select Ballpark</span><span id="park-count"></span></div>
+      <span class="hint-text">&#9734; to pin favorites</span>
     </div>
-    <div id="fav-section" class="hidden"><div style="margin-bottom:6px"><span class="chip fav">&#9733; FAVORITES</span></div><div id="fav-grid"></div><div style="height:10px"></div></div>
-    <div style="margin-bottom:7px"><span class="chip all">ALL PARKS</span></div>
+    <div id="fav-section" class="hidden"><div style="margin-bottom:8px"><span class="chip fav">&#9733; Favorites</span></div><div id="fav-grid"></div><div style="height:10px"></div></div>
+    <div style="margin-bottom:8px"><span class="chip all">All Parks</span></div>
     <div id="field-grid"></div>
     <div id="no-results">No parks match the current filters.</div>
-    <button type="button" id="submit-btn" disabled>CHECK PLAY PROBABILITY</button>
-  </div>
+    <button type="button" id="submit-btn" disabled>Check Play Probability</button>
+  </div><!-- /form-inner -->
+  </div><!-- /form-card -->
   <div id="error-box"></div>
-  <div id="result-card">
+  <div id="result-card" class="gc-card">
     <div id="result-header"><div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div><span id="wx-icon"></span></div>
     <div id="result-body">
       <svg id="gauge-svg" width="125" height="125" viewBox="0 0 130 130">
@@ -187,8 +297,7 @@
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
         <div id="stat-pills">
-          <div class="stat-pill" id="pill-pregame"><span class="sp-icon">&#127750;</span><span class="sp-value" id="pv-pregame">&#8212;</span><span class="sp-label">PRE-GAME IN</span></div>
-          <div class="stat-pill" id="pill-temp"><span class="sp-icon">&#127777;&#65039;</span><span class="sp-value" id="pv-temp">&#8212;</span><span class="sp-label">FEELS LIKE</span></div>
+          <div class="stat-pill" id="pill-temp"><span class="sp-icon" id="temp-icon">🌡️</span><span class="sp-value" id="pv-temp">&#8212;</span><span class="sp-label">FEELS LIKE</span></div>
           <div class="stat-pill" id="pill-rain"><span class="sp-icon">&#127783;</span><span class="sp-value" id="pv-rain">&#8212;</span><span class="sp-label">RAIN CHANCE</span></div>
           <div class="stat-pill" id="pill-precip"><span class="sp-icon">&#128167;</span><span class="sp-value" id="pv-precip">&#8212;</span><span class="sp-label">GAME PRECIP</span></div>
           <div class="stat-pill" id="pill-wind"><span class="sp-icon">&#128168;</span><span class="sp-value" id="pv-wind">&#8212;</span><span class="sp-label">WIND mph</span></div>
@@ -206,204 +315,92 @@ var TYPES=[{id:"all",label:"All Types",cls:""},{id:"hs",label:"High School",cls:
 var TYPE_LABELS={hs:"High School",col:"College",yr:"Youth / Rec"};
 var TYPE_CLS={hs:"ft-hs",col:"ft-col",yr:"ft-yr"};
 
-var FIELDS=[
-// ── OK High School — Northeastern ──
-{id:101,state:"OK",region:"ne-ok",type:"hs",name:"Union HS — Stigall Field",city:"Tulsa",lat:36.0596,lon:-95.8694},
-{id:102,state:"OK",region:"ne-ok",type:"hs",name:"Jenks HS",city:"Jenks",lat:35.9980,lon:-95.9645},
-{id:103,state:"OK",region:"ne-ok",type:"hs",name:"Broken Arrow HS",city:"Broken Arrow",lat:36.0432,lon:-95.7856},
-{id:104,state:"OK",region:"ne-ok",type:"hs",name:"Owasso HS",city:"Owasso",lat:36.2920,lon:-95.8453},
-{id:105,state:"OK",region:"ne-ok",type:"hs",name:"Bixby HS",city:"Bixby",lat:35.9425,lon:-95.8830},
-{id:106,state:"OK",region:"ne-ok",type:"hs",name:"Bishop Kelley HS",city:"Tulsa",lat:36.1010,lon:-95.9367},
-{id:107,state:"OK",region:"ne-ok",type:"hs",name:"Memorial HS",city:"Tulsa",lat:36.1046,lon:-95.9850},
-{id:108,state:"OK",region:"ne-ok",type:"hs",name:"Edison Prep HS",city:"Tulsa",lat:36.1380,lon:-95.9557},
-{id:109,state:"OK",region:"ne-ok",type:"hs",name:"Booker T. Washington HS",city:"Tulsa",lat:36.1303,lon:-95.9793},
-{id:110,state:"OK",region:"ne-ok",type:"hs",name:"Claremore HS",city:"Claremore",lat:36.3178,lon:-95.6158},
-{id:111,state:"OK",region:"ne-ok",type:"hs",name:"Pryor HS",city:"Pryor",lat:36.3059,lon:-95.3106},
-{id:112,state:"OK",region:"ne-ok",type:"hs",name:"Tahlequah HS",city:"Tahlequah",lat:35.9147,lon:-94.9697},
-{id:113,state:"OK",region:"ne-ok",type:"hs",name:"Muskogee HS",city:"Muskogee",lat:35.7538,lon:-95.3572},
-{id:114,state:"OK",region:"ne-ok",type:"hs",name:"Sapulpa HS",city:"Sapulpa",lat:35.9940,lon:-96.1107},
-{id:115,state:"OK",region:"ne-ok",type:"hs",name:"Coweta HS",city:"Coweta",lat:35.9617,lon:-95.6488},
-{id:116,state:"OK",region:"ne-ok",type:"hs",name:"Wagoner HS",city:"Wagoner",lat:35.9607,lon:-95.3718},
-{id:117,state:"OK",region:"ne-ok",type:"hs",name:"Catoosa HS",city:"Catoosa",lat:36.1879,lon:-95.7434},
-{id:118,state:"OK",region:"ne-ok",type:"hs",name:"Collinsville HS",city:"Collinsville",lat:36.3641,lon:-95.8400},
-{id:119,state:"OK",region:"ne-ok",type:"hs",name:"Skiatook HS",city:"Skiatook",lat:36.3710,lon:-95.9993},
-{id:120,state:"OK",region:"ne-ok",type:"hs",name:"Bartlesville HS",city:"Bartlesville",lat:36.7464,lon:-95.9797},
-{id:121,state:"OK",region:"ne-ok",type:"hs",name:"Sand Springs HS",city:"Sand Springs",lat:36.1395,lon:-96.1083},
-{id:122,state:"OK",region:"ne-ok",type:"hs",name:"Verdigris HS",city:"Verdigris",lat:36.2556,lon:-95.6840},
-{id:123,state:"OK",region:"ne-ok",type:"hs",name:"Fort Gibson HS",city:"Fort Gibson",lat:35.7993,lon:-95.2457},
-{id:124,state:"OK",region:"ne-ok",type:"hs",name:"Oologah HS",city:"Oologah",lat:36.4413,lon:-95.7105},
-{id:125,state:"OK",region:"ne-ok",type:"hs",name:"Inola HS",city:"Inola",lat:36.1500,lon:-95.5108},
-{id:126,state:"OK",region:"ne-ok",type:"hs",name:"Berryhill HS",city:"Tulsa",lat:36.1100,lon:-96.0680},
-{id:127,state:"OK",region:"ne-ok",type:"hs",name:"Adair HS",city:"Adair",lat:36.1386,lon:-95.0271},
-{id:128,state:"OK",region:"ne-ok",type:"hs",name:"Salina HS",city:"Salina",lat:36.2890,lon:-95.1595},
-{id:129,state:"OK",region:"ne-ok",type:"hs",name:"Glenpool HS",city:"Glenpool",lat:35.9490,lon:-96.0062},
-// ── OK High School — Central ──
-{id:201,state:"OK",region:"c-ok",type:"hs",name:"Edmond Santa Fe HS",city:"Edmond",lat:35.6612,lon:-97.5342},
-{id:202,state:"OK",region:"c-ok",type:"hs",name:"Edmond North HS",city:"Edmond",lat:35.7063,lon:-97.4682},
-{id:203,state:"OK",region:"c-ok",type:"hs",name:"Edmond Memorial HS",city:"Edmond",lat:35.6342,lon:-97.4624},
-{id:204,state:"OK",region:"c-ok",type:"hs",name:"Stillwater HS",city:"Stillwater",lat:36.1143,lon:-97.0521},
-{id:205,state:"OK",region:"c-ok",type:"hs",name:"Moore HS",city:"Moore",lat:35.3370,lon:-97.4860},
-{id:206,state:"OK",region:"c-ok",type:"hs",name:"Norman HS",city:"Norman",lat:35.2218,lon:-97.4390},
-{id:207,state:"OK",region:"c-ok",type:"hs",name:"Norman North HS",city:"Norman",lat:35.2645,lon:-97.4522},
-{id:208,state:"OK",region:"c-ok",type:"hs",name:"Westmoore HS",city:"Moore",lat:35.3573,lon:-97.5098},
-{id:209,state:"OK",region:"c-ok",type:"hs",name:"Yukon HS",city:"Yukon",lat:35.5024,lon:-97.7591},
-{id:210,state:"OK",region:"c-ok",type:"hs",name:"Mustang HS",city:"Mustang",lat:35.3848,lon:-97.7178},
-{id:211,state:"OK",region:"c-ok",type:"hs",name:"Choctaw HS",city:"Choctaw",lat:35.5002,lon:-97.2681},
-{id:212,state:"OK",region:"c-ok",type:"hs",name:"Midwest City HS",city:"Midwest City",lat:35.4498,lon:-97.3960},
-{id:213,state:"OK",region:"c-ok",type:"hs",name:"Carl Albert HS",city:"Midwest City",lat:35.4432,lon:-97.3823},
-{id:214,state:"OK",region:"c-ok",type:"hs",name:"Guthrie HS",city:"Guthrie",lat:35.8789,lon:-97.4248},
-{id:215,state:"OK",region:"c-ok",type:"hs",name:"Shawnee HS",city:"Shawnee",lat:35.3276,lon:-96.9248},
-{id:216,state:"OK",region:"c-ok",type:"hs",name:"Ponca City HS",city:"Ponca City",lat:36.7073,lon:-97.0843},
-{id:217,state:"OK",region:"c-ok",type:"hs",name:"Noble HS",city:"Noble",lat:35.1392,lon:-97.3813},
-{id:218,state:"OK",region:"c-ok",type:"hs",name:"Putnam City HS",city:"Oklahoma City",lat:35.5333,lon:-97.6063},
-{id:219,state:"OK",region:"c-ok",type:"hs",name:"Piedmont HS",city:"Piedmont",lat:35.6432,lon:-97.7489},
-{id:220,state:"OK",region:"c-ok",type:"hs",name:"Blanchard HS",city:"Blanchard",lat:35.1381,lon:-97.6641},
-{id:221,state:"OK",region:"c-ok",type:"hs",name:"Newcastle HS",city:"Newcastle",lat:35.2393,lon:-97.5970},
-{id:222,state:"OK",region:"c-ok",type:"hs",name:"Tuttle HS",city:"Tuttle",lat:35.2842,lon:-97.8134},
-{id:223,state:"OK",region:"c-ok",type:"hs",name:"Bethany HS",city:"Bethany",lat:35.5172,lon:-97.6337},
-{id:224,state:"OK",region:"c-ok",type:"hs",name:"El Reno HS",city:"El Reno",lat:35.5322,lon:-97.9554},
-// ── OK High School — Southeastern ──
-{id:301,state:"OK",region:"se-ok",type:"hs",name:"Durant HS",city:"Durant",lat:33.9983,lon:-96.4050},
-{id:302,state:"OK",region:"se-ok",type:"hs",name:"McAlester HS",city:"McAlester",lat:34.9318,lon:-95.7699},
-{id:303,state:"OK",region:"se-ok",type:"hs",name:"Ada HS",city:"Ada",lat:34.7744,lon:-96.6781},
-{id:304,state:"OK",region:"se-ok",type:"hs",name:"Ardmore HS",city:"Ardmore",lat:34.1749,lon:-97.1315},
-{id:305,state:"OK",region:"se-ok",type:"hs",name:"Sulphur HS",city:"Sulphur",lat:34.5090,lon:-96.9672},
-{id:306,state:"OK",region:"se-ok",type:"hs",name:"Atoka HS",city:"Atoka",lat:34.3848,lon:-96.1282},
-{id:307,state:"OK",region:"se-ok",type:"hs",name:"Tishomingo HS",city:"Tishomingo",lat:34.2381,lon:-96.6789},
-{id:308,state:"OK",region:"se-ok",type:"hs",name:"Seminole HS",city:"Seminole",lat:35.2253,lon:-96.6741},
-{id:309,state:"OK",region:"se-ok",type:"hs",name:"Poteau HS",city:"Poteau",lat:35.0530,lon:-94.6213},
-{id:310,state:"OK",region:"se-ok",type:"hs",name:"Sallisaw HS",city:"Sallisaw",lat:35.4578,lon:-94.7991},
-{id:311,state:"OK",region:"se-ok",type:"hs",name:"Stigler HS",city:"Stigler",lat:35.2540,lon:-95.1238},
-{id:312,state:"OK",region:"se-ok",type:"hs",name:"Hugo HS",city:"Hugo",lat:34.0090,lon:-95.5102},
-{id:313,state:"OK",region:"se-ok",type:"hs",name:"Idabel HS",city:"Idabel",lat:33.8960,lon:-94.8278},
-// ── OK High School — Western ──
-{id:401,state:"OK",region:"w-ok",type:"hs",name:"Lawton HS",city:"Lawton",lat:34.6079,lon:-98.4021},
-{id:402,state:"OK",region:"w-ok",type:"hs",name:"Lawton MacArthur HS",city:"Lawton",lat:34.5899,lon:-98.3762},
-{id:403,state:"OK",region:"w-ok",type:"hs",name:"Elk City HS",city:"Elk City",lat:35.4072,lon:-99.4039},
-{id:404,state:"OK",region:"w-ok",type:"hs",name:"Weatherford HS",city:"Weatherford",lat:35.5261,lon:-98.7051},
-{id:405,state:"OK",region:"w-ok",type:"hs",name:"Woodward HS",city:"Woodward",lat:36.4330,lon:-99.3942},
-{id:406,state:"OK",region:"w-ok",type:"hs",name:"Altus HS",city:"Altus",lat:34.6382,lon:-99.3322},
-{id:407,state:"OK",region:"w-ok",type:"hs",name:"Elgin HS",city:"Elgin",lat:34.6500,lon:-98.2940},
-{id:408,state:"OK",region:"w-ok",type:"hs",name:"Duncan HS",city:"Duncan",lat:34.5029,lon:-97.9598},
-{id:409,state:"OK",region:"w-ok",type:"hs",name:"Chickasha HS",city:"Chickasha",lat:34.9962,lon:-97.9459},
-{id:410,state:"OK",region:"w-ok",type:"hs",name:"Marlow HS",city:"Marlow",lat:34.6441,lon:-97.9530},
-{id:411,state:"OK",region:"w-ok",type:"hs",name:"Clinton HS",city:"Clinton",lat:35.5163,lon:-98.9671},
-{id:412,state:"OK",region:"w-ok",type:"hs",name:"Enid HS",city:"Enid",lat:36.3961,lon:-97.8789},
-{id:413,state:"OK",region:"w-ok",type:"hs",name:"Anadarko HS",city:"Anadarko",lat:35.0730,lon:-98.2452},
-{id:414,state:"OK",region:"w-ok",type:"hs",name:"Alva HS",city:"Alva",lat:36.8051,lon:-98.6641},
-// ── OK College — Northeastern ──
-{id:501,state:"OK",region:"ne-ok",type:"col",name:"Oral Roberts Univ. — J.L. Johnson Stadium",city:"Tulsa",lat:36.1018,lon:-95.8727},
-{id:502,state:"OK",region:"ne-ok",type:"col",name:"Univ. of Tulsa — Lorton Performance Center",city:"Tulsa",lat:36.1540,lon:-95.9377},
-{id:503,state:"OK",region:"ne-ok",type:"col",name:"Northeastern State Univ.",city:"Tahlequah",lat:35.9202,lon:-94.9721},
-{id:504,state:"OK",region:"ne-ok",type:"col",name:"Rogers State Univ.",city:"Claremore",lat:36.3022,lon:-95.6382},
-{id:505,state:"OK",region:"ne-ok",type:"col",name:"Oklahoma Wesleyan Univ.",city:"Bartlesville",lat:36.7522,lon:-95.9814},
-{id:506,state:"OK",region:"ne-ok",type:"col",name:"Connors State College",city:"Warner",lat:35.4931,lon:-95.3032},
-{id:507,state:"OK",region:"ne-ok",type:"col",name:"Bacone College",city:"Muskogee",lat:35.7472,lon:-95.3542},
-// ── OK College — Central ──
-{id:601,state:"OK",region:"c-ok",type:"col",name:"Univ. of Oklahoma — L. Dale Mitchell Park",city:"Norman",lat:35.2066,lon:-97.4444},
-{id:602,state:"OK",region:"c-ok",type:"col",name:"Oklahoma State Univ. — O'Brate Stadium",city:"Stillwater",lat:36.1265,lon:-97.0757},
-{id:603,state:"OK",region:"c-ok",type:"col",name:"Univ. of Central Oklahoma",city:"Edmond",lat:35.6528,lon:-97.4781},
-{id:604,state:"OK",region:"c-ok",type:"col",name:"Oklahoma Baptist Univ.",city:"Shawnee",lat:35.3492,lon:-96.9562},
-{id:605,state:"OK",region:"c-ok",type:"col",name:"Southern Nazarene Univ.",city:"Bethany",lat:35.5052,lon:-97.6441},
-{id:606,state:"OK",region:"c-ok",type:"col",name:"Mid-America Christian Univ.",city:"Oklahoma City",lat:35.4298,lon:-97.5721},
-{id:607,state:"OK",region:"c-ok",type:"col",name:"Rose State College",city:"Midwest City",lat:35.4534,lon:-97.3612},
-{id:608,state:"OK",region:"c-ok",type:"col",name:"Northern Oklahoma College",city:"Tonkawa",lat:36.6702,lon:-97.3119},
-{id:609,state:"OK",region:"c-ok",type:"col",name:"Redlands Community College",city:"El Reno",lat:35.5412,lon:-97.9612},
-{id:610,state:"OK",region:"c-ok",type:"col",name:"Seminole State College",city:"Seminole",lat:35.2253,lon:-96.6600},
-// ── OK College — Southeastern ──
-{id:701,state:"OK",region:"se-ok",type:"col",name:"Southeastern Oklahoma State Univ.",city:"Durant",lat:33.9975,lon:-96.3920},
-{id:702,state:"OK",region:"se-ok",type:"col",name:"East Central Univ.",city:"Ada",lat:34.7771,lon:-96.6752},
-{id:703,state:"OK",region:"se-ok",type:"col",name:"Murray State College",city:"Tishomingo",lat:34.2401,lon:-96.6800},
-{id:704,state:"OK",region:"se-ok",type:"col",name:"Eastern Oklahoma State College",city:"Wilburton",lat:34.9201,lon:-95.3124},
-{id:705,state:"OK",region:"se-ok",type:"col",name:"Carl Albert State College",city:"Poteau",lat:35.0511,lon:-94.6132},
-// ── OK College — Western ──
-{id:801,state:"OK",region:"w-ok",type:"col",name:"Northwestern Oklahoma State Univ.",city:"Alva",lat:36.8052,lon:-98.6560},
-{id:802,state:"OK",region:"w-ok",type:"col",name:"Southwestern Oklahoma State Univ.",city:"Weatherford",lat:35.5331,lon:-98.6949},
-{id:803,state:"OK",region:"w-ok",type:"col",name:"Cameron Univ.",city:"Lawton",lat:34.6092,lon:-98.3991},
-{id:804,state:"OK",region:"w-ok",type:"col",name:"Oklahoma Panhandle State Univ.",city:"Goodwell",lat:36.5991,lon:-101.6380},
-{id:805,state:"OK",region:"w-ok",type:"col",name:"Western Oklahoma State College",city:"Altus",lat:34.6470,lon:-99.3162},
-// ── OK Youth — Northeastern ──
-{id:901,state:"OK",region:"ne-ok",type:"yr",name:"ONEOK Field Complex",city:"Tulsa",lat:36.1536,lon:-95.9925},
-{id:902,state:"OK",region:"ne-ok",type:"yr",name:"Jenks Youth Baseball",city:"Jenks",lat:35.9973,lon:-95.9682},
-{id:903,state:"OK",region:"ne-ok",type:"yr",name:"Bixby Youth Sports Complex",city:"Bixby",lat:35.9423,lon:-95.8869},
-{id:904,state:"OK",region:"ne-ok",type:"yr",name:"Broken Arrow Veteran's Park",city:"Broken Arrow",lat:36.0526,lon:-95.7908},
-{id:905,state:"OK",region:"ne-ok",type:"yr",name:"Owasso Sports Animal Complex",city:"Owasso",lat:36.2695,lon:-95.8550},
-{id:906,state:"OK",region:"ne-ok",type:"yr",name:"RCB Ballfields",city:"Claremore",lat:36.3126,lon:-95.6157},
-{id:907,state:"OK",region:"ne-ok",type:"yr",name:"Sapulpa Sports Complex",city:"Sapulpa",lat:35.9987,lon:-96.1114},
-{id:908,state:"OK",region:"ne-ok",type:"yr",name:"Skiatook Sports Park",city:"Skiatook",lat:36.3715,lon:-96.0003},
-{id:909,state:"OK",region:"ne-ok",type:"yr",name:"Coweta Sports Complex",city:"Coweta",lat:35.9637,lon:-95.6543},
-{id:910,state:"OK",region:"ne-ok",type:"yr",name:"Muskogee Sports Complex",city:"Muskogee",lat:35.7479,lon:-95.3696},
-{id:911,state:"OK",region:"ne-ok",type:"yr",name:"Catoosa Athletic Complex",city:"Catoosa",lat:36.1862,lon:-95.7447},
-{id:912,state:"OK",region:"ne-ok",type:"yr",name:"Collinsville Athletic Park",city:"Collinsville",lat:36.3637,lon:-95.8392},
-{id:913,state:"OK",region:"ne-ok",type:"yr",name:"Glenpool Conference Center Fields",city:"Glenpool",lat:35.9490,lon:-96.0061},
-{id:914,state:"OK",region:"ne-ok",type:"yr",name:"Sand Springs Centennial Park",city:"Sand Springs",lat:36.1398,lon:-96.1089},
-{id:915,state:"OK",region:"ne-ok",type:"yr",name:"Pryor Creek Sports Complex",city:"Pryor Creek",lat:36.3087,lon:-95.3171},
-{id:916,state:"OK",region:"ne-ok",type:"yr",name:"Wagoner Youth Sports Park",city:"Wagoner",lat:35.9582,lon:-95.3710},
-{id:917,state:"OK",region:"ne-ok",type:"yr",name:"O'Brien Park",city:"Tulsa",lat:36.2221,lon:-95.9889},
-{id:918,state:"OK",region:"ne-ok",type:"yr",name:"Berryhill Athletic Fields",city:"Berryhill",lat:36.1101,lon:-96.0681},
-{id:919,state:"OK",region:"ne-ok",type:"yr",name:"Tahlequah Youth Baseball Complex",city:"Tahlequah",lat:35.9151,lon:-94.9699},
-// ── OK Youth — Central ──
-{id:920,state:"OK",region:"c-ok",type:"yr",name:"Edmond Regional Park Baseball",city:"Edmond",lat:35.6528,lon:-97.4781},
-{id:921,state:"OK",region:"c-ok",type:"yr",name:"Yukon Youth Sports Complex",city:"Yukon",lat:35.5067,lon:-97.7617},
-{id:922,state:"OK",region:"c-ok",type:"yr",name:"Moore Youth Athletic Park",city:"Moore",lat:35.3395,lon:-97.4867},
-{id:923,state:"OK",region:"c-ok",type:"yr",name:"Norman Central Park Fields",city:"Norman",lat:35.2226,lon:-97.4395},
-{id:924,state:"OK",region:"c-ok",type:"yr",name:"Midwest City Sports Complex",city:"Midwest City",lat:35.4495,lon:-97.3967},
-{id:925,state:"OK",region:"c-ok",type:"yr",name:"Choctaw Athletic Complex",city:"Choctaw",lat:35.4973,lon:-97.2709},
-{id:926,state:"OK",region:"c-ok",type:"yr",name:"Mustang Youth Baseball Fields",city:"Mustang",lat:35.3840,lon:-97.7245},
-{id:927,state:"OK",region:"c-ok",type:"yr",name:"Putnam City Athletic Fields",city:"Oklahoma City",lat:35.5118,lon:-97.6309},
-{id:928,state:"OK",region:"c-ok",type:"yr",name:"Piedmont Community Sports Park",city:"Piedmont",lat:35.6412,lon:-97.7481},
-{id:929,state:"OK",region:"c-ok",type:"yr",name:"Guthrie Sports Complex",city:"Guthrie",lat:35.8787,lon:-97.4245},
-{id:930,state:"OK",region:"c-ok",type:"yr",name:"Shawnee Athletic Park",city:"Shawnee",lat:35.3273,lon:-96.9248},
-// ── OK Youth — Western ──
-{id:931,state:"OK",region:"w-ok",type:"yr",name:"Elmer Thomas Park Diamonds",city:"Lawton",lat:34.6106,lon:-98.4304},
-{id:932,state:"OK",region:"w-ok",type:"yr",name:"Lawton Sports Complex",city:"Lawton",lat:34.6181,lon:-98.3912},
-{id:933,state:"OK",region:"w-ok",type:"yr",name:"Duncan Youth Baseball Park",city:"Duncan",lat:34.5023,lon:-97.9578},
-// ── Arkansas Youth ──
-{id:1001,state:"AR",region:"nw-ar",type:"yr",name:"Millsap Youth Baseball Complex",city:"Fayetteville",lat:36.0626,lon:-94.1574},
-{id:1002,state:"AR",region:"nw-ar",type:"yr",name:"Walker Park Fields",city:"Fayetteville",lat:36.0812,lon:-94.1821},
-{id:1003,state:"AR",region:"nw-ar",type:"yr",name:"Bentonville Youth Sports Village",city:"Bentonville",lat:36.3729,lon:-94.2088},
-{id:1004,state:"AR",region:"nw-ar",type:"yr",name:"Rogers Athletic Complex",city:"Rogers",lat:36.3320,lon:-94.1185},
-{id:1005,state:"AR",region:"nw-ar",type:"yr",name:"Randal Tyson Recreation Center",city:"Springdale",lat:36.1867,lon:-94.1288},
-{id:1006,state:"AR",region:"nw-ar",type:"yr",name:"Siloam Springs Youth Baseball",city:"Siloam Springs",lat:36.1881,lon:-94.5404},
-{id:1007,state:"AR",region:"nw-ar",type:"yr",name:"Bella Vista Ballpark Complex",city:"Bella Vista",lat:36.4793,lon:-94.2724},
-{id:1008,state:"AR",region:"nw-ar",type:"yr",name:"Centerton Sports Park",city:"Centerton",lat:36.3598,lon:-94.2838},
-{id:1009,state:"AR",region:"fs-ar",type:"yr",name:"Ben Geren Regional Park",city:"Fort Smith",lat:35.3495,lon:-94.3985},
-{id:1010,state:"AR",region:"fs-ar",type:"yr",name:"Chaffee Crossing Athletic Fields",city:"Fort Smith",lat:35.3218,lon:-94.3401},
-{id:1011,state:"AR",region:"fs-ar",type:"yr",name:"Hackett Youth Baseball Complex",city:"Hackett",lat:35.1831,lon:-94.4073},
-{id:1012,state:"AR",region:"fs-ar",type:"yr",name:"Van Buren Sports Complex",city:"Van Buren",lat:35.4362,lon:-94.3482},
-{id:1013,state:"AR",region:"c-ar",type:"yr",name:"Burns Park Athletic Complex",city:"N. Little Rock",lat:34.8039,lon:-92.2696},
-{id:1014,state:"AR",region:"c-ar",type:"yr",name:"War Memorial Park Diamonds",city:"Little Rock",lat:34.7465,lon:-92.3313},
-{id:1015,state:"AR",region:"c-ar",type:"yr",name:"Bryant Sports Complex",city:"Bryant",lat:34.5987,lon:-92.4895},
-{id:1016,state:"AR",region:"c-ar",type:"yr",name:"Cabot Youth Baseball Fields",city:"Cabot",lat:34.9748,lon:-92.0165},
-{id:1017,state:"AR",region:"c-ar",type:"yr",name:"Jacksonville Community Park",city:"Jacksonville",lat:34.8662,lon:-92.1154},
-{id:1018,state:"AR",region:"c-ar",type:"yr",name:"Benton Athletic Park",city:"Benton",lat:34.5648,lon:-92.5868},
-// ── Missouri Youth ──
-{id:1101,state:"MO",region:"sw-mo",type:"yr",name:"Mercy Park Baseball Complex",city:"Joplin",lat:37.0842,lon:-94.5133},
-{id:1102,state:"MO",region:"sw-mo",type:"yr",name:"Schifferdecker Park Diamonds",city:"Joplin",lat:37.0930,lon:-94.5401},
-{id:1103,state:"MO",region:"sw-mo",type:"yr",name:"Carthage Youth Sports Complex",city:"Carthage",lat:37.1773,lon:-94.3117},
-{id:1104,state:"MO",region:"sw-mo",type:"yr",name:"Webb City Athletic Park",city:"Webb City",lat:37.1481,lon:-94.4649},
-{id:1105,state:"MO",region:"sw-mo",type:"yr",name:"Cooper Park Baseball",city:"Springfield",lat:37.2153,lon:-93.2982},
-{id:1106,state:"MO",region:"sw-mo",type:"yr",name:"Nathanael Greene Park Fields",city:"Springfield",lat:37.1712,lon:-93.3181},
-{id:1107,state:"MO",region:"sw-mo",type:"yr",name:"Republic Youth Baseball",city:"Republic",lat:37.1204,lon:-93.4771},
-// ── Kansas Youth ──
-{id:1201,state:"KS",region:"s-ks",type:"yr",name:"Stryker Complex",city:"Wichita",lat:37.6922,lon:-97.3341},
-{id:1202,state:"KS",region:"s-ks",type:"yr",name:"Riverfront Stadium Fields",city:"Wichita",lat:37.6872,lon:-97.3461},
-{id:1203,state:"KS",region:"s-ks",type:"yr",name:"Derby Youth Baseball Complex",city:"Derby",lat:37.5548,lon:-97.2676},
-{id:1204,state:"KS",region:"s-ks",type:"yr",name:"Andover Central Athletic Park",city:"Andover",lat:37.6870,lon:-97.1363},
-{id:1205,state:"KS",region:"s-ks",type:"yr",name:"Goddard Recreation Complex",city:"Goddard",lat:37.6589,lon:-97.5713},
-{id:1206,state:"KS",region:"s-ks",type:"yr",name:"Maize Youth Baseball Fields",city:"Maize",lat:37.7742,lon:-97.4687},
-// ── Texas Youth ──
-{id:1301,state:"TX",region:"dfw-tx",type:"yr",name:"Bob Woodruff Baseball Complex",city:"Plano",lat:33.0137,lon:-96.6989},
-{id:1302,state:"TX",region:"dfw-tx",type:"yr",name:"Craig Ranch Athletic Fields",city:"McKinney",lat:33.1584,lon:-96.7541},
-{id:1303,state:"TX",region:"dfw-tx",type:"yr",name:"Frisco Athletic Center Fields",city:"Frisco",lat:33.1581,lon:-96.8236},
-{id:1304,state:"TX",region:"dfw-tx",type:"yr",name:"Lewisville Community Park",city:"Lewisville",lat:33.0462,lon:-97.0028},
-{id:1305,state:"TX",region:"dfw-tx",type:"yr",name:"Coppell Youth Baseball Complex",city:"Coppell",lat:32.9543,lon:-97.0149},
-{id:1306,state:"TX",region:"dfw-tx",type:"yr",name:"Allen Eagles Baseball Fields",city:"Allen",lat:33.1032,lon:-96.6706},
-{id:1307,state:"TX",region:"dfw-tx",type:"yr",name:"Garland Sports Complex",city:"Garland",lat:32.9126,lon:-96.6389},
-{id:1308,state:"TX",region:"dfw-tx",type:"yr",name:"Richardson Athletic Center",city:"Richardson",lat:32.9483,lon:-96.7299},
-];
+var FIELDS=[];
+var SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vRZxDFJM55pQ6yC2dp1qyhv9Vtn4ds53hU_SrsgA9IisqVurStvlA3OhxuNn9wFDw/pub?gid=915517523&single=true&output=csv';
 
-var STATUSES={on:{label:"&#9918; PLAY BALL",sub:"Conditions look favorable",color:"#4ade80",glow:"rgba(74,222,128,0.12)"},questionable:{label:"&#9888;&#65039; QUESTIONABLE",sub:"Monitor conditions closely",color:"#fbbf24",glow:"rgba(251,191,36,0.12)"},cancelled:{label:"&#127783; LIKELY CANCELLED",sub:"High chance of rain/delay",color:"#f87171",glow:"rgba(248,113,113,0.12)"}};
+function parseCSV(text){
+  var lines=text.trim().split('\n');
+  var result=[];
+  var typeMap={'youth':'yr','youth / recreation':'yr','youth / rec':'yr',
+               'high school':'hs','hs':'hs','col':'col','college':'col',
+               'college / univ.':'col','university':'col','yr':'yr'};
+  for(var i=1;i<lines.length;i++){
+    var cols=splitCSVLine(lines[i]);
+    if(cols.length<8)continue;
+    var active=cols.length>=11?(cols[10]||'Y').trim().toUpperCase():'Y';
+    if(active==='N')continue;
+    var id=parseInt(cols[0],10);
+    var lat=parseFloat(cols[6]);
+    var lon=parseFloat(cols[7]);
+    if(!id||isNaN(lat)||isNaN(lon))continue;
+    var rawType=(cols[3]||'').trim().toLowerCase();
+    var ftype=typeMap[rawType]||rawType;
+    result.push({
+      id:id, state:(cols[1]||'').trim(), region:(cols[2]||'').trim(),
+      type:ftype, name:(cols[4]||'').trim(), city:(cols[5]||'').trim(),
+      lat:lat, lon:lon,
+      surface:cols.length>=9?(cols[8]||'').trim():'',
+      notes:cols.length>=10?(cols[9]||'').trim():'',
+    });
+  }
+  return result;
+}
+
+function splitCSVLine(line){
+  var cols=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){cols.push(cur);cur='';}
+    else{cur+=c;}
+  }
+  cols.push(cur);
+  return cols;
+}
+
+async function loadParks(){
+  var grid=document.getElementById('field-grid');
+  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#3a5268;">&#8635; Loading ballparks...</div>';
+
+  var baseURL = SHEET_CSV_URL;
+  var proxies = [
+    baseURL,
+    'https://corsproxy.io/?' + baseURL,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseURL),
+  ];
+
+  var text = null;
+  var lastErr = null;
+  for(var p=0; p<proxies.length; p++){
+    try{
+      var res = await fetch(proxies[p], {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      text = await res.text();
+      if(text && text.length > 10) break;
+    }catch(e){
+      lastErr = e;
+      console.warn('Fetch attempt '+(p+1)+' failed:', e.message);
+    }
+  }
+
+  if(!text){
+    console.error('All fetch attempts failed:', lastErr);
+    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#f87171;">&#9888; Could not load ballpark data.<br><span style=\"color:#4a6880;font-size:10px;\">This works on the live site. To test locally, open via a local server or push to GitHub Pages.</span><br><br><button type=\"button\" onclick=\"loadParks()\" style=\"margin-top:10px;padding:7px 16px;border-radius:8px;border:1px solid #2a3d50;background:#0d1017;color:#38bdf8;font-family:DM Mono,monospace;font-size:10px;cursor:pointer;\">&#8635; Retry</button></div>';
+    return;
+  }
+
+  try{
+    var parsed = parseCSV(text);
+    if(parsed.length === 0) throw new Error('Spreadsheet returned 0 parks — check Active column and CSV publish settings.');
+    FIELDS = parsed;
+    renderGrids();
+  }catch(e){
+    console.error('Park parse error:', e);
+    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#f87171;">&#9888; ' + e.message + '</div>';
+  }
+}
+
+var STATUSES={on:{label:"&#9918; Play Ball",sub:"Conditions look favorable",color:"#00c853",glow:"rgba(0,200,83,0.12)"},questionable:{label:"&#9888; Questionable",sub:"Monitor conditions closely",color:"#ffd600",glow:"rgba(255,214,0,0.12)"},cancelled:{label:"&#127783; Likely Cancelled",sub:"High chance of rain or delay",color:"#ff3d57",glow:"rgba(255,61,87,0.12)"}};
 var SURFACE_CFG={standard:{duringMult:1.00,preMult:1.00,windMult:1.00},allDirt:{duringMult:1.20,preMult:1.45,windMult:0.85},infieldTurf:{duringMult:0.72,preMult:0.45,windMult:1.00},fullTurf:{duringMult:0.38,preMult:0.10,windMult:1.00}};
 var SURFACE_LABELS={standard:{name:"Standard",icon:"&#128994;",desc:"Grass / Dirt Infield"},allDirt:{name:"All Dirt",icon:"&#128997;",desc:"Full Dirt Infield"},infieldTurf:{name:"Infield Turf",icon:"&#128995;",desc:"Turf Infield / Grass OF"},fullTurf:{name:"Full Turf",icon:"&#128274;",desc:"100% Artificial Turf"}};
 var TIME_OPTIONS=[];
@@ -487,7 +484,7 @@ function checkReady(){var ok=document.getElementById("date-input").value&&select
 
 (function init(){
   var today=new Date().toISOString().split("T")[0];
-  var di=document.getElementById("date-input");di.value=today;di.min=today;di.addEventListener("change",checkReady);
+  var di=document.getElementById("date-input");di.value=today;di.addEventListener("change",checkReady);
   var ts=document.getElementById("time-sel");
   TIME_OPTIONS.forEach(function(t,i){var o=document.createElement("option");o.value=String(i);o.textContent=t.label;ts.appendChild(o);});
   ts.value="16";ts.addEventListener("change",checkReady);
@@ -498,7 +495,7 @@ function checkReady(){var ok=document.getElementById("date-input").value&&select
     activeState=this.value;activeRegion="all";activeType="all";
     buildRegionChips();buildTypeChips();renderGrids();
   });
-  buildRegionChips();buildTypeChips();renderGrids();
+  buildRegionChips();buildTypeChips();loadParks();
   document.getElementById("submit-btn").addEventListener("click",doCheck);
 })();
 
@@ -546,7 +543,7 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   var key=prob>=75?"on":prob>=45?"questionable":"cancelled";
   var st=STATUSES[key],sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard,cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard;
   var card=document.getElementById("result-card");
-  card.style.background="#0f1318";card.style.border="1px solid "+st.color+"33";card.style.boxShadow="0 0 50px "+st.glow;
+  card.style.background="#ffffff";card.style.border="1px solid "+st.color+"33";card.style.boxShadow="0 0 50px "+st.glow;
   document.getElementById("result-header").style.background="linear-gradient(90deg,"+st.glow+",transparent)";
   document.getElementById("rh-field").textContent=field.name+" \xb7 "+field.city;
   var dateObj=new Date(dateVal+"T12:00:00");
@@ -564,8 +561,12 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   function mmToIn(mm){return(mm*0.0393701).toFixed(2)+'"';}
   function kphToMph(k){return Math.round(k*0.621371);}
   function setPill(pid,vid,val,warn){document.getElementById(pid).classList.toggle("warn",warn);document.getElementById(vid).textContent=val;}
-  setPill("pill-pregame","pv-pregame",mmToIn(wx.preGameMm),wx.preGameMm>3);
-  setPill("pill-temp","pv-temp",wx.windChillF+"\xb0F",wx.windChillF<40);
+  var isCold=wx.windChillF<40;
+  var tempPill=document.getElementById("pill-temp");
+  tempPill.classList.toggle("cold",isCold);
+  tempPill.classList.remove("warn");
+  document.getElementById("temp-icon").textContent=isCold?"🥶":"🌡️";
+  document.getElementById("pv-temp").textContent=wx.windChillF+"\xb0F";
   setPill("pill-rain","pv-rain",wx.rainPct+"%",wx.rainPct>60);
   setPill("pill-precip","pv-precip",mmToIn(wx.precipMm),wx.precipMm>2);
   setPill("pill-wind","pv-wind",kphToMph(wx.windKph)+" mph",wx.windKph>40);
@@ -576,4 +577,3 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
 </script>
 </body>
 </html>
-
