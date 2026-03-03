@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Will Easton Play?</title>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-46C23W9PFV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-46C23W9PFV');
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -392,7 +400,7 @@ async function loadParks(){
   try{
     var parsed = parseCSV(text);
     if(parsed.length === 0) throw new Error('Spreadsheet returned 0 parks — check Active column and CSV publish settings.');
-    FIELDS = parsed;
+    FIELDS = parsed.map(function(f,i){f._idx=i;return f;});
     renderGrids();
   }catch(e){
     console.error('Park parse error:', e);
@@ -445,7 +453,7 @@ function buildTypeChips(){
 function makeBtn(f){
   var isFav=favorites.has(f.id);
   var btn=document.createElement("button");btn.type="button";
-  btn.className="field-btn"+(isFav?" favorited":"");btn.dataset.id=String(f.id);
+  btn.className="field-btn"+(isFav?" favorited":"");btn.dataset.id=String(f._idx);
   var nd=document.createElement("div");nd.className="fn";nd.textContent=f.name;
   var cd=document.createElement("div");cd.className="fc";cd.textContent=f.city;
   var td=document.createElement("div");td.className="ft "+(TYPE_CLS[f.type]||"");td.textContent=TYPE_LABELS[f.type]||"";
@@ -453,7 +461,7 @@ function makeBtn(f){
   star.title=isFav?"Remove from favorites":"Pin to favorites";star.textContent=isFav?"\u2605":"\u2606";
   star.addEventListener("click",function(e){e.stopPropagation();toggleFav(f.id);});
   btn.appendChild(nd);btn.appendChild(cd);btn.appendChild(td);btn.appendChild(star);
-  btn.addEventListener("click",function(){selectField(f.id);});
+  btn.addEventListener("click",function(){selectField(f._idx);});
   return btn;
 }
 
@@ -479,8 +487,8 @@ function renderGrids(){
 
 function syncSelected(){document.querySelectorAll(".field-btn").forEach(function(b){b.classList.toggle("selected",Number(b.dataset.id)===selectedFieldId);});}
 function toggleFav(id){if(favorites.has(id)){favorites.delete(id);}else{favorites.add(id);}saveFavs(favorites);renderGrids();}
-function selectField(id){selectedFieldId=id;syncSelected();checkReady();}
-function checkReady(){var ok=document.getElementById("date-input").value&&selectedFieldId;document.getElementById("submit-btn").disabled=!ok;}
+function selectField(idx){selectedFieldId=idx;syncSelected();checkReady();}
+function checkReady(){var ok=document.getElementById("date-input").value&&selectedFieldId!==null;document.getElementById("submit-btn").disabled=!ok;}
 
 (function init(){
   var today=new Date().toISOString().split("T")[0];
@@ -530,7 +538,7 @@ async function doCheck(){
   errBox.style.display="none";resCard.style.display="none";btn.disabled=true;
   btn.innerHTML='<div class="spinner"></div> FETCHING WEATHER...';
   var dateVal=document.getElementById("date-input").value,timeIdx=Number(document.getElementById("time-sel").value),timeOpt=TIME_OPTIONS[timeIdx];
-  var field=FIELDS.find(function(f){return f.id===selectedFieldId;});
+  var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
     var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF);
