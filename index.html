@@ -3,707 +3,572 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gameday Rain Check · Tulsa Baseball</title>
+  <title>Gameday Rain Check</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { min-height: 100%; background: #07080f; }
-    body {
-      font-family: 'Barlow', sans-serif;
-      color: #e2e8f0;
-      background: #07080f;
-      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14,38,80,0.6) 0%, transparent 70%);
-    }
+    html, body { min-height: 100%; }
+    body { font-family:'Barlow',sans-serif; color:#e2e8f0; background:#0a0a0f; }
     select, input { color-scheme: dark; }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2d3f55; border-radius: 3px; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.65); cursor:pointer; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-track { background:#111; }
+    ::-webkit-scrollbar-thumb { background:#2a3a4a; border-radius:3px; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin    { to{transform:rotate(360deg)} }
+    @keyframes popIn   { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.3)} 100%{transform:scale(1);opacity:1} }
+    .result-enter { animation:slideUp 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
 
-    @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes spin    { to { transform: rotate(360deg); } }
-    @keyframes popIn   { 0% { transform:scale(0.6); opacity:0; } 70% { transform:scale(1.3); } 100% { transform:scale(1); opacity:1; } }
-    .result-enter { animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) forwards; }
-
-    /* ── Nav ── */
-    #nav {
-      padding: 18px 24px;
-      display: flex; align-items: center; gap: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    #nav .logo-a { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#38bdf8; }
-    #nav .logo-b { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#7a92ab; }
-    #nav .sub    { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:#6b8099; }
-
-    /* ── Layout ── */
+    #nav { padding:18px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #1a1f28; background:#0a0a0f; }
+    .logo-a { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#38bdf8; }
+    .logo-b { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#4a6478; }
+    .nav-sub { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; }
     #main { max-width:700px; margin:0 auto; padding:36px 20px 60px; }
-
-    /* ── Hero ── */
     #hero { margin-bottom:32px; text-align:center; }
-    #hero h1 {
-      font-family:'Bebas Neue',cursive;
-      font-size: clamp(42px,8vw,68px);
-      letter-spacing:.03em; line-height:.95; color:#f1f5f9;
-    }
+    #hero h1 { font-family:'Bebas Neue',cursive; font-size:clamp(40px,8vw,66px); letter-spacing:.03em; line-height:.95; color:#f1f5f9; }
     #hero h1 span { color:#38bdf8; }
-    #hero p { margin-top:12px; color:#8faabf; font-size:15px; font-weight:300; letter-spacing:.02em; }
+    #hero p { margin-top:12px; color:#6a8499; font-size:15px; font-weight:300; }
+    #form-card { background:#111318; border:1px solid #1e2530; border-radius:14px; padding:24px 24px 20px; }
+    .lbl { display:block; font-family:'DM Mono',monospace; font-size:10px; color:#4a6880; letter-spacing:.12em; margin-bottom:8px; }
+    .dt-row { display:flex; gap:12px; margin-bottom:20px; }
+    .dt-row > div { flex:1; }
+    input[type="date"], select.time-sel, select.state-sel {
+      width:100%; padding:10px 13px; background:#0d1017; border:1px solid #1e2a36;
+      border-radius:8px; color:#d4e4f0; font-size:14px; font-family:'Barlow',sans-serif; cursor:pointer;
+    }
+    input[type="date"]:focus, select.time-sel:focus, select.state-sel:focus { outline:2px solid rgba(56,189,248,0.4); outline-offset:2px; }
 
-    /* ── Form card ── */
-    #form-card {
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius:16px; padding:26px 26px 22px;
-    }
+    /* Surface */
+    #surface-wrap { margin-bottom:20px; }
+    #surface-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .surf-btn { padding:10px 12px; border-radius:8px; cursor:pointer; text-align:left; border:1px solid #1e2530; background:#0d1017; transition:border-color .12s,background .12s; }
+    .surf-btn:hover { background:#131a22; border-color:#2a3d50; }
+    .surf-btn.active { background:#0d1a24; border-color:#38bdf8; }
+    .surf-btn .sn { font-size:13px; font-weight:600; color:#b0c8dc; display:flex; align-items:center; gap:6px; line-height:1.2; }
+    .surf-btn.active .sn { color:#38bdf8; }
+    .surf-btn .sd { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; margin-top:3px; }
+    .sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
-    .field-label {
-      display:block;
-      font-family:'DM Mono',monospace; font-size:10px;
-      color:#7a92ab; letter-spacing:.12em; margin-bottom:8px;
-    }
+    /* 3-Tier Filter */
+    #filter-wrap { margin-bottom:16px; }
+    .filter-row { margin-bottom:12px; }
+    .chip-row { display:flex; flex-wrap:wrap; gap:5px; }
+    .fchip { padding:5px 11px; border-radius:20px; cursor:pointer; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.05em; border:1px solid #1e2530; background:#0d1017; color:#5a7a90; transition:all .12s; white-space:nowrap; }
+    .fchip:hover { background:#131a22; border-color:#2a3d50; color:#7aaccf; }
+    .fchip.active { background:#0d1a24; border-color:#38bdf8; color:#38bdf8; }
+    .fchip.type-hs.active  { background:rgba(251,191,36,0.08);  border-color:rgba(251,191,36,0.55);  color:#fbbf24; }
+    .fchip.type-col.active { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.55); color:#a78bfa; }
+    .fchip.type-yr.active  { background:rgba(52,211,153,0.08);  border-color:rgba(52,211,153,0.55);  color:#34d399; }
 
-    .row { display:flex; gap:14px; margin-bottom:20px; }
-    .row > div { flex:1; }
+    /* Park grid header */
+    .grid-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; margin-top:4px; }
+    .chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em; padding:3px 9px; border-radius:20px; }
+    .chip.fav { color:#fbbf24; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.22); }
+    .chip.all { color:#4a6880; background:rgba(255,255,255,0.03); border:1px solid #1e2530; }
+    #park-count { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; }
 
-    input[type="date"], select.time-sel {
-      width:100%; padding:11px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius:10px; color:#e2e8f0;
-      font-size:15px; font-family:'Barlow',sans-serif; cursor:pointer;
-    }
-    input[type="date"]:focus, select.time-sel:focus {
-      outline: 2px solid rgba(56,189,248,0.45); outline-offset:2px;
-    }
-
-    /* ── Metro filter bar ── */
-    #metro-filter-wrap {
-      margin-bottom: 14px;
-    }
-    #metro-filter-wrap .field-label { margin-bottom: 8px; }
-    #metro-tabs {
-      display: flex; flex-wrap: wrap; gap: 6px;
-    }
-    .metro-tab {
-      padding: 5px 12px; border-radius: 20px; cursor: pointer;
-      font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.06em;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
-      color: #9fb8cc;
-      transition: all .15s;
-      white-space: nowrap;
-    }
-    .metro-tab:hover { background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.35); color:#7dd3f0; }
-    .metro-tab.active {
-      background: rgba(56,189,248,0.18);
-      border-color: rgba(56,189,248,0.55);
-      color: #38bdf8;
-    }
-
-    /* ── Section chips ── */
-    .section-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em;
-      padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;
-    }
-    .section-chip.fav { color:#fbbf24; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); }
-    .section-chip.all { color:#7a92ab; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); }
-
-    /* ── Favorites strip ── */
-    #fav-section { margin-bottom:14px; }
+    /* Fav strip */
+    #fav-section { margin-bottom:12px; }
     #fav-section.hidden { display:none; }
-    #fav-grid { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; }
+    #fav-grid { display:flex; gap:7px; overflow-x:auto; padding-bottom:5px; }
 
-    /* ── All parks grid ── */
-    #field-grid {
-      display:grid; grid-template-columns:1fr 1fr;
-      gap:8px; max-height:320px; overflow-y:auto; padding-right:4px;
-    }
-    #no-results {
-      display:none; padding:20px; text-align:center;
-      font-family:'DM Mono',monospace; font-size:12px; color:#4d6478;
-    }
+    /* Park grid */
+    #field-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; max-height:320px; overflow-y:auto; padding-right:3px; }
+    #no-results { display:none; padding:20px; text-align:center; font-family:'DM Mono',monospace; font-size:11px; color:#2a3d50; }
 
-    /* ── Field button ── */
-    .field-btn {
-      position:relative;
-      padding:10px 34px 10px 14px; border-radius:9px;
-      border:1px solid rgba(255,255,255,0.09);
-      background:rgba(255,255,255,0.025);
-      cursor:pointer; text-align:left;
-      transition: background .12s, border-color .12s;
-    }
-    .field-btn:hover { background:rgba(56,189,248,0.08); border-color:rgba(56,189,248,0.32); }
-    .field-btn.selected { background:rgba(56,189,248,0.14) !important; border-color:rgba(56,189,248,0.6) !important; }
-    .field-btn .fn { font-size:13px; font-weight:600; color:#c8dae8; line-height:1.25; }
+    /* Field button */
+    .field-btn { position:relative; padding:9px 32px 9px 12px; border-radius:8px; border:1px solid #1e2530; background:#0d1017; cursor:pointer; text-align:left; transition:background .12s,border-color .12s; }
+    .field-btn:hover { background:#131a22; border-color:#2a3d50; }
+    .field-btn.selected { background:#0d1a24 !important; border-color:#38bdf8 !important; }
+    .field-btn .fn { font-size:13px; font-weight:600; color:#a8c4d8; line-height:1.25; }
     .field-btn.selected .fn { color:#38bdf8; }
-    .field-btn .fc { font-family:'DM Mono',monospace; font-size:10px; color:#5e7d96; margin-top:3px; }
-
-    /* Fav strip cards */
-    #fav-grid .field-btn { min-width:168px; max-width:168px; flex-shrink:0; }
-    #fav-grid .field-btn { border-color:rgba(251,191,36,0.28); background:rgba(251,191,36,0.04); }
-    #fav-grid .field-btn:hover { background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.5); }
-
-    /* Star */
-    .star-btn {
-      position:absolute; top:7px; right:7px;
-      background:none; border:none; padding:3px;
-      font-size:15px; line-height:1; cursor:pointer;
-      color:#3a5570; transition:color .15s, transform .15s; z-index:2;
-    }
-    .star-btn:hover { color:#fbbf24; transform:scale(1.18); }
+    .field-btn .fc { font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; margin-top:2px; }
+    .field-btn .ft { font-family:'DM Mono',monospace; font-size:9px; margin-top:2px; letter-spacing:.04em; }
+    .ft-hs  { color:#a07818; }
+    .ft-col { color:#7a60c0; }
+    .ft-yr  { color:#267a60; }
+    #fav-grid .field-btn { min-width:160px; max-width:160px; flex-shrink:0; border-color:rgba(251,191,36,0.2); background:rgba(251,191,36,0.03); }
+    #fav-grid .field-btn:hover { background:rgba(251,191,36,0.07); border-color:rgba(251,191,36,0.4); }
+    .star-btn { position:absolute; top:7px; right:7px; background:none; border:none; padding:2px; font-size:14px; line-height:1; cursor:pointer; color:#243444; transition:color .12s,transform .12s; }
+    .star-btn:hover { color:#fbbf24; transform:scale(1.2); }
     .field-btn.favorited .star-btn { color:#fbbf24; }
-    .star-btn.pop { animation: popIn 0.28s ease forwards; }
 
-    /* ── Submit ── */
-    #submit-btn {
-      margin-top:20px; width:100%; padding:14px;
-      border:none; border-radius:11px;
-      font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:.1em;
-      cursor:pointer; transition:all .2s;
-      display:flex; align-items:center; justify-content:center; gap:10px;
-    }
-    #submit-btn:disabled { background:rgba(255,255,255,0.05); color:#4d6478; cursor:not-allowed; box-shadow:none; }
-    #submit-btn:not(:disabled) {
-      background:linear-gradient(135deg,#0ea5e9,#2563eb);
-      color:#fff; box-shadow:0 4px 24px rgba(14,165,233,0.28);
-    }
-    .spinner {
-      width:16px; height:16px;
-      border:2px solid rgba(255,255,255,0.3); border-top-color:#fff;
-      border-radius:50%; animation:spin .7s linear infinite;
-    }
+    /* Submit */
+    #submit-btn { margin-top:18px; width:100%; padding:13px; border:none; border-radius:10px; font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:.1em; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px; }
+    #submit-btn:disabled { background:#111318; color:#2a3d50; cursor:not-allowed; }
+    #submit-btn:not(:disabled) { background:linear-gradient(135deg,#0ea5e9,#1d4ed8); color:#fff; box-shadow:0 4px 20px rgba(14,165,233,0.22); }
+    .spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
 
-    /* ── Error ── */
-    #error-box {
-      display:none; margin-top:14px; padding:14px 18px;
-      background:rgba(248,113,113,0.09); border:1px solid rgba(248,113,113,0.25);
-      border-radius:10px; color:#f87171;
-      font-family:'DM Mono',monospace; font-size:13px;
-    }
+    #error-box { display:none; margin-top:12px; padding:13px 16px; background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.2); border-radius:9px; color:#f87171; font-family:'DM Mono',monospace; font-size:12px; }
 
-    /* ── Result card ── */
-    #result-card { display:none; margin-top:22px; border-radius:16px; overflow:hidden; }
-    #result-header {
-      padding:18px 22px 14px;
-      border-bottom:1px solid rgba(255,255,255,0.07);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .rh-field { font-family:'DM Mono',monospace; font-size:11px; color:#7a92ab; letter-spacing:.09em; margin-bottom:5px; }
-    .rh-date  { font-family:'DM Mono',monospace; font-size:11px; color:#5e7d96; }
-    #wx-icon { font-size:36px; }
-
-    #result-body { padding:22px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+    /* Result card */
+    #result-card { display:none; margin-top:20px; border-radius:14px; overflow:hidden; }
+    #result-header { padding:16px 20px 13px; border-bottom:1px solid #1a1f28; display:flex; align-items:center; justify-content:space-between; }
+    .rh-field { font-family:'DM Mono',monospace; font-size:11px; color:#7eb5d4; letter-spacing:.08em; margin-bottom:5px; }
+    .rh-date  { font-family:'DM Mono',monospace; font-size:11px; color:#6a96b0; }
+    #wx-icon  { font-size:34px; }
+    #result-body { padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
     #gauge-svg text { font-family:'Bebas Neue',cursive; }
-    #verdict-wrap { flex:1; min-width:180px; }
-    #verdict-label { font-family:'Bebas Neue',cursive; font-size:clamp(28px,6vw,42px); line-height:1; margin-bottom:5px; }
-    #verdict-sub   { color:#7a92ab; font-size:14px; font-weight:300; margin-bottom:14px; }
-
-    #stat-pills { display:flex; gap:8px; }
-    .stat-pill {
-      display:flex; flex-direction:column; align-items:center; gap:4px;
-      padding:11px 14px; border-radius:10px; flex:1; min-width:78px;
-      border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.04);
-    }
-    .stat-pill.warn { background:rgba(248,113,113,0.09); border-color:rgba(248,113,113,0.25); }
-    .stat-pill .sp-icon  { font-size:18px; }
-    .stat-pill .sp-value { font-family:'Bebas Neue',cursive; font-size:22px; color:#e2e8f0; line-height:1; }
+    #verdict-wrap { flex:1; min-width:175px; }
+    #verdict-label { font-family:'Bebas Neue',cursive; font-size:clamp(26px,5.5vw,40px); line-height:1; margin-bottom:5px; }
+    #verdict-sub   { font-size:13px; font-weight:300; margin-bottom:13px; color:#8ab8d0; }
+    #stat-pills { display:flex; gap:7px; flex-wrap:wrap; }
+    .stat-pill { display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 12px; border-radius:9px; flex:1; min-width:68px; border:1px solid #253545; background:#0d1017; }
+    .stat-pill.warn { background:rgba(248,113,113,0.09); border-color:rgba(248,113,113,0.3); }
+    .stat-pill .sp-icon  { font-size:17px; }
+    .stat-pill .sp-value { font-family:'Bebas Neue',cursive; font-size:21px; color:#eaf3fb; line-height:1; }
     .stat-pill.warn .sp-value { color:#f87171; }
-    .stat-pill .sp-label { font-family:'DM Mono',monospace; font-size:9px; color:#6b8099; letter-spacing:.06em; text-align:center; }
+    .stat-pill .sp-label { font-family:'DM Mono',monospace; font-size:9px; color:#6a96b0; letter-spacing:.05em; text-align:center; }
+    #result-footer { padding:0 20px 14px; }
+    #result-footer p { font-family:'DM Mono',monospace; font-size:10px; color:#4a6880; line-height:1.8; white-space:pre-wrap; }
 
-    #result-footer { padding:0 22px 14px; }
-    #result-footer p { font-family:'DM Mono',monospace; font-size:10px; color:#334d62; line-height:1.8; }
-
-    @media (max-width:540px) {
-      .row { flex-direction:column; }
+    @media(max-width:520px) {
+      .dt-row { flex-direction:column; }
       #field-grid { grid-template-columns:1fr; }
       #result-body { flex-direction:column; align-items:flex-start; }
-      #metro-tabs { gap:5px; }
-      .metro-tab { font-size:9px; padding:4px 10px; }
     }
   </style>
 </head>
 <body>
-
 <div id="nav">
-  <span class="logo-a">⚾ GAMEDAY</span>
+  <span class="logo-a">&#9918; GAMEDAY</span>
   <span class="logo-b">RAIN CHECK</span>
-  <span class="sub">250-MILE RADIUS · TULSA, OK</span>
+  <span class="nav-sub">OKLAHOMA &amp; SURROUNDING STATES</span>
 </div>
-
 <div id="main">
   <div id="hero">
     <h1>WILL YOUR<br><span>GAME</span> BE PLAYED?</h1>
-    <p>Select your game date, time, and ballpark for a real-time weather-based play probability.</p>
+    <p>Enter your game details for a real-time weather-based play probability.</p>
   </div>
-
   <div id="form-card">
-    <!-- Date + Time -->
-    <div class="row">
-      <div>
-        <label class="field-label" for="date-input">GAME DATE</label>
-        <input type="date" id="date-input" />
+    <div class="dt-row">
+      <div><label class="lbl" for="date-input">GAME DATE</label><input type="date" id="date-input" /></div>
+      <div><label class="lbl" for="time-sel">GAME TIME</label><select class="time-sel" id="time-sel"></select></div>
+    </div>
+    <div id="surface-wrap">
+      <label class="lbl">PLAYING SURFACE</label>
+      <div id="surface-grid">
+        <button type="button" class="surf-btn active" data-surface="standard"><div class="sn"><span class="sdot" style="background:#5a8a5a"></span>Standard</div><div class="sd">Grass outfield / Dirt infield</div></button>
+        <button type="button" class="surf-btn" data-surface="allDirt"><div class="sn"><span class="sdot" style="background:#8a6030"></span>All Dirt Infield</div><div class="sd">Grass outfield / Full dirt infield</div></button>
+        <button type="button" class="surf-btn" data-surface="infieldTurf"><div class="sn"><span class="sdot" style="background:#2a7a6a"></span>Infield Turf</div><div class="sd">Grass outfield / Turf infield</div></button>
+        <button type="button" class="surf-btn" data-surface="fullTurf"><div class="sn"><span class="sdot" style="background:#1a6a9a"></span>Full Turf</div><div class="sd">100% artificial turf surface</div></button>
       </div>
-      <div>
-        <label class="field-label" for="time-sel">GAME TIME</label>
-        <select class="time-sel" id="time-sel"></select>
-      </div>
     </div>
-
-    <!-- Metro filter -->
-    <div id="metro-filter-wrap">
-      <label class="field-label">FILTER BY METRO AREA</label>
-      <div id="metro-tabs"></div>
+    <div id="filter-wrap">
+      <div class="filter-row"><label class="lbl">STATE</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas (DFW)</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
+      <div class="filter-row"><label class="lbl">REGION</label><div class="chip-row" id="region-chips"></div></div>
+      <div class="filter-row"><label class="lbl">FACILITY TYPE</label><div class="chip-row" id="type-chips"></div></div>
     </div>
-
-    <!-- Header row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px;">
-      <span class="field-label" style="margin-bottom:0;">SELECT BALLPARK</span>
-      <span style="font-family:'DM Mono',monospace;font-size:10px;color:#4d6478;">tap ☆ to pin favorites</span>
+    <div class="grid-hdr">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="lbl" style="margin-bottom:0">SELECT BALLPARK</span><span id="park-count"></span></div>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:#243444">tap &#9734; to pin favorites</span>
     </div>
-
-    <!-- Favorites strip -->
-    <div id="fav-section" class="hidden">
-      <div class="section-chip fav">★ FAVORITES</div>
-      <div id="fav-grid"></div>
-    </div>
-
-    <!-- All parks -->
-    <div class="section-chip all" id="all-chip">ALL PARKS</div>
+    <div id="fav-section" class="hidden"><div style="margin-bottom:6px"><span class="chip fav">&#9733; FAVORITES</span></div><div id="fav-grid"></div><div style="height:10px"></div></div>
+    <div style="margin-bottom:7px"><span class="chip all">ALL PARKS</span></div>
     <div id="field-grid"></div>
-    <div id="no-results">No parks found for this filter.</div>
-
-    <button id="submit-btn" disabled>CHECK PLAY PROBABILITY</button>
+    <div id="no-results">No parks match the current filters.</div>
+    <button type="button" id="submit-btn" disabled>CHECK PLAY PROBABILITY</button>
   </div>
-
   <div id="error-box"></div>
-
-  <!-- Result -->
   <div id="result-card">
-    <div id="result-header">
-      <div>
-        <div class="rh-field" id="rh-field"></div>
-        <div class="rh-date"  id="rh-date"></div>
-      </div>
-      <span id="wx-icon"></span>
-    </div>
+    <div id="result-header"><div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div><span id="wx-icon"></span></div>
     <div id="result-body">
-      <svg id="gauge-svg" width="130" height="130" viewBox="0 0 130 130">
-        <circle cx="65" cy="65" r="52" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10"/>
-        <circle id="gauge-arc" cx="65" cy="65" r="52" fill="none"
-          stroke="#4ade80" stroke-width="10"
-          stroke-dasharray="0 999" stroke-linecap="round"
-          transform="rotate(-90 65 65)"
-          style="transition:stroke-dasharray 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
+      <svg id="gauge-svg" width="125" height="125" viewBox="0 0 130 130">
+        <circle cx="65" cy="65" r="52" fill="none" stroke="#1a2230" stroke-width="10"/>
+        <circle id="gauge-arc" cx="65" cy="65" r="52" fill="none" stroke="#4ade80" stroke-width="10" stroke-dasharray="0 999" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dasharray 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
         <text id="gauge-pct" x="65" y="61" text-anchor="middle" font-size="28" fill="#4ade80">0%</text>
-        <text x="65" y="78" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.35)"
-          style="font-family:'DM Mono',monospace;letter-spacing:.06em">PLAY CHANCE</text>
+        <text x="65" y="78" text-anchor="middle" font-size="9" fill="#2a3d50" style="font-family:'DM Mono',monospace;letter-spacing:.06em">PLAY CHANCE</text>
       </svg>
       <div id="verdict-wrap">
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
         <div id="stat-pills">
-          <div class="stat-pill" id="pill-rain">
-            <span class="sp-icon">🌧</span>
-            <span class="sp-value" id="pv-rain">—</span>
-            <span class="sp-label">RAIN CHANCE</span>
-          </div>
-          <div class="stat-pill" id="pill-precip">
-            <span class="sp-icon">💧</span>
-            <span class="sp-value" id="pv-precip">—</span>
-            <span class="sp-label">PRECIP (mm)</span>
-          </div>
-          <div class="stat-pill" id="pill-wind">
-            <span class="sp-icon">💨</span>
-            <span class="sp-value" id="pv-wind">—</span>
-            <span class="sp-label">WIND (km/h)</span>
-          </div>
+          <div class="stat-pill" id="pill-pregame"><span class="sp-icon">&#127750;</span><span class="sp-value" id="pv-pregame">&#8212;</span><span class="sp-label">PRE-GAME IN</span></div>
+          <div class="stat-pill" id="pill-temp"><span class="sp-icon">&#127777;&#65039;</span><span class="sp-value" id="pv-temp">&#8212;</span><span class="sp-label">FEELS LIKE</span></div>
+          <div class="stat-pill" id="pill-rain"><span class="sp-icon">&#127783;</span><span class="sp-value" id="pv-rain">&#8212;</span><span class="sp-label">RAIN CHANCE</span></div>
+          <div class="stat-pill" id="pill-precip"><span class="sp-icon">&#128167;</span><span class="sp-value" id="pv-precip">&#8212;</span><span class="sp-label">GAME PRECIP</span></div>
+          <div class="stat-pill" id="pill-wind"><span class="sp-icon">&#128168;</span><span class="sp-value" id="pv-wind">&#8212;</span><span class="sp-label">WIND mph</span></div>
         </div>
       </div>
     </div>
     <div id="result-footer"><p id="result-coords"></p></div>
   </div>
-
-</div><!-- /main -->
+</div>
 
 <script>
-// ── Metro areas ───────────────────────────────────────────────────────────────
-const METROS = [
-  { id:"all",         label:"All Parks" },
-  { id:"tulsa",       label:"Tulsa, OK" },
-  { id:"okc",         label:"Oklahoma City, OK" },
-  { id:"lawton",      label:"Lawton, OK" },
-  { id:"nwa",         label:"NW Arkansas (Fayetteville)" },
-  { id:"fortsmith",   label:"Fort Smith, AR" },
-  { id:"littlerock",  label:"Little Rock, AR" },
-  { id:"joplin",      label:"Joplin / Springfield, MO" },
-  { id:"wichita",     label:"Wichita, KS" },
-  { id:"dallas",      label:"Dallas / Plano, TX" },
+"use strict";
+var REGIONS={OK:[{id:"all",label:"All Regions"},{id:"ne-ok",label:"Northeastern OK"},{id:"c-ok",label:"Central OK"},{id:"se-ok",label:"Southeastern OK"},{id:"w-ok",label:"Western OK"}],AR:[{id:"all",label:"All Regions"},{id:"nw-ar",label:"NW Arkansas"},{id:"fs-ar",label:"Fort Smith"},{id:"c-ar",label:"Central AR"}],TX:[{id:"all",label:"All Regions"},{id:"dfw-tx",label:"DFW"}],KS:[{id:"all",label:"All Regions"},{id:"s-ks",label:"South KS"}],MO:[{id:"all",label:"All Regions"},{id:"sw-mo",label:"SW Missouri"}]};
+var TYPES=[{id:"all",label:"All Types",cls:""},{id:"hs",label:"High School",cls:"type-hs"},{id:"col",label:"College / Univ.",cls:"type-col"},{id:"yr",label:"Youth / Recreation",cls:"type-yr"}];
+var TYPE_LABELS={hs:"High School",col:"College",yr:"Youth / Rec"};
+var TYPE_CLS={hs:"ft-hs",col:"ft-col",yr:"ft-yr"};
+
+var FIELDS=[
+// ── OK High School — Northeastern ──
+{id:101,state:"OK",region:"ne-ok",type:"hs",name:"Union HS — Stigall Field",city:"Tulsa",lat:36.0596,lon:-95.8694},
+{id:102,state:"OK",region:"ne-ok",type:"hs",name:"Jenks HS",city:"Jenks",lat:35.9980,lon:-95.9645},
+{id:103,state:"OK",region:"ne-ok",type:"hs",name:"Broken Arrow HS",city:"Broken Arrow",lat:36.0432,lon:-95.7856},
+{id:104,state:"OK",region:"ne-ok",type:"hs",name:"Owasso HS",city:"Owasso",lat:36.2920,lon:-95.8453},
+{id:105,state:"OK",region:"ne-ok",type:"hs",name:"Bixby HS",city:"Bixby",lat:35.9425,lon:-95.8830},
+{id:106,state:"OK",region:"ne-ok",type:"hs",name:"Bishop Kelley HS",city:"Tulsa",lat:36.1010,lon:-95.9367},
+{id:107,state:"OK",region:"ne-ok",type:"hs",name:"Memorial HS",city:"Tulsa",lat:36.1046,lon:-95.9850},
+{id:108,state:"OK",region:"ne-ok",type:"hs",name:"Edison Prep HS",city:"Tulsa",lat:36.1380,lon:-95.9557},
+{id:109,state:"OK",region:"ne-ok",type:"hs",name:"Booker T. Washington HS",city:"Tulsa",lat:36.1303,lon:-95.9793},
+{id:110,state:"OK",region:"ne-ok",type:"hs",name:"Claremore HS",city:"Claremore",lat:36.3178,lon:-95.6158},
+{id:111,state:"OK",region:"ne-ok",type:"hs",name:"Pryor HS",city:"Pryor",lat:36.3059,lon:-95.3106},
+{id:112,state:"OK",region:"ne-ok",type:"hs",name:"Tahlequah HS",city:"Tahlequah",lat:35.9147,lon:-94.9697},
+{id:113,state:"OK",region:"ne-ok",type:"hs",name:"Muskogee HS",city:"Muskogee",lat:35.7538,lon:-95.3572},
+{id:114,state:"OK",region:"ne-ok",type:"hs",name:"Sapulpa HS",city:"Sapulpa",lat:35.9940,lon:-96.1107},
+{id:115,state:"OK",region:"ne-ok",type:"hs",name:"Coweta HS",city:"Coweta",lat:35.9617,lon:-95.6488},
+{id:116,state:"OK",region:"ne-ok",type:"hs",name:"Wagoner HS",city:"Wagoner",lat:35.9607,lon:-95.3718},
+{id:117,state:"OK",region:"ne-ok",type:"hs",name:"Catoosa HS",city:"Catoosa",lat:36.1879,lon:-95.7434},
+{id:118,state:"OK",region:"ne-ok",type:"hs",name:"Collinsville HS",city:"Collinsville",lat:36.3641,lon:-95.8400},
+{id:119,state:"OK",region:"ne-ok",type:"hs",name:"Skiatook HS",city:"Skiatook",lat:36.3710,lon:-95.9993},
+{id:120,state:"OK",region:"ne-ok",type:"hs",name:"Bartlesville HS",city:"Bartlesville",lat:36.7464,lon:-95.9797},
+{id:121,state:"OK",region:"ne-ok",type:"hs",name:"Sand Springs HS",city:"Sand Springs",lat:36.1395,lon:-96.1083},
+{id:122,state:"OK",region:"ne-ok",type:"hs",name:"Verdigris HS",city:"Verdigris",lat:36.2556,lon:-95.6840},
+{id:123,state:"OK",region:"ne-ok",type:"hs",name:"Fort Gibson HS",city:"Fort Gibson",lat:35.7993,lon:-95.2457},
+{id:124,state:"OK",region:"ne-ok",type:"hs",name:"Oologah HS",city:"Oologah",lat:36.4413,lon:-95.7105},
+{id:125,state:"OK",region:"ne-ok",type:"hs",name:"Inola HS",city:"Inola",lat:36.1500,lon:-95.5108},
+{id:126,state:"OK",region:"ne-ok",type:"hs",name:"Berryhill HS",city:"Tulsa",lat:36.1100,lon:-96.0680},
+{id:127,state:"OK",region:"ne-ok",type:"hs",name:"Adair HS",city:"Adair",lat:36.1386,lon:-95.0271},
+{id:128,state:"OK",region:"ne-ok",type:"hs",name:"Salina HS",city:"Salina",lat:36.2890,lon:-95.1595},
+{id:129,state:"OK",region:"ne-ok",type:"hs",name:"Glenpool HS",city:"Glenpool",lat:35.9490,lon:-96.0062},
+// ── OK High School — Central ──
+{id:201,state:"OK",region:"c-ok",type:"hs",name:"Edmond Santa Fe HS",city:"Edmond",lat:35.6612,lon:-97.5342},
+{id:202,state:"OK",region:"c-ok",type:"hs",name:"Edmond North HS",city:"Edmond",lat:35.7063,lon:-97.4682},
+{id:203,state:"OK",region:"c-ok",type:"hs",name:"Edmond Memorial HS",city:"Edmond",lat:35.6342,lon:-97.4624},
+{id:204,state:"OK",region:"c-ok",type:"hs",name:"Stillwater HS",city:"Stillwater",lat:36.1143,lon:-97.0521},
+{id:205,state:"OK",region:"c-ok",type:"hs",name:"Moore HS",city:"Moore",lat:35.3370,lon:-97.4860},
+{id:206,state:"OK",region:"c-ok",type:"hs",name:"Norman HS",city:"Norman",lat:35.2218,lon:-97.4390},
+{id:207,state:"OK",region:"c-ok",type:"hs",name:"Norman North HS",city:"Norman",lat:35.2645,lon:-97.4522},
+{id:208,state:"OK",region:"c-ok",type:"hs",name:"Westmoore HS",city:"Moore",lat:35.3573,lon:-97.5098},
+{id:209,state:"OK",region:"c-ok",type:"hs",name:"Yukon HS",city:"Yukon",lat:35.5024,lon:-97.7591},
+{id:210,state:"OK",region:"c-ok",type:"hs",name:"Mustang HS",city:"Mustang",lat:35.3848,lon:-97.7178},
+{id:211,state:"OK",region:"c-ok",type:"hs",name:"Choctaw HS",city:"Choctaw",lat:35.5002,lon:-97.2681},
+{id:212,state:"OK",region:"c-ok",type:"hs",name:"Midwest City HS",city:"Midwest City",lat:35.4498,lon:-97.3960},
+{id:213,state:"OK",region:"c-ok",type:"hs",name:"Carl Albert HS",city:"Midwest City",lat:35.4432,lon:-97.3823},
+{id:214,state:"OK",region:"c-ok",type:"hs",name:"Guthrie HS",city:"Guthrie",lat:35.8789,lon:-97.4248},
+{id:215,state:"OK",region:"c-ok",type:"hs",name:"Shawnee HS",city:"Shawnee",lat:35.3276,lon:-96.9248},
+{id:216,state:"OK",region:"c-ok",type:"hs",name:"Ponca City HS",city:"Ponca City",lat:36.7073,lon:-97.0843},
+{id:217,state:"OK",region:"c-ok",type:"hs",name:"Noble HS",city:"Noble",lat:35.1392,lon:-97.3813},
+{id:218,state:"OK",region:"c-ok",type:"hs",name:"Putnam City HS",city:"Oklahoma City",lat:35.5333,lon:-97.6063},
+{id:219,state:"OK",region:"c-ok",type:"hs",name:"Piedmont HS",city:"Piedmont",lat:35.6432,lon:-97.7489},
+{id:220,state:"OK",region:"c-ok",type:"hs",name:"Blanchard HS",city:"Blanchard",lat:35.1381,lon:-97.6641},
+{id:221,state:"OK",region:"c-ok",type:"hs",name:"Newcastle HS",city:"Newcastle",lat:35.2393,lon:-97.5970},
+{id:222,state:"OK",region:"c-ok",type:"hs",name:"Tuttle HS",city:"Tuttle",lat:35.2842,lon:-97.8134},
+{id:223,state:"OK",region:"c-ok",type:"hs",name:"Bethany HS",city:"Bethany",lat:35.5172,lon:-97.6337},
+{id:224,state:"OK",region:"c-ok",type:"hs",name:"El Reno HS",city:"El Reno",lat:35.5322,lon:-97.9554},
+// ── OK High School — Southeastern ──
+{id:301,state:"OK",region:"se-ok",type:"hs",name:"Durant HS",city:"Durant",lat:33.9983,lon:-96.4050},
+{id:302,state:"OK",region:"se-ok",type:"hs",name:"McAlester HS",city:"McAlester",lat:34.9318,lon:-95.7699},
+{id:303,state:"OK",region:"se-ok",type:"hs",name:"Ada HS",city:"Ada",lat:34.7744,lon:-96.6781},
+{id:304,state:"OK",region:"se-ok",type:"hs",name:"Ardmore HS",city:"Ardmore",lat:34.1749,lon:-97.1315},
+{id:305,state:"OK",region:"se-ok",type:"hs",name:"Sulphur HS",city:"Sulphur",lat:34.5090,lon:-96.9672},
+{id:306,state:"OK",region:"se-ok",type:"hs",name:"Atoka HS",city:"Atoka",lat:34.3848,lon:-96.1282},
+{id:307,state:"OK",region:"se-ok",type:"hs",name:"Tishomingo HS",city:"Tishomingo",lat:34.2381,lon:-96.6789},
+{id:308,state:"OK",region:"se-ok",type:"hs",name:"Seminole HS",city:"Seminole",lat:35.2253,lon:-96.6741},
+{id:309,state:"OK",region:"se-ok",type:"hs",name:"Poteau HS",city:"Poteau",lat:35.0530,lon:-94.6213},
+{id:310,state:"OK",region:"se-ok",type:"hs",name:"Sallisaw HS",city:"Sallisaw",lat:35.4578,lon:-94.7991},
+{id:311,state:"OK",region:"se-ok",type:"hs",name:"Stigler HS",city:"Stigler",lat:35.2540,lon:-95.1238},
+{id:312,state:"OK",region:"se-ok",type:"hs",name:"Hugo HS",city:"Hugo",lat:34.0090,lon:-95.5102},
+{id:313,state:"OK",region:"se-ok",type:"hs",name:"Idabel HS",city:"Idabel",lat:33.8960,lon:-94.8278},
+// ── OK High School — Western ──
+{id:401,state:"OK",region:"w-ok",type:"hs",name:"Lawton HS",city:"Lawton",lat:34.6079,lon:-98.4021},
+{id:402,state:"OK",region:"w-ok",type:"hs",name:"Lawton MacArthur HS",city:"Lawton",lat:34.5899,lon:-98.3762},
+{id:403,state:"OK",region:"w-ok",type:"hs",name:"Elk City HS",city:"Elk City",lat:35.4072,lon:-99.4039},
+{id:404,state:"OK",region:"w-ok",type:"hs",name:"Weatherford HS",city:"Weatherford",lat:35.5261,lon:-98.7051},
+{id:405,state:"OK",region:"w-ok",type:"hs",name:"Woodward HS",city:"Woodward",lat:36.4330,lon:-99.3942},
+{id:406,state:"OK",region:"w-ok",type:"hs",name:"Altus HS",city:"Altus",lat:34.6382,lon:-99.3322},
+{id:407,state:"OK",region:"w-ok",type:"hs",name:"Elgin HS",city:"Elgin",lat:34.6500,lon:-98.2940},
+{id:408,state:"OK",region:"w-ok",type:"hs",name:"Duncan HS",city:"Duncan",lat:34.5029,lon:-97.9598},
+{id:409,state:"OK",region:"w-ok",type:"hs",name:"Chickasha HS",city:"Chickasha",lat:34.9962,lon:-97.9459},
+{id:410,state:"OK",region:"w-ok",type:"hs",name:"Marlow HS",city:"Marlow",lat:34.6441,lon:-97.9530},
+{id:411,state:"OK",region:"w-ok",type:"hs",name:"Clinton HS",city:"Clinton",lat:35.5163,lon:-98.9671},
+{id:412,state:"OK",region:"w-ok",type:"hs",name:"Enid HS",city:"Enid",lat:36.3961,lon:-97.8789},
+{id:413,state:"OK",region:"w-ok",type:"hs",name:"Anadarko HS",city:"Anadarko",lat:35.0730,lon:-98.2452},
+{id:414,state:"OK",region:"w-ok",type:"hs",name:"Alva HS",city:"Alva",lat:36.8051,lon:-98.6641},
+// ── OK College — Northeastern ──
+{id:501,state:"OK",region:"ne-ok",type:"col",name:"Oral Roberts Univ. — J.L. Johnson Stadium",city:"Tulsa",lat:36.1018,lon:-95.8727},
+{id:502,state:"OK",region:"ne-ok",type:"col",name:"Univ. of Tulsa — Lorton Performance Center",city:"Tulsa",lat:36.1540,lon:-95.9377},
+{id:503,state:"OK",region:"ne-ok",type:"col",name:"Northeastern State Univ.",city:"Tahlequah",lat:35.9202,lon:-94.9721},
+{id:504,state:"OK",region:"ne-ok",type:"col",name:"Rogers State Univ.",city:"Claremore",lat:36.3022,lon:-95.6382},
+{id:505,state:"OK",region:"ne-ok",type:"col",name:"Oklahoma Wesleyan Univ.",city:"Bartlesville",lat:36.7522,lon:-95.9814},
+{id:506,state:"OK",region:"ne-ok",type:"col",name:"Connors State College",city:"Warner",lat:35.4931,lon:-95.3032},
+{id:507,state:"OK",region:"ne-ok",type:"col",name:"Bacone College",city:"Muskogee",lat:35.7472,lon:-95.3542},
+// ── OK College — Central ──
+{id:601,state:"OK",region:"c-ok",type:"col",name:"Univ. of Oklahoma — L. Dale Mitchell Park",city:"Norman",lat:35.2066,lon:-97.4444},
+{id:602,state:"OK",region:"c-ok",type:"col",name:"Oklahoma State Univ. — O'Brate Stadium",city:"Stillwater",lat:36.1265,lon:-97.0757},
+{id:603,state:"OK",region:"c-ok",type:"col",name:"Univ. of Central Oklahoma",city:"Edmond",lat:35.6528,lon:-97.4781},
+{id:604,state:"OK",region:"c-ok",type:"col",name:"Oklahoma Baptist Univ.",city:"Shawnee",lat:35.3492,lon:-96.9562},
+{id:605,state:"OK",region:"c-ok",type:"col",name:"Southern Nazarene Univ.",city:"Bethany",lat:35.5052,lon:-97.6441},
+{id:606,state:"OK",region:"c-ok",type:"col",name:"Mid-America Christian Univ.",city:"Oklahoma City",lat:35.4298,lon:-97.5721},
+{id:607,state:"OK",region:"c-ok",type:"col",name:"Rose State College",city:"Midwest City",lat:35.4534,lon:-97.3612},
+{id:608,state:"OK",region:"c-ok",type:"col",name:"Northern Oklahoma College",city:"Tonkawa",lat:36.6702,lon:-97.3119},
+{id:609,state:"OK",region:"c-ok",type:"col",name:"Redlands Community College",city:"El Reno",lat:35.5412,lon:-97.9612},
+{id:610,state:"OK",region:"c-ok",type:"col",name:"Seminole State College",city:"Seminole",lat:35.2253,lon:-96.6600},
+// ── OK College — Southeastern ──
+{id:701,state:"OK",region:"se-ok",type:"col",name:"Southeastern Oklahoma State Univ.",city:"Durant",lat:33.9975,lon:-96.3920},
+{id:702,state:"OK",region:"se-ok",type:"col",name:"East Central Univ.",city:"Ada",lat:34.7771,lon:-96.6752},
+{id:703,state:"OK",region:"se-ok",type:"col",name:"Murray State College",city:"Tishomingo",lat:34.2401,lon:-96.6800},
+{id:704,state:"OK",region:"se-ok",type:"col",name:"Eastern Oklahoma State College",city:"Wilburton",lat:34.9201,lon:-95.3124},
+{id:705,state:"OK",region:"se-ok",type:"col",name:"Carl Albert State College",city:"Poteau",lat:35.0511,lon:-94.6132},
+// ── OK College — Western ──
+{id:801,state:"OK",region:"w-ok",type:"col",name:"Northwestern Oklahoma State Univ.",city:"Alva",lat:36.8052,lon:-98.6560},
+{id:802,state:"OK",region:"w-ok",type:"col",name:"Southwestern Oklahoma State Univ.",city:"Weatherford",lat:35.5331,lon:-98.6949},
+{id:803,state:"OK",region:"w-ok",type:"col",name:"Cameron Univ.",city:"Lawton",lat:34.6092,lon:-98.3991},
+{id:804,state:"OK",region:"w-ok",type:"col",name:"Oklahoma Panhandle State Univ.",city:"Goodwell",lat:36.5991,lon:-101.6380},
+{id:805,state:"OK",region:"w-ok",type:"col",name:"Western Oklahoma State College",city:"Altus",lat:34.6470,lon:-99.3162},
+// ── OK Youth — Northeastern ──
+{id:901,state:"OK",region:"ne-ok",type:"yr",name:"ONEOK Field Complex",city:"Tulsa",lat:36.1536,lon:-95.9925},
+{id:902,state:"OK",region:"ne-ok",type:"yr",name:"Jenks Youth Baseball",city:"Jenks",lat:35.9973,lon:-95.9682},
+{id:903,state:"OK",region:"ne-ok",type:"yr",name:"Bixby Youth Sports Complex",city:"Bixby",lat:35.9423,lon:-95.8869},
+{id:904,state:"OK",region:"ne-ok",type:"yr",name:"Broken Arrow Veteran's Park",city:"Broken Arrow",lat:36.0526,lon:-95.7908},
+{id:905,state:"OK",region:"ne-ok",type:"yr",name:"Owasso Sports Animal Complex",city:"Owasso",lat:36.2695,lon:-95.8550},
+{id:906,state:"OK",region:"ne-ok",type:"yr",name:"RCB Ballfields",city:"Claremore",lat:36.3126,lon:-95.6157},
+{id:907,state:"OK",region:"ne-ok",type:"yr",name:"Sapulpa Sports Complex",city:"Sapulpa",lat:35.9987,lon:-96.1114},
+{id:908,state:"OK",region:"ne-ok",type:"yr",name:"Skiatook Sports Park",city:"Skiatook",lat:36.3715,lon:-96.0003},
+{id:909,state:"OK",region:"ne-ok",type:"yr",name:"Coweta Sports Complex",city:"Coweta",lat:35.9637,lon:-95.6543},
+{id:910,state:"OK",region:"ne-ok",type:"yr",name:"Muskogee Sports Complex",city:"Muskogee",lat:35.7479,lon:-95.3696},
+{id:911,state:"OK",region:"ne-ok",type:"yr",name:"Catoosa Athletic Complex",city:"Catoosa",lat:36.1862,lon:-95.7447},
+{id:912,state:"OK",region:"ne-ok",type:"yr",name:"Collinsville Athletic Park",city:"Collinsville",lat:36.3637,lon:-95.8392},
+{id:913,state:"OK",region:"ne-ok",type:"yr",name:"Glenpool Conference Center Fields",city:"Glenpool",lat:35.9490,lon:-96.0061},
+{id:914,state:"OK",region:"ne-ok",type:"yr",name:"Sand Springs Centennial Park",city:"Sand Springs",lat:36.1398,lon:-96.1089},
+{id:915,state:"OK",region:"ne-ok",type:"yr",name:"Pryor Creek Sports Complex",city:"Pryor Creek",lat:36.3087,lon:-95.3171},
+{id:916,state:"OK",region:"ne-ok",type:"yr",name:"Wagoner Youth Sports Park",city:"Wagoner",lat:35.9582,lon:-95.3710},
+{id:917,state:"OK",region:"ne-ok",type:"yr",name:"O'Brien Park",city:"Tulsa",lat:36.2221,lon:-95.9889},
+{id:918,state:"OK",region:"ne-ok",type:"yr",name:"Berryhill Athletic Fields",city:"Berryhill",lat:36.1101,lon:-96.0681},
+{id:919,state:"OK",region:"ne-ok",type:"yr",name:"Tahlequah Youth Baseball Complex",city:"Tahlequah",lat:35.9151,lon:-94.9699},
+// ── OK Youth — Central ──
+{id:920,state:"OK",region:"c-ok",type:"yr",name:"Edmond Regional Park Baseball",city:"Edmond",lat:35.6528,lon:-97.4781},
+{id:921,state:"OK",region:"c-ok",type:"yr",name:"Yukon Youth Sports Complex",city:"Yukon",lat:35.5067,lon:-97.7617},
+{id:922,state:"OK",region:"c-ok",type:"yr",name:"Moore Youth Athletic Park",city:"Moore",lat:35.3395,lon:-97.4867},
+{id:923,state:"OK",region:"c-ok",type:"yr",name:"Norman Central Park Fields",city:"Norman",lat:35.2226,lon:-97.4395},
+{id:924,state:"OK",region:"c-ok",type:"yr",name:"Midwest City Sports Complex",city:"Midwest City",lat:35.4495,lon:-97.3967},
+{id:925,state:"OK",region:"c-ok",type:"yr",name:"Choctaw Athletic Complex",city:"Choctaw",lat:35.4973,lon:-97.2709},
+{id:926,state:"OK",region:"c-ok",type:"yr",name:"Mustang Youth Baseball Fields",city:"Mustang",lat:35.3840,lon:-97.7245},
+{id:927,state:"OK",region:"c-ok",type:"yr",name:"Putnam City Athletic Fields",city:"Oklahoma City",lat:35.5118,lon:-97.6309},
+{id:928,state:"OK",region:"c-ok",type:"yr",name:"Piedmont Community Sports Park",city:"Piedmont",lat:35.6412,lon:-97.7481},
+{id:929,state:"OK",region:"c-ok",type:"yr",name:"Guthrie Sports Complex",city:"Guthrie",lat:35.8787,lon:-97.4245},
+{id:930,state:"OK",region:"c-ok",type:"yr",name:"Shawnee Athletic Park",city:"Shawnee",lat:35.3273,lon:-96.9248},
+// ── OK Youth — Western ──
+{id:931,state:"OK",region:"w-ok",type:"yr",name:"Elmer Thomas Park Diamonds",city:"Lawton",lat:34.6106,lon:-98.4304},
+{id:932,state:"OK",region:"w-ok",type:"yr",name:"Lawton Sports Complex",city:"Lawton",lat:34.6181,lon:-98.3912},
+{id:933,state:"OK",region:"w-ok",type:"yr",name:"Duncan Youth Baseball Park",city:"Duncan",lat:34.5023,lon:-97.9578},
+// ── Arkansas Youth ──
+{id:1001,state:"AR",region:"nw-ar",type:"yr",name:"Millsap Youth Baseball Complex",city:"Fayetteville",lat:36.0626,lon:-94.1574},
+{id:1002,state:"AR",region:"nw-ar",type:"yr",name:"Walker Park Fields",city:"Fayetteville",lat:36.0812,lon:-94.1821},
+{id:1003,state:"AR",region:"nw-ar",type:"yr",name:"Bentonville Youth Sports Village",city:"Bentonville",lat:36.3729,lon:-94.2088},
+{id:1004,state:"AR",region:"nw-ar",type:"yr",name:"Rogers Athletic Complex",city:"Rogers",lat:36.3320,lon:-94.1185},
+{id:1005,state:"AR",region:"nw-ar",type:"yr",name:"Randal Tyson Recreation Center",city:"Springdale",lat:36.1867,lon:-94.1288},
+{id:1006,state:"AR",region:"nw-ar",type:"yr",name:"Siloam Springs Youth Baseball",city:"Siloam Springs",lat:36.1881,lon:-94.5404},
+{id:1007,state:"AR",region:"nw-ar",type:"yr",name:"Bella Vista Ballpark Complex",city:"Bella Vista",lat:36.4793,lon:-94.2724},
+{id:1008,state:"AR",region:"nw-ar",type:"yr",name:"Centerton Sports Park",city:"Centerton",lat:36.3598,lon:-94.2838},
+{id:1009,state:"AR",region:"fs-ar",type:"yr",name:"Ben Geren Regional Park",city:"Fort Smith",lat:35.3495,lon:-94.3985},
+{id:1010,state:"AR",region:"fs-ar",type:"yr",name:"Chaffee Crossing Athletic Fields",city:"Fort Smith",lat:35.3218,lon:-94.3401},
+{id:1011,state:"AR",region:"fs-ar",type:"yr",name:"Hackett Youth Baseball Complex",city:"Hackett",lat:35.1831,lon:-94.4073},
+{id:1012,state:"AR",region:"fs-ar",type:"yr",name:"Van Buren Sports Complex",city:"Van Buren",lat:35.4362,lon:-94.3482},
+{id:1013,state:"AR",region:"c-ar",type:"yr",name:"Burns Park Athletic Complex",city:"N. Little Rock",lat:34.8039,lon:-92.2696},
+{id:1014,state:"AR",region:"c-ar",type:"yr",name:"War Memorial Park Diamonds",city:"Little Rock",lat:34.7465,lon:-92.3313},
+{id:1015,state:"AR",region:"c-ar",type:"yr",name:"Bryant Sports Complex",city:"Bryant",lat:34.5987,lon:-92.4895},
+{id:1016,state:"AR",region:"c-ar",type:"yr",name:"Cabot Youth Baseball Fields",city:"Cabot",lat:34.9748,lon:-92.0165},
+{id:1017,state:"AR",region:"c-ar",type:"yr",name:"Jacksonville Community Park",city:"Jacksonville",lat:34.8662,lon:-92.1154},
+{id:1018,state:"AR",region:"c-ar",type:"yr",name:"Benton Athletic Park",city:"Benton",lat:34.5648,lon:-92.5868},
+// ── Missouri Youth ──
+{id:1101,state:"MO",region:"sw-mo",type:"yr",name:"Mercy Park Baseball Complex",city:"Joplin",lat:37.0842,lon:-94.5133},
+{id:1102,state:"MO",region:"sw-mo",type:"yr",name:"Schifferdecker Park Diamonds",city:"Joplin",lat:37.0930,lon:-94.5401},
+{id:1103,state:"MO",region:"sw-mo",type:"yr",name:"Carthage Youth Sports Complex",city:"Carthage",lat:37.1773,lon:-94.3117},
+{id:1104,state:"MO",region:"sw-mo",type:"yr",name:"Webb City Athletic Park",city:"Webb City",lat:37.1481,lon:-94.4649},
+{id:1105,state:"MO",region:"sw-mo",type:"yr",name:"Cooper Park Baseball",city:"Springfield",lat:37.2153,lon:-93.2982},
+{id:1106,state:"MO",region:"sw-mo",type:"yr",name:"Nathanael Greene Park Fields",city:"Springfield",lat:37.1712,lon:-93.3181},
+{id:1107,state:"MO",region:"sw-mo",type:"yr",name:"Republic Youth Baseball",city:"Republic",lat:37.1204,lon:-93.4771},
+// ── Kansas Youth ──
+{id:1201,state:"KS",region:"s-ks",type:"yr",name:"Stryker Complex",city:"Wichita",lat:37.6922,lon:-97.3341},
+{id:1202,state:"KS",region:"s-ks",type:"yr",name:"Riverfront Stadium Fields",city:"Wichita",lat:37.6872,lon:-97.3461},
+{id:1203,state:"KS",region:"s-ks",type:"yr",name:"Derby Youth Baseball Complex",city:"Derby",lat:37.5548,lon:-97.2676},
+{id:1204,state:"KS",region:"s-ks",type:"yr",name:"Andover Central Athletic Park",city:"Andover",lat:37.6870,lon:-97.1363},
+{id:1205,state:"KS",region:"s-ks",type:"yr",name:"Goddard Recreation Complex",city:"Goddard",lat:37.6589,lon:-97.5713},
+{id:1206,state:"KS",region:"s-ks",type:"yr",name:"Maize Youth Baseball Fields",city:"Maize",lat:37.7742,lon:-97.4687},
+// ── Texas Youth ──
+{id:1301,state:"TX",region:"dfw-tx",type:"yr",name:"Bob Woodruff Baseball Complex",city:"Plano",lat:33.0137,lon:-96.6989},
+{id:1302,state:"TX",region:"dfw-tx",type:"yr",name:"Craig Ranch Athletic Fields",city:"McKinney",lat:33.1584,lon:-96.7541},
+{id:1303,state:"TX",region:"dfw-tx",type:"yr",name:"Frisco Athletic Center Fields",city:"Frisco",lat:33.1581,lon:-96.8236},
+{id:1304,state:"TX",region:"dfw-tx",type:"yr",name:"Lewisville Community Park",city:"Lewisville",lat:33.0462,lon:-97.0028},
+{id:1305,state:"TX",region:"dfw-tx",type:"yr",name:"Coppell Youth Baseball Complex",city:"Coppell",lat:32.9543,lon:-97.0149},
+{id:1306,state:"TX",region:"dfw-tx",type:"yr",name:"Allen Eagles Baseball Fields",city:"Allen",lat:33.1032,lon:-96.6706},
+{id:1307,state:"TX",region:"dfw-tx",type:"yr",name:"Garland Sports Complex",city:"Garland",lat:32.9126,lon:-96.6389},
+{id:1308,state:"TX",region:"dfw-tx",type:"yr",name:"Richardson Athletic Center",city:"Richardson",lat:32.9483,lon:-96.7299},
 ];
 
-// ── Fields (60+ parks across 250-mile radius) ─────────────────────────────────
-const FIELDS = [
-  // ── Tulsa Metro ──────────────────────────────────────────────────────────────
-  { id:1,  metro:"tulsa",      name:"ONEOK Field Complex",               city:"Tulsa, OK",          lat:36.1536, lon:-95.9925 },
-  { id:2,  metro:"tulsa",      name:"Jenks Youth Baseball",              city:"Jenks, OK",          lat:35.9973, lon:-95.9682 },
-  { id:3,  metro:"tulsa",      name:"Bixby Youth Sports Complex",        city:"Bixby, OK",          lat:35.9423, lon:-95.8869 },
-  { id:4,  metro:"tulsa",      name:"Broken Arrow Veteran's Park",       city:"Broken Arrow, OK",   lat:36.0526, lon:-95.7908 },
-  { id:5,  metro:"tulsa",      name:"Owasso Sports Animal Complex",      city:"Owasso, OK",         lat:36.2695, lon:-95.8550 },
-  { id:6,  metro:"tulsa",      name:"RCB Ballfields",                    city:"Claremore, OK",      lat:36.3126, lon:-95.6157 },
-  { id:7,  metro:"tulsa",      name:"Sapulpa Sports Complex",            city:"Sapulpa, OK",        lat:35.9987, lon:-96.1114 },
-  { id:8,  metro:"tulsa",      name:"Skiatook Sports Park",              city:"Skiatook, OK",       lat:36.3715, lon:-96.0003 },
-  { id:9,  metro:"tulsa",      name:"Coweta Sports Complex",             city:"Coweta, OK",         lat:35.9637, lon:-95.6543 },
-  { id:10, metro:"tulsa",      name:"Muskogee Sports Complex",           city:"Muskogee, OK",       lat:35.7479, lon:-95.3696 },
-  { id:11, metro:"tulsa",      name:"Catoosa Athletic Complex",          city:"Catoosa, OK",        lat:36.1862, lon:-95.7447 },
-  { id:12, metro:"tulsa",      name:"Collinsville Athletic Park",        city:"Collinsville, OK",   lat:36.3637, lon:-95.8392 },
-  { id:13, metro:"tulsa",      name:"Glenpool Conference Center Fields", city:"Glenpool, OK",       lat:35.9490, lon:-96.0061 },
-  { id:14, metro:"tulsa",      name:"Sand Springs Centennial Park",      city:"Sand Springs, OK",   lat:36.1398, lon:-96.1089 },
-  { id:15, metro:"tulsa",      name:"Pryor Creek Sports Complex",        city:"Pryor Creek, OK",    lat:36.3087, lon:-95.3171 },
-  { id:16, metro:"tulsa",      name:"Wagoner Youth Sports Park",         city:"Wagoner, OK",        lat:35.9582, lon:-95.3710 },
-  { id:17, metro:"tulsa",      name:"O'Brien Park",                      city:"Tulsa, OK",          lat:36.2221, lon:-95.9889 },
-  { id:18, metro:"tulsa",      name:"Berryhill Athletic Fields",         city:"Berryhill, OK",      lat:36.1101, lon:-96.0681 },
-  { id:19, metro:"tulsa",      name:"Tahlequah Youth Baseball Complex",  city:"Tahlequah, OK",      lat:35.9151, lon:-94.9699 },
+var STATUSES={on:{label:"&#9918; PLAY BALL",sub:"Conditions look favorable",color:"#4ade80",glow:"rgba(74,222,128,0.12)"},questionable:{label:"&#9888;&#65039; QUESTIONABLE",sub:"Monitor conditions closely",color:"#fbbf24",glow:"rgba(251,191,36,0.12)"},cancelled:{label:"&#127783; LIKELY CANCELLED",sub:"High chance of rain/delay",color:"#f87171",glow:"rgba(248,113,113,0.12)"}};
+var SURFACE_CFG={standard:{duringMult:1.00,preMult:1.00,windMult:1.00},allDirt:{duringMult:1.20,preMult:1.45,windMult:0.85},infieldTurf:{duringMult:0.72,preMult:0.45,windMult:1.00},fullTurf:{duringMult:0.38,preMult:0.10,windMult:1.00}};
+var SURFACE_LABELS={standard:{name:"Standard",icon:"&#128994;",desc:"Grass / Dirt Infield"},allDirt:{name:"All Dirt",icon:"&#128997;",desc:"Full Dirt Infield"},infieldTurf:{name:"Infield Turf",icon:"&#128995;",desc:"Turf Infield / Grass OF"},fullTurf:{name:"Full Turf",icon:"&#128274;",desc:"100% Artificial Turf"}};
+var TIME_OPTIONS=[];
+for(var _h=6;_h<=21;_h++){for(var _m=0;_m<60;_m+=15){var _ap=_h<12?"AM":"PM";var _lbl=(_h%12===0?12:_h%12)+":"+(_m<10?"0"+_m:_m)+" "+_ap;TIME_OPTIONS.push({label:_lbl,hour:_h});}}
 
-  // ── Oklahoma City Metro ───────────────────────────────────────────────────────
-  { id:20, metro:"okc",        name:"Edmond Regional Park Baseball",     city:"Edmond, OK",         lat:35.6528, lon:-97.4781 },
-  { id:21, metro:"okc",        name:"Yukon Youth Sports Complex",        city:"Yukon, OK",          lat:35.5067, lon:-97.7617 },
-  { id:22, metro:"okc",        name:"Moore Youth Athletic Park",         city:"Moore, OK",          lat:35.3395, lon:-97.4867 },
-  { id:23, metro:"okc",        name:"Norman Central Park Fields",        city:"Norman, OK",         lat:35.2226, lon:-97.4395 },
-  { id:24, metro:"okc",        name:"Midwest City Sports Complex",       city:"Midwest City, OK",   lat:35.4495, lon:-97.3967 },
-  { id:25, metro:"okc",        name:"Choctaw Athletic Complex",          city:"Choctaw, OK",        lat:35.4973, lon:-97.2709 },
-  { id:26, metro:"okc",        name:"Mustang Youth Baseball Fields",     city:"Mustang, OK",        lat:35.3840, lon:-97.7245 },
-  { id:27, metro:"okc",        name:"Putnam City Athletic Fields",       city:"Oklahoma City, OK",  lat:35.5118, lon:-97.6309 },
-  { id:28, metro:"okc",        name:"Piedmont Community Sports Park",    city:"Piedmont, OK",       lat:35.6412, lon:-97.7481 },
-  { id:29, metro:"okc",        name:"Guthrie Sports Complex",            city:"Guthrie, OK",        lat:35.8787, lon:-97.4245 },
-  { id:30, metro:"okc",        name:"Shawnee Athletic Park",             city:"Shawnee, OK",        lat:35.3273, lon:-96.9248 },
+var FAV_KEY="grc_favs_v3";
+function loadFavs(){try{return new Set(JSON.parse(localStorage.getItem(FAV_KEY))||[]);}catch(e){return new Set();}}
+function saveFavs(s){try{localStorage.setItem(FAV_KEY,JSON.stringify([...s]));}catch(e){}}
+var favorites=loadFavs();
 
-  // ── Lawton, OK ───────────────────────────────────────────────────────────────
-  { id:31, metro:"lawton",     name:"Elmer Thomas Park Diamonds",        city:"Lawton, OK",         lat:34.6106, lon:-98.4304 },
-  { id:32, metro:"lawton",     name:"Lawton Sports Complex",             city:"Lawton, OK",         lat:34.6181, lon:-98.3912 },
-  { id:33, metro:"lawton",     name:"Duncan Youth Baseball Park",        city:"Duncan, OK",         lat:34.5023, lon:-97.9578 },
+var selectedFieldId=null,activeState="OK",activeRegion="all",activeType="all",selectedSurface="standard";
 
-  // ── NW Arkansas (Fayetteville / Bentonville / Rogers / Springdale) ────────────
-  { id:34, metro:"nwa",        name:"Millsap Youth Baseball Complex",    city:"Fayetteville, AR",   lat:36.0626, lon:-94.1574 },
-  { id:35, metro:"nwa",        name:"Walker Park Fields",                city:"Fayetteville, AR",   lat:36.0812, lon:-94.1821 },
-  { id:36, metro:"nwa",        name:"Bentonville Youth Sports Village",  city:"Bentonville, AR",    lat:36.3729, lon:-94.2088 },
-  { id:37, metro:"nwa",        name:"Rogers Athletic Complex",           city:"Rogers, AR",         lat:36.3320, lon:-94.1185 },
-  { id:38, metro:"nwa",        name:"Randal Tyson Recreation Center",    city:"Springdale, AR",     lat:36.1867, lon:-94.1288 },
-  { id:39, metro:"nwa",        name:"Siloam Springs Youth Baseball",     city:"Siloam Springs, AR", lat:36.1881, lon:-94.5404 },
-  { id:40, metro:"nwa",        name:"Bella Vista Ballpark Complex",      city:"Bella Vista, AR",    lat:36.4793, lon:-94.2724 },
-  { id:41, metro:"nwa",        name:"Centerton Sports Park",             city:"Centerton, AR",      lat:36.3598, lon:-94.2838 },
-
-  // ── Fort Smith, AR ───────────────────────────────────────────────────────────
-  { id:42, metro:"fortsmith",  name:"Ben Geren Regional Park",           city:"Fort Smith, AR",     lat:35.3495, lon:-94.3985 },
-  { id:43, metro:"fortsmith",  name:"Chaffee Crossing Athletic Fields",  city:"Fort Smith, AR",     lat:35.3218, lon:-94.3401 },
-  { id:44, metro:"fortsmith",  name:"Hackett Youth Baseball Complex",    city:"Hackett, AR",        lat:35.1831, lon:-94.4073 },
-  { id:45, metro:"fortsmith",  name:"Van Buren Sports Complex",          city:"Van Buren, AR",      lat:35.4362, lon:-94.3482 },
-
-  // ── Little Rock, AR ──────────────────────────────────────────────────────────
-  { id:46, metro:"littlerock", name:"Burns Park Athletic Complex",       city:"N. Little Rock, AR", lat:34.8039, lon:-92.2696 },
-  { id:47, metro:"littlerock", name:"War Memorial Park Diamonds",        city:"Little Rock, AR",    lat:34.7465, lon:-92.3313 },
-  { id:48, metro:"littlerock", name:"Bryant Sports Complex",             city:"Bryant, AR",         lat:34.5987, lon:-92.4895 },
-  { id:49, metro:"littlerock", name:"Cabot Youth Baseball Fields",       city:"Cabot, AR",          lat:34.9748, lon:-92.0165 },
-  { id:50, metro:"littlerock", name:"Jacksonville Community Park",       city:"Jacksonville, AR",   lat:34.8662, lon:-92.1154 },
-  { id:51, metro:"littlerock", name:"Benton Athletic Park",              city:"Benton, AR",         lat:34.5648, lon:-92.5868 },
-
-  // ── Joplin / Springfield, MO ─────────────────────────────────────────────────
-  { id:52, metro:"joplin",     name:"Mercy Park Baseball Complex",       city:"Joplin, MO",         lat:37.0842, lon:-94.5133 },
-  { id:53, metro:"joplin",     name:"Schifferdecker Park Diamonds",      city:"Joplin, MO",         lat:37.0930, lon:-94.5401 },
-  { id:54, metro:"joplin",     name:"Carthage Youth Sports Complex",     city:"Carthage, MO",       lat:37.1773, lon:-94.3117 },
-  { id:55, metro:"joplin",     name:"Webb City Athletic Park",           city:"Webb City, MO",      lat:37.1481, lon:-94.4649 },
-  { id:56, metro:"joplin",     name:"Cooper Park Baseball",              city:"Springfield, MO",    lat:37.2153, lon:-93.2982 },
-  { id:57, metro:"joplin",     name:"Nathanael Greene Park Fields",      city:"Springfield, MO",    lat:37.1712, lon:-93.3181 },
-  { id:58, metro:"joplin",     name:"Republic Youth Baseball",           city:"Republic, MO",       lat:37.1204, lon:-93.4771 },
-
-  // ── Wichita, KS ─────────────────────────────────────────────────────────────
-  { id:59, metro:"wichita",    name:"Stryker Complex",                   city:"Wichita, KS",        lat:37.6922, lon:-97.3341 },
-  { id:60, metro:"wichita",    name:"Riverfront Stadium Fields",         city:"Wichita, KS",        lat:37.6872, lon:-97.3461 },
-  { id:61, metro:"wichita",    name:"Derby Youth Baseball Complex",      city:"Derby, KS",          lat:37.5548, lon:-97.2676 },
-  { id:62, metro:"wichita",    name:"Andover Central Athletic Park",     city:"Andover, KS",        lat:37.6870, lon:-97.1363 },
-  { id:63, metro:"wichita",    name:"Goddard Recreation Complex",        city:"Goddard, KS",        lat:37.6589, lon:-97.5713 },
-  { id:64, metro:"wichita",    name:"Maize Youth Baseball Fields",       city:"Maize, KS",          lat:37.7742, lon:-97.4687 },
-
-  // ── Dallas / Plano, TX ───────────────────────────────────────────────────────
-  { id:65, metro:"dallas",     name:"Bob Woodruff Baseball Complex",     city:"Plano, TX",          lat:33.0137, lon:-96.6989 },
-  { id:66, metro:"dallas",     name:"Craig Ranch Athletic Fields",       city:"McKinney, TX",       lat:33.1584, lon:-96.7541 },
-  { id:67, metro:"dallas",     name:"Frisco Athletic Center Fields",     city:"Frisco, TX",         lat:33.1581, lon:-96.8236 },
-  { id:68, metro:"dallas",     name:"Lewisville Community Park",         city:"Lewisville, TX",     lat:33.0462, lon:-97.0028 },
-  { id:69, metro:"dallas",     name:"Coppell Youth Baseball Complex",    city:"Coppell, TX",        lat:32.9543, lon:-97.0149 },
-  { id:70, metro:"dallas",     name:"Allen Eagles Baseball Fields",      city:"Allen, TX",          lat:33.1032, lon:-96.6706 },
-  { id:71, metro:"dallas",     name:"Garland Sports Complex",            city:"Garland, TX",        lat:32.9126, lon:-96.6389 },
-  { id:72, metro:"dallas",     name:"Richardson Athletic Center",        city:"Richardson, TX",     lat:32.9483, lon:-96.7299 },
-];
-
-const STATUSES = {
-  on:           { label:"⚾ GAME ON",          sub:"Conditions look favorable",  color:"#4ade80", glow:"rgba(74,222,128,0.15)"  },
-  questionable: { label:"⚠️ QUESTIONABLE",    sub:"Monitor conditions closely", color:"#fbbf24", glow:"rgba(251,191,36,0.15)"  },
-  cancelled:    { label:"🌧 LIKELY CANCELLED", sub:"High chance of rain/delay",  color:"#f87171", glow:"rgba(248,113,113,0.15)" },
-};
-
-// ── Time options ──────────────────────────────────────────────────────────────
-const TIME_OPTIONS = [];
-for (let h = 6; h <= 21; h++) {
-  for (let m = 0; m < 60; m += 15) {
-    const ampm = h < 12 ? "AM" : "PM";
-    const label = `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2,"0")} ${ampm}`;
-    TIME_OPTIONS.push({ label, hour: h, minute: m });
-  }
-}
-
-// ── Favorites ─────────────────────────────────────────────────────────────────
-const FAV_KEY = "gameday_fav_fields";
-function loadFavs() {
-  try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY)) || []); }
-  catch { return new Set(); }
-}
-function saveFavs(set) {
-  try { localStorage.setItem(FAV_KEY, JSON.stringify([...set])); } catch {}
-}
-let favorites = loadFavs();
-
-// ── State ─────────────────────────────────────────────────────────────────────
-let selectedFieldId = null;
-let activeMetro = "all";
-
-// ── Build one field button ────────────────────────────────────────────────────
-function makeBtn(f) {
-  const btn = document.createElement("button");
-  btn.className = "field-btn" + (favorites.has(f.id) ? " favorited" : "");
-  btn.dataset.id = f.id;
-  btn.innerHTML = `
-    <div class="fn">${f.name}</div>
-    <div class="fc">${f.city}</div>
-    <button class="star-btn" title="${favorites.has(f.id) ? 'Remove from favorites' : 'Pin to favorites'}">${favorites.has(f.id) ? "★" : "☆"}</button>
-  `;
-  btn.querySelector(".star-btn").addEventListener("click", e => { e.stopPropagation(); toggleFav(f.id); });
-  btn.addEventListener("click", () => selectField(f.id));
-  return btn;
-}
-
-// ── Render grids ──────────────────────────────────────────────────────────────
-function renderGrids() {
-  const favGrid  = document.getElementById("fav-grid");
-  const allGrid  = document.getElementById("field-grid");
-  const favSect  = document.getElementById("fav-section");
-  const noRes    = document.getElementById("no-results");
-  favGrid.innerHTML = "";
-  allGrid.innerHTML = "";
-
-  // Favorites strip — always show all favorited parks regardless of filter
-  const favFields = FIELDS.filter(f => favorites.has(f.id));
-  if (favFields.length > 0) {
-    favSect.classList.remove("hidden");
-    favFields.forEach(f => favGrid.appendChild(makeBtn(f)));
-  } else {
-    favSect.classList.add("hidden");
-  }
-
-  // Filtered main grid
-  const filtered = FIELDS.filter(f => activeMetro === "all" || f.metro === activeMetro);
-  if (filtered.length === 0) {
-    noRes.style.display = "block";
-  } else {
-    noRes.style.display = "none";
-    filtered.forEach(f => allGrid.appendChild(makeBtn(f)));
-  }
-
-  syncSelected();
-}
-
-function syncSelected() {
-  document.querySelectorAll(".field-btn").forEach(b => {
-    b.classList.toggle("selected", Number(b.dataset.id) === selectedFieldId);
-  });
-}
-
-// ── Toggle favorite ───────────────────────────────────────────────────────────
-function toggleFav(id) {
-  if (favorites.has(id)) { favorites.delete(id); }
-  else { favorites.add(id); }
-  saveFavs(favorites);
-  renderGrids();
-}
-
-// ── Select field ──────────────────────────────────────────────────────────────
-function selectField(id) {
-  selectedFieldId = id;
-  syncSelected();
-  checkReady();
-}
-
-// ── Metro filter ──────────────────────────────────────────────────────────────
-function buildMetroTabs() {
-  const wrap = document.getElementById("metro-tabs");
-  METROS.forEach(m => {
-    const btn = document.createElement("button");
-    btn.className = "metro-tab" + (m.id === "all" ? " active" : "");
-    btn.dataset.metro = m.id;
-    btn.textContent = m.label;
-    btn.addEventListener("click", () => {
-      activeMetro = m.id;
-      document.querySelectorAll(".metro-tab").forEach(b => b.classList.toggle("active", b.dataset.metro === m.id));
-      // If selected park is now hidden by filter, keep it in state but don't deselect
+function buildRegionChips(){
+  var wrap=document.getElementById("region-chips");wrap.innerHTML="";
+  var regions=REGIONS[activeState]||REGIONS.OK;
+  regions.forEach(function(r){
+    var btn=document.createElement("button");btn.type="button";
+    btn.className="fchip"+(r.id===activeRegion?" active":"");btn.dataset.region=r.id;btn.textContent=r.label;
+    btn.addEventListener("click",function(){
+      activeRegion=r.id;
+      document.querySelectorAll(".fchip[data-region]").forEach(function(b){b.classList.toggle("active",b.dataset.region===r.id);});
       renderGrids();
     });
     wrap.appendChild(btn);
   });
 }
 
-// ── Ready check ───────────────────────────────────────────────────────────────
-function checkReady() {
-  const ok = document.getElementById("date-input").value && selectedFieldId;
-  document.getElementById("submit-btn").disabled = !ok;
-  document.getElementById("result-card").style.display = "none";
-  document.getElementById("error-box").style.display   = "none";
+function buildTypeChips(){
+  var wrap=document.getElementById("type-chips");wrap.innerHTML="";
+  TYPES.forEach(function(t){
+    var btn=document.createElement("button");btn.type="button";
+    btn.className="fchip "+(t.cls||"")+(t.id===activeType?" active":"");btn.dataset.typeId=t.id;btn.textContent=t.label;
+    btn.addEventListener("click",function(){
+      activeType=t.id;
+      document.querySelectorAll(".fchip[data-type-id]").forEach(function(b){b.classList.toggle("active",b.dataset.typeId===t.id);});
+      renderGrids();
+    });
+    wrap.appendChild(btn);
+  });
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-(function init() {
-  const today = new Date().toISOString().split("T")[0];
-  const dateInput = document.getElementById("date-input");
-  dateInput.value = today;
-  dateInput.min   = today;
-  dateInput.addEventListener("change", checkReady);
+function makeBtn(f){
+  var isFav=favorites.has(f.id);
+  var btn=document.createElement("button");btn.type="button";
+  btn.className="field-btn"+(isFav?" favorited":"");btn.dataset.id=String(f.id);
+  var nd=document.createElement("div");nd.className="fn";nd.textContent=f.name;
+  var cd=document.createElement("div");cd.className="fc";cd.textContent=f.city;
+  var td=document.createElement("div");td.className="ft "+(TYPE_CLS[f.type]||"");td.textContent=TYPE_LABELS[f.type]||"";
+  var star=document.createElement("button");star.type="button";star.className="star-btn";
+  star.title=isFav?"Remove from favorites":"Pin to favorites";star.textContent=isFav?"\u2605":"\u2606";
+  star.addEventListener("click",function(e){e.stopPropagation();toggleFav(f.id);});
+  btn.appendChild(nd);btn.appendChild(cd);btn.appendChild(td);btn.appendChild(star);
+  btn.addEventListener("click",function(){selectField(f.id);});
+  return btn;
+}
 
-  const timeSel = document.getElementById("time-sel");
-  TIME_OPTIONS.forEach((t, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = t.label;
-    timeSel.appendChild(opt);
+function renderGrids(){
+  var favGrid=document.getElementById("fav-grid"),allGrid=document.getElementById("field-grid");
+  var favSect=document.getElementById("fav-section"),noRes=document.getElementById("no-results");
+  var counter=document.getElementById("park-count");
+  favGrid.innerHTML="";allGrid.innerHTML="";
+  var favFields=FIELDS.filter(function(f){return favorites.has(f.id);});
+  if(favFields.length>0){favSect.classList.remove("hidden");favFields.forEach(function(f){favGrid.appendChild(makeBtn(f));});}
+  else{favSect.classList.add("hidden");}
+  var filtered=FIELDS.filter(function(f){
+    if(f.state!==activeState)return false;
+    if(activeRegion!=="all"&&f.region!==activeRegion)return false;
+    if(activeType!=="all"&&f.type!==activeType)return false;
+    return true;
   });
-  timeSel.value = 16; // default 10:00 AM
-  timeSel.addEventListener("change", checkReady);
+  counter.textContent=filtered.length+" parks";
+  if(filtered.length===0){noRes.style.display="block";}
+  else{noRes.style.display="none";filtered.forEach(function(f){allGrid.appendChild(makeBtn(f));});}
+  syncSelected();
+}
 
-  buildMetroTabs();
-  renderGrids();
-  document.getElementById("submit-btn").addEventListener("click", doCheck);
+function syncSelected(){document.querySelectorAll(".field-btn").forEach(function(b){b.classList.toggle("selected",Number(b.dataset.id)===selectedFieldId);});}
+function toggleFav(id){if(favorites.has(id)){favorites.delete(id);}else{favorites.add(id);}saveFavs(favorites);renderGrids();}
+function selectField(id){selectedFieldId=id;syncSelected();checkReady();}
+function checkReady(){var ok=document.getElementById("date-input").value&&selectedFieldId;document.getElementById("submit-btn").disabled=!ok;}
+
+(function init(){
+  var today=new Date().toISOString().split("T")[0];
+  var di=document.getElementById("date-input");di.value=today;di.min=today;di.addEventListener("change",checkReady);
+  var ts=document.getElementById("time-sel");
+  TIME_OPTIONS.forEach(function(t,i){var o=document.createElement("option");o.value=String(i);o.textContent=t.label;ts.appendChild(o);});
+  ts.value="16";ts.addEventListener("change",checkReady);
+  document.querySelectorAll(".surf-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){selectedSurface=btn.dataset.surface;document.querySelectorAll(".surf-btn").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");});
+  });
+  document.getElementById("state-sel").addEventListener("change",function(){
+    activeState=this.value;activeRegion="all";activeType="all";
+    buildRegionChips();buildTypeChips();renderGrids();
+  });
+  buildRegionChips();buildTypeChips();renderGrids();
+  document.getElementById("submit-btn").addEventListener("click",doCheck);
 })();
 
-// ── Weather fetch ─────────────────────────────────────────────────────────────
-async function fetchWeather(lat, lon, date, hour) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-    + `&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode`
-    + `&timezone=auto&forecast_days=7`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Weather service unavailable. Please try again.");
-  const data = await res.json();
-
-  const hours  = data.hourly.time;
-  const rPct   = data.hourly.precipitation_probability;
-  const precip = data.hourly.precipitation;
-  const wind   = data.hourly.windspeed_10m;
-  const codes  = data.hourly.weathercode;
-
-  const target = `${date}T${String(hour).padStart(2,"0")}:00`;
-  const idx = hours.indexOf(target);
-  if (idx === -1) throw new Error("Date is outside the 7-day forecast window.");
-
-  const win = [-1,0,1,2].map(o => Math.max(0, Math.min(idx+o, hours.length-1)));
-  const avg = arr => Math.round(win.reduce((s,i) => s+arr[i], 0) / win.length);
-  const max = arr => Math.max(...win.map(i => arr[i]));
-
-  return {
-    rainPct:     avg(rPct),
-    precipMm:    parseFloat(max(precip).toFixed(2)),
-    windKph:     avg(wind),
-    weatherCode: codes[idx],
-  };
+async function fetchWeather(lat,lon,date,hour){
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature&timezone=auto&forecast_days=7";
+  var res=await fetch(url);if(!res.ok)throw new Error("Weather service unavailable. Please try again.");
+  var data=await res.json();
+  var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,wind=data.hourly.windspeed_10m,codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature;
+  var target=date+"T"+String(hour).padStart(2,"0")+":00";
+  var idx=hours.indexOf(target);if(idx===-1)throw new Error("Date is outside the 7-day forecast window.");
+  var winIdxs=[-1,0,1,2].map(function(o){return Math.max(0,Math.min(idx+o,hours.length-1));});
+  var avg=function(arr){return Math.round(winIdxs.reduce(function(s,i){return s+arr[i];},0)/winIdxs.length);};
+  var maxArr=function(arr){return Math.max.apply(null,winIdxs.map(function(i){return arr[i];}));};
+  var preTotal=0;for(var p=Math.max(0,idx-6);p<idx;p++){preTotal+=precip[p];}
+  return{rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),windChillF:Math.round(avg(appTemp)*9/5+32)};
 }
 
-function getProb(rainPct, precipMm, windKph) {
-  let s = 100;
-  s -= rainPct * 0.72;
-  s -= Math.min(precipMm * 18, 28);
-  s -= Math.max(0, (windKph - 32) * 0.5);
-  return Math.max(0, Math.min(100, Math.round(s)));
+function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF){
+  var cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard,s=100;
+  s-=rainPct*0.72*cfg.duringMult;
+  s-=Math.min(precipMm*16,26)*cfg.duringMult;
+  s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,32)*cfg.preMult;
+  s-=Math.max(0,(windKph-32)*0.5)*cfg.windMult;
+  if(windChillF<40){s-=Math.min((40-windChillF)*2.5,40);}
+  return Math.max(0,Math.min(100,Math.round(s)));
 }
 
-function wxEmoji(code) {
-  if (code === 0)  return "☀️";
-  if (code <= 3)   return "⛅";
-  if (code <= 48)  return "🌫";
-  if (code <= 67)  return "🌧";
-  if (code <= 77)  return "❄️";
-  if (code <= 82)  return "🌦";
-  return "⛈";
+function wxEmoji(c){if(c===0)return"\u2600\uFE0F";if(c<=3)return"\u26C5";if(c<=48)return"\uD83C\uDF2B";if(c<=67)return"\uD83C\uDF27";if(c<=77)return"\u2744\uFE0F";if(c<=82)return"\uD83C\uDF26";return"\u26C8";}
+
+async function doCheck(){
+  var btn=document.getElementById("submit-btn"),errBox=document.getElementById("error-box"),resCard=document.getElementById("result-card");
+  errBox.style.display="none";resCard.style.display="none";btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> FETCHING WEATHER...';
+  var dateVal=document.getElementById("date-input").value,timeIdx=Number(document.getElementById("time-sel").value),timeOpt=TIME_OPTIONS[timeIdx];
+  var field=FIELDS.find(function(f){return f.id===selectedFieldId;});
+  try{
+    var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
+    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF);
+    renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
+  }catch(e){errBox.textContent="\u26A0 "+e.message;errBox.style.display="block";}
+  finally{btn.disabled=false;btn.innerHTML="CHECK PLAY PROBABILITY";}
 }
 
-// ── Run check ─────────────────────────────────────────────────────────────────
-async function doCheck() {
-  const btn     = document.getElementById("submit-btn");
-  const errBox  = document.getElementById("error-box");
-  const resCard = document.getElementById("result-card");
-
-  errBox.style.display  = "none";
-  resCard.style.display = "none";
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> FETCHING WEATHER...';
-
-  const dateVal = document.getElementById("date-input").value;
-  const timeIdx = Number(document.getElementById("time-sel").value);
-  const timeOpt = TIME_OPTIONS[timeIdx];
-  const field   = FIELDS.find(f => f.id === selectedFieldId);
-
-  try {
-    const wx   = await fetchWeather(field.lat, field.lon, dateVal, timeOpt.hour);
-    const prob = getProb(wx.rainPct, wx.precipMm, wx.windKph);
-    renderResult(field, dateVal, timeOpt.label, wx, prob);
-  } catch(e) {
-    errBox.textContent   = "⚠ " + e.message;
-    errBox.style.display = "block";
-  } finally {
-    btn.disabled  = false;
-    btn.innerHTML = "CHECK PLAY PROBABILITY";
-  }
-}
-
-// ── Render result ─────────────────────────────────────────────────────────────
-function renderResult(field, dateVal, timeLabel, wx, prob) {
-  const key = prob >= 75 ? "on" : prob >= 45 ? "questionable" : "cancelled";
-  const st  = STATUSES[key];
-
-  const card = document.getElementById("result-card");
-  card.style.border     = `1px solid ${st.color}33`;
-  card.style.background = `linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))`;
-  card.style.boxShadow  = `0 0 60px ${st.glow}`;
-
-  document.getElementById("result-header").style.background = `linear-gradient(90deg, ${st.glow}, transparent)`;
-  document.getElementById("rh-field").textContent = `${field.name} · ${field.city}`;
-  const dateObj = new Date(dateVal + "T12:00:00");
-  document.getElementById("rh-date").textContent =
-    dateObj.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}) + " at " + timeLabel;
-  document.getElementById("wx-icon").textContent = wxEmoji(wx.weatherCode);
-
-  const circ = 2 * Math.PI * 52;
-  const arc  = document.getElementById("gauge-arc");
-  arc.setAttribute("stroke", st.color);
-  arc.setAttribute("stroke-dasharray","0 999");
+function renderResult(field,dateVal,timeLabel,wx,prob,surface){
+  var key=prob>=75?"on":prob>=45?"questionable":"cancelled";
+  var st=STATUSES[key],sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard,cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard;
+  var card=document.getElementById("result-card");
+  card.style.background="#0f1318";card.style.border="1px solid "+st.color+"33";card.style.boxShadow="0 0 50px "+st.glow;
+  document.getElementById("result-header").style.background="linear-gradient(90deg,"+st.glow+",transparent)";
+  document.getElementById("rh-field").textContent=field.name+" \xb7 "+field.city;
+  var dateObj=new Date(dateVal+"T12:00:00");
+  document.getElementById("rh-date").textContent=dateObj.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})+" at "+timeLabel+"  \xb7  "+sl.name;
+  document.getElementById("wx-icon").textContent=wxEmoji(wx.weatherCode);
+  var circ=2*Math.PI*52,arc=document.getElementById("gauge-arc");
+  arc.setAttribute("stroke",st.color);arc.setAttribute("stroke-dasharray","0 999");
   void arc.getBoundingClientRect();
-  setTimeout(() => arc.setAttribute("stroke-dasharray", `${(prob/100)*circ} ${circ}`), 30);
-
-  document.getElementById("gauge-pct").textContent = prob + "%";
-  document.getElementById("gauge-pct").setAttribute("fill", st.color);
-  document.getElementById("verdict-label").textContent = st.label;
-  document.getElementById("verdict-label").style.color = st.color;
-  document.getElementById("verdict-sub").textContent   = st.sub;
-
-  function setPill(pillId, valId, value, warn) {
-    document.getElementById(pillId).classList.toggle("warn", warn);
-    document.getElementById(valId).textContent = value;
-  }
-  setPill("pill-rain",   "pv-rain",   wx.rainPct + "%", wx.rainPct > 60);
-  setPill("pill-precip", "pv-precip", wx.precipMm,      wx.precipMm > 2);
-  setPill("pill-wind",   "pv-wind",   wx.windKph,        wx.windKph > 40);
-
-  document.getElementById("result-coords").textContent =
-    `Weather from Open-Meteo · ${field.lat.toFixed(4)}, ${field.lon.toFixed(4)} · Always confirm with your league director.`;
-
-  card.style.display = "block";
-  card.className = "";
-  void card.getBoundingClientRect();
-  card.className = "result-enter";
-  card.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  setTimeout(function(){arc.setAttribute("stroke-dasharray",(prob/100*circ)+" "+circ);},30);
+  document.getElementById("gauge-pct").textContent=prob+"%";
+  document.getElementById("gauge-pct").setAttribute("fill",st.color);
+  document.getElementById("verdict-label").innerHTML=st.label;
+  document.getElementById("verdict-label").style.color=st.color;
+  document.getElementById("verdict-sub").textContent=st.sub;
+  function mmToIn(mm){return(mm*0.0393701).toFixed(2)+'"';}
+  function kphToMph(k){return Math.round(k*0.621371);}
+  function setPill(pid,vid,val,warn){document.getElementById(pid).classList.toggle("warn",warn);document.getElementById(vid).textContent=val;}
+  setPill("pill-pregame","pv-pregame",mmToIn(wx.preGameMm),wx.preGameMm>3);
+  setPill("pill-temp","pv-temp",wx.windChillF+"\xb0F",wx.windChillF<40);
+  setPill("pill-rain","pv-rain",wx.rainPct+"%",wx.rainPct>60);
+  setPill("pill-precip","pv-precip",mmToIn(wx.precipMm),wx.precipMm>2);
+  setPill("pill-wind","pv-wind",kphToMph(wx.windKph)+" mph",wx.windKph>40);
+  document.getElementById("result-coords").textContent="Surface: "+sl.name+" ("+sl.desc+")\nWeather: Open-Meteo \xb7 "+field.lat.toFixed(4)+", "+field.lon.toFixed(4)+" \xb7 Always confirm with your league director.";
+  card.style.display="block";card.className="";void card.getBoundingClientRect();card.className="result-enter";
+  card.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 </script>
 </body>
