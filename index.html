@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gameday Rain Check</title>
+  <title>Will Easton Play?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -24,6 +24,8 @@
     .logo-a { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#38bdf8; }
     .logo-b { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:.1em; color:#4a6478; }
     .nav-sub { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:#3a5268; }
+    #feedback-btn { margin-left:12px; padding:6px 12px; border-radius:20px; border:1px solid #1e3a50; background:rgba(56,189,248,0.07); color:#38bdf8; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.05em; cursor:pointer; transition:all .15s; white-space:nowrap; }
+    #feedback-btn:hover { background:rgba(56,189,248,0.15); border-color:#38bdf8; }
     #main { max-width:700px; margin:0 auto; padding:36px 20px 60px; }
     #hero { margin-bottom:32px; text-align:center; }
     #hero h1 { font-family:'Bebas Neue',cursive; font-size:clamp(40px,8vw,66px); letter-spacing:.03em; line-height:.95; color:#f1f5f9; }
@@ -132,9 +134,10 @@
 </head>
 <body>
 <div id="nav">
-  <span class="logo-a">&#9918; GAMEDAY</span>
-  <span class="logo-b">RAIN CHECK</span>
+  <span class="logo-a">&#9918; WILL EASTON</span>
+  <span class="logo-b">PLAY?</span>
   <span class="nav-sub">OKLAHOMA &amp; SURROUNDING STATES</span>
+  <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
 </div>
 <div id="main">
   <div id="hero">
@@ -470,7 +473,7 @@ function renderGrids(){
     if(activeRegion!=="all"&&f.region!==activeRegion)return false;
     if(activeType!=="all"&&f.type!==activeType)return false;
     return true;
-  });
+  }).sort(function(a,b){return a.city.localeCompare(b.city)||a.name.localeCompare(b.name);});
   counter.textContent=filtered.length+" parks";
   if(filtered.length===0){noRes.style.display="block";}
   else{noRes.style.display="none";filtered.forEach(function(f){allGrid.appendChild(makeBtn(f));});}
@@ -573,3 +576,4 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
 </script>
 </body>
 </html>
+
