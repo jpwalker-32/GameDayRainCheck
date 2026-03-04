@@ -12,6 +12,8 @@
     gtag('js', new Date());
     gtag('config', 'G-46C23W9PFV');
   </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -314,6 +316,24 @@
   #result-footer { padding:0 20px 16px; }
   #result-footer p { font-size:11px; color:#94a3b8; line-height:1.8; white-space:pre-wrap; font-weight:400; }
 
+  /* ── Submit panel ── */
+  #submit-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
+  .sub-field { margin-bottom:16px; }
+  .sub-input {
+    width:100%; padding:11px 14px; background:#f8fafc; border:1px solid #cbd5e1;
+    border-radius:8px; color:#0b1929; font-size:14px; font-family:'Outfit',sans-serif;
+    font-weight:500; transition:border-color .15s; box-sizing:border-box;
+  }
+  .sub-input:focus { outline:none; border-color:#00c853; }
+  .sub-type-btn {
+    padding:8px 16px; border-radius:20px; border:1px solid #e2e8f0; background:#fff;
+    color:#475569; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .sub-type-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
+  #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
+
   @media(max-width:520px){
     .dt-row { flex-direction:column; }
     #field-grid { grid-template-columns:1fr; }
@@ -331,6 +351,7 @@
 <div id="tab-bar">
   <button type="button" class="tab-btn active" onclick="switchTab('forecast')">&#9918; Game Forecast</button>
   <button type="button" class="tab-btn" onclick="switchTab('rankings')">&#127942; Park Rankings</button>
+  <button type="button" class="tab-btn" onclick="switchTab('submit')">&#43; Add a Ballpark</button>
 </div>
 <div class="tab-panel active" id="panel-forecast">
 <div id="main">
@@ -432,6 +453,95 @@
     <div id="rankings-list"></div>
   </div>
 </div><!-- /panel-rankings -->
+
+<!-- ══ SUBMIT PANEL ══ -->
+<div class="tab-panel" id="panel-submit">
+  <div id="submit-wrap">
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;letter-spacing:-.02em;">Add a Ballpark</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px;">Help grow the community database. All submissions are reviewed before going live.</div>
+    </div>
+
+    <div class="gc-card" style="padding:20px;">
+
+      <!-- Park Name -->
+      <div class="sub-field">
+        <label class="sec-label" for="sub-name">Park / Complex Name <span style="color:#dc2626">*</span></label>
+        <input type="text" id="sub-name" class="sub-input" placeholder="e.g. Charlie & Willie George Park" maxlength="100"/>
+      </div>
+
+      <!-- City + State row -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:2;">
+          <label class="sec-label" for="sub-city">City <span style="color:#dc2626">*</span></label>
+          <input type="text" id="sub-city" class="sub-input" placeholder="e.g. Tulsa" maxlength="60" style="margin-bottom:0;"/>
+        </div>
+        <div style="flex:1;">
+          <label class="sec-label" for="sub-state">State <span style="color:#dc2626">*</span></label>
+          <select id="sub-state" class="sub-input" style="margin-bottom:0;">
+            <option value="">Select</option>
+            <option value="OK">Oklahoma</option>
+            <option value="AR">Arkansas</option>
+            <option value="TX">Texas</option>
+            <option value="KS">Kansas</option>
+            <option value="MO">Missouri</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Facility Type -->
+      <div class="sub-field">
+        <label class="sec-label">Facility Type <span style="color:#dc2626">*</span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sub-type-chips">
+          <button type="button" class="sub-type-btn" data-type="yr" onclick="selectSubType(this)">⚾ Youth / Rec</button>
+          <button type="button" class="sub-type-btn" data-type="hs" onclick="selectSubType(this)">🏫 High School</button>
+          <button type="button" class="sub-type-btn" data-type="col" onclick="selectSubType(this)">🎓 College</button>
+        </div>
+      </div>
+
+      <!-- Surface Type -->
+      <div class="sub-field">
+        <label class="sec-label" for="sub-surface">Playing Surface</label>
+        <select id="sub-surface" class="sub-input">
+          <option value="">Unknown</option>
+          <option value="standard">Standard (Grass / Dirt Infield)</option>
+          <option value="allDirt">All Dirt Infield</option>
+          <option value="infieldTurf">Infield Turf</option>
+          <option value="fullTurf">Full Turf</option>
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div class="sub-field">
+        <label class="sec-label" for="sub-notes">Notes <span style="font-weight:400;color:#94a3b8;">(optional)</span></label>
+        <textarea id="sub-notes" class="sub-input" rows="2" placeholder="Drainage issues, parking notes, field condition info..." maxlength="200" style="resize:vertical;"></textarea>
+      </div>
+
+      <!-- Map pin -->
+      <div class="sub-field">
+        <label class="sec-label">Pin the Location <span style="color:#dc2626">*</span></label>
+        <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Search for the park, then click the map to drop a pin on the exact field location.</div>
+        <!-- Search bar -->
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="map-search-input" class="sub-input" placeholder="Search address or park name..." style="margin-bottom:0;flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();searchMapLocation();}"/>
+          <button type="button" onclick="searchMapLocation()" style="padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">🔍 Search</button>
+        </div>
+        <div id="sub-map" style="height:280px;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;"></div>
+        <div id="sub-coords-display" style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-family:'Outfit',sans-serif;font-weight:600;color:#64748b;display:none;">
+          📍 <span id="sub-lat-display"></span>, <span id="sub-lon-display"></span>
+        </div>
+        <input type="hidden" id="sub-lat"/>
+        <input type="hidden" id="sub-lon"/>
+      </div>
+
+      <!-- Submit button -->
+      <button type="button" id="sub-submit-btn" onclick="submitPark()" disabled style="width:100%;padding:13px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;margin-top:4px;">Submit Ballpark</button>
+      <div id="sub-msg" style="margin-top:10px;text-align:center;font-size:13px;font-weight:600;display:none;"></div>
+
+    </div>
+  </div>
+</div><!-- /panel-submit -->
+
 
 <!-- ══ PARK PROFILE MODAL ══ -->
 <div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(11,25,41,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
@@ -989,14 +1099,140 @@ function closeProfile(){
   document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
 
 
-// ── Tab switching ──
+// ── Add a Ballpark ──
+var subMap = null, subMarker = null, subType = null;
+var subMapInitialized = false;
+
+function initSubMap(){
+  if(subMapInitialized) return;
+  subMapInitialized = true;
+  subMap = L.map('sub-map').setView([35.5, -97.5], 7); // Center on Oklahoma
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap contributors', maxZoom:19
+  }).addTo(subMap);
+  subMap.on('click', function(e){ placeSubPin(e.latlng.lat, e.latlng.lng); });
+  // Fix Leaflet tile sizing after tab show
+  setTimeout(function(){ subMap.invalidateSize(); }, 50);
+}
+
+function placeSubPin(lat, lng){
+  if(subMarker) subMap.removeLayer(subMarker);
+  subMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className:'',
+      html:'<div style="width:28px;height:28px;background:#00c853;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+      iconSize:[28,28], iconAnchor:[14,14]
+    })
+  }).addTo(subMap);
+  document.getElementById('sub-lat').value = lat.toFixed(6);
+  document.getElementById('sub-lon').value = lng.toFixed(6);
+  document.getElementById('sub-lat-display').textContent = lat.toFixed(6)+'°N';
+  document.getElementById('sub-lon-display').textContent = Math.abs(lng).toFixed(6)+'°W';
+  document.getElementById('sub-coords-display').style.display = 'block';
+  checkSubReady();
+}
+
+async function searchMapLocation(){
+  var q = document.getElementById('map-search-input').value.trim();
+  if(!q) return;
+  var btn = document.querySelector('#sub-map').previousElementSibling.querySelector('button');
+  btn.textContent = '⏳ Searching...'; btn.disabled = true;
+  try{
+    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q), {
+      headers:{'Accept-Language':'en-US'}
+    });
+    var results = await res.json();
+    if(!results.length){ alert('Location not found. Try a more specific search.'); return; }
+    var r = results[0];
+    subMap.setView([r.lat, r.lon], 15);
+    placeSubPin(parseFloat(r.lat), parseFloat(r.lon));
+  }catch(e){
+    alert('Search failed. Please try again.');
+  }finally{
+    btn.textContent = '🔍 Search'; btn.disabled = false;
+  }
+}
+
+function selectSubType(el){
+  subType = el.dataset.type;
+  document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  checkSubReady();
+}
+
+function checkSubReady(){
+  var name = document.getElementById('sub-name').value.trim();
+  var city = document.getElementById('sub-city').value.trim();
+  var state = document.getElementById('sub-state').value;
+  var lat  = document.getElementById('sub-lat').value;
+  var ok = name && city && state && subType && lat;
+  document.getElementById('sub-submit-btn').disabled = !ok;
+}
+
+// Wire up live validation on text inputs
+document.addEventListener('DOMContentLoaded', function(){
+  ['sub-name','sub-city','sub-state'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', checkSubReady);
+  });
+});
+
+async function submitPark(){
+  var btn = document.getElementById('sub-submit-btn');
+  var msg = document.getElementById('sub-msg');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try{
+    var payload = {
+      park_name: document.getElementById('sub-name').value.trim(),
+      city: document.getElementById('sub-city').value.trim(),
+      state: document.getElementById('sub-state').value,
+      type: subType,
+      lat: parseFloat(document.getElementById('sub-lat').value),
+      lon: parseFloat(document.getElementById('sub-lon').value),
+      surface_type: document.getElementById('sub-surface').value || null,
+      notes: document.getElementById('sub-notes').value.trim() || null
+    };
+    var res = await supaFetch('pending_parks', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('Submit failed');
+    msg.style.color='#00a846';
+    msg.innerHTML='✓ Ballpark submitted — thank you! It will appear in the app after review.';
+    msg.style.display='block';
+    // Reset form
+    document.getElementById('sub-name').value='';
+    document.getElementById('sub-city').value='';
+    document.getElementById('sub-state').value='';
+    document.getElementById('sub-surface').value='';
+    document.getElementById('sub-notes').value='';
+    document.getElementById('map-search-input').value='';
+    document.getElementById('sub-coords-display').style.display='none';
+    if(subMarker){ subMap.removeLayer(subMarker); subMarker=null; }
+    subType=null;
+    document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.textContent='Submit Ballpark';
+  }catch(e){
+    msg.style.color='#dc2626';
+    msg.textContent='⚠ Submission failed. Please try again.';
+    msg.style.display='block';
+    btn.disabled=false; btn.textContent='Submit Ballpark';
+  }
+}
+
+
 var rankingsLoaded = false;
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelector('.tab-btn[onclick*="\''+tab+'\'"]').classList.add('active');
+  // Activate matching tab button
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1) b.classList.add('active');
+  });
   document.getElementById('panel-'+tab).classList.add('active');
   if(tab==='rankings' && !rankingsLoaded){ loadRankings(); rankingsLoaded=true; }
+  if(tab==='submit'){ setTimeout(initSubMap, 50); }
 }
 
 // ── Rankings ──
@@ -1004,8 +1240,10 @@ var activeRankCat = 'overall';
 
 function switchRankCat(cat){
   activeRankCat = cat;
-  document.querySelectorAll('.rank-tab').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelector('.rank-tab[onclick*="\''+cat+'\'"]').classList.add('active');
+  document.querySelectorAll('.rank-tab').forEach(function(b){
+    b.classList.remove('active');
+    if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1) b.classList.add('active');
+  });
   renderRankings(window._rankData || []);
 }
 
