@@ -702,23 +702,23 @@ async function loadParks(){
   var grid=document.getElementById('field-grid');
   grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-size:13px;color:#64748b;">&#8635; Loading ballparks...</div>';
   try{
-    var res = await supaFetch('parks?"Active (Y/N)"=eq.true&select=id,"State","Region","Type","Park Name","City","Latitude","Longitude","Surface Type","Notes / Field Condition"&order="Park Name".asc&limit=1000');
+    var res = await supaFetch('parks?select=id,state,region,type,name,city,lat,lon,surface_type,notes&order=name.asc&limit=1000');
     if(!res.ok) throw new Error('HTTP '+res.status);
     var rows = await res.json();
     if(!rows.length) throw new Error('No parks returned from database.');
     FIELDS = rows.map(function(r, i){
       return {
         _idx: i,
-        id: r['id'],
-        state: (r['State']||'').trim(),
-        region: (r['Region']||'').trim(),
-        type: (r['Type']||'').trim(),
-        name: (r['Park Name']||'').trim(),
-        city: (r['City']||'').trim(),
-        lat: parseFloat(r['Latitude']),
-        lon: parseFloat(r['Longitude']),
-        surface: (r['Surface Type']||'').trim(),
-        notes: (r['Notes / Field Condition']||'').trim()
+        id: r.id,
+        state: (r.state||'').trim(),
+        region: (r.region||'').trim(),
+        type: (r.type||'').trim(),
+        name: (r.name||'').trim(),
+        city: (r.city||'').trim(),
+        lat: parseFloat(r.lat),
+        lon: parseFloat(r.lon),
+        surface: (r.surface_type||'').trim(),
+        notes: (r.notes||'').trim()
       };
     });
     renderGrids();
