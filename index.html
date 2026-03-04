@@ -111,7 +111,6 @@
     border-radius:var(--radius-sm); color:#0b1929;
     font-size:14px; font-family:'Outfit',sans-serif;
     font-weight:500; cursor:pointer; transition:border-color .15s;
-    position:relative; z-index:1;
   }
   input[type="date"]:focus, select.time-sel:focus, select.state-sel:focus {
     outline:none; border-color:var(--green);
@@ -231,6 +230,18 @@
   .stat-pill { display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 11px; border-radius:var(--radius-sm); flex:1; min-width:64px; border:1px solid #e2e8f0; background:#f8fafc; }
   .stat-pill.warn { background:rgba(255,61,87,0.08); border-color:rgba(255,61,87,0.3); }
   .stat-pill.cold { background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.3); }
+  .stat-pill.lightning { background:rgba(234,179,8,0.1); border-color:rgba(234,179,8,0.4); }
+  .stat-pill.lightning .sp-value { color:#ca8a04; }
+
+  /* Star selector */
+  .star-sel-btn { font-size:28px; background:none; border:none; cursor:pointer; opacity:0.25; transition:opacity .1s,transform .1s; padding:0; }
+  .star-sel-btn.active { opacity:1; transform:scale(1.15); }
+  .star-sel-btn:hover { opacity:0.8; }
+
+  /* Reason chips */
+  .reason-chip { padding:7px 13px; border-radius:20px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+  .reason-chip:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .reason-chip.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
   .stat-pill .sp-icon  { font-size:16px; }
   .stat-pill .sp-value { font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; color:#0b1929; line-height:1; }
   .stat-pill.warn .sp-value { color:#ff3d57; }
@@ -309,10 +320,73 @@
           <div class="stat-pill" id="pill-rain"><span class="sp-icon">&#127783;</span><span class="sp-value" id="pv-rain">&#8212;</span><span class="sp-label">RAIN CHANCE</span></div>
           <div class="stat-pill" id="pill-precip"><span class="sp-icon">&#128167;</span><span class="sp-value" id="pv-precip">&#8212;</span><span class="sp-label">GAME PRECIP</span></div>
           <div class="stat-pill" id="pill-wind"><span class="sp-icon">&#128168;</span><span class="sp-value" id="pv-wind">&#8212;</span><span class="sp-label">WIND mph</span></div>
+          <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">&#9889;</span><span class="sp-value" id="pv-lightning">&#8212;</span><span class="sp-label">LIGHTNING</span></div>
         </div>
       </div>
     </div>
-    <div id="result-footer"><p id="result-coords"></p></div>
+    <div id="result-footer">
+    <p id="result-coords"></p>
+    <button type="button" id="profile-btn" onclick="" style="margin-top:12px;width:100%;padding:11px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#1e3a5f;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;">&#9420; View Park Profile &amp; Ratings</button>
+  </div>
+  </div>
+</div>
+
+<!-- ══ PARK PROFILE MODAL ══ -->
+<div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(11,25,41,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
+  <div style="max-width:660px;margin:32px auto 32px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <!-- Modal header -->
+    <div id="pm-header" style="padding:18px 20px;background:#0b1929;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div id="pm-name" style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:#fff;"></div>
+        <div id="pm-city" style="font-size:12px;color:#6b8daa;margin-top:2px;font-weight:500;"></div>
+      </div>
+      <button onclick="closeProfile()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1;font-family:'Outfit',sans-serif;">&#x2715;</button>
+    </div>
+    <!-- Live Radar -->
+    <div style="padding:16px 20px 0;">
+      <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;">Live Radar</div>
+      <div id="radar-wrap" style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;height:280px;background:#e8f0f8;position:relative;">
+        <iframe id="radar-iframe" style="width:100%;height:100%;border:none;" src="" title="Live radar"></iframe>
+      </div>
+    </div>
+    <!-- Community Rating display -->
+    <div style="padding:16px 20px 0;">
+      <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        Community Field Rating
+        <span id="pm-rating-summary" style="font-size:12px;font-weight:500;color:#64748b;"></span>
+      </div>
+      <div id="pm-stars-display" style="display:flex;gap:6px;margin-bottom:6px;font-size:26px;"></div>
+      <div id="pm-rating-breakdown" style="font-size:12px;color:#64748b;"></div>
+    </div>
+    <!-- Rate this field -->
+    <div style="padding:16px 20px 20px;">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+        <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:12px;">Rate This Field</div>
+        <!-- Star selector -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Your Rating</div>
+          <div id="star-selector" style="display:flex;gap:8px;">
+            <button type="button" class="star-sel-btn" data-val="1" onclick="selectStar(1)">&#9917;</button>
+            <button type="button" class="star-sel-btn" data-val="2" onclick="selectStar(2)">&#9917;</button>
+            <button type="button" class="star-sel-btn" data-val="3" onclick="selectStar(3)">&#9917;</button>
+            <button type="button" class="star-sel-btn" data-val="4" onclick="selectStar(4)">&#9917;</button>
+            <button type="button" class="star-sel-btn" data-val="5" onclick="selectStar(5)">&#9917;</button>
+          </div>
+        </div>
+        <!-- Reason selector -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Reason</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;" id="reason-chips">
+            <button type="button" class="reason-chip" data-reason="Tournament Director" onclick="selectReason(this)">Tournament Director</button>
+            <button type="button" class="reason-chip" data-reason="League Director" onclick="selectReason(this)">League Director</button>
+            <button type="button" class="reason-chip" data-reason="Playing Surface" onclick="selectReason(this)">Playing Surface</button>
+            <button type="button" class="reason-chip" data-reason="Other" onclick="selectReason(this)">Other</button>
+          </div>
+        </div>
+        <button type="button" id="submit-rating-btn" onclick="submitRating()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;" disabled>Submit Rating</button>
+        <div id="rating-msg" style="margin-top:8px;text-align:center;font-size:12px;font-weight:600;display:none;"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -373,8 +447,9 @@ async function loadParks(){
   var baseURL = SHEET_CSV_URL;
   var proxies = [
     baseURL,
-    'https://corsproxy.io/?' + baseURL,
+    'https://corsproxy.io/?' + encodeURIComponent(baseURL),
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseURL),
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(baseURL),
   ];
 
   var text = null;
@@ -393,7 +468,12 @@ async function loadParks(){
 
   if(!text){
     console.error('All fetch attempts failed:', lastErr);
-    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#f87171;">&#9888; Could not load ballpark data.<br><span style=\"color:#4a6880;font-size:10px;\">This works on the live site. To test locally, open via a local server or push to GitHub Pages.</span><br><br><button type=\"button\" onclick=\"loadParks()\" style=\"margin-top:10px;padding:7px 16px;border-radius:8px;border:1px solid #2a3d50;background:#0d1017;color:#38bdf8;font-family:DM Mono,monospace;font-size:10px;cursor:pointer;\">&#8635; Retry</button></div>';
+    grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;font-family:\'Outfit\',sans-serif;">'
+      +'<div style="font-size:22px;margin-bottom:8px;">⚠️</div>'
+      +'<div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div>'
+      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">This is a CORS restriction when opening the file directly from your desktop.<br>Push to GitHub Pages and it will work automatically.</div>'
+      +'<button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button>'
+      +'</div>';
     return;
   }
 
@@ -505,29 +585,48 @@ function checkReady(){var ok=document.getElementById("date-input").value&&select
   });
   buildRegionChips();buildTypeChips();loadParks();
   document.getElementById("submit-btn").addEventListener("click",doCheck);
+  // Modal backdrop click
+  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
 })();
 
 async function fetchWeather(lat,lon,date,hour){
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature&timezone=auto&forecast_days=7";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
+    +"&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature,lightning_potential"
+    +"&timezone=auto&forecast_days=7";
   var res=await fetch(url);if(!res.ok)throw new Error("Weather service unavailable. Please try again.");
   var data=await res.json();
-  var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,wind=data.hourly.windspeed_10m,codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature;
+  var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,
+      wind=data.hourly.windspeed_10m,codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature,
+      ltng=data.hourly.lightning_potential||[];
   var target=date+"T"+String(hour).padStart(2,"0")+":00";
   var idx=hours.indexOf(target);if(idx===-1)throw new Error("Date is outside the 7-day forecast window.");
   var winIdxs=[-1,0,1,2].map(function(o){return Math.max(0,Math.min(idx+o,hours.length-1));});
-  var avg=function(arr){return Math.round(winIdxs.reduce(function(s,i){return s+arr[i];},0)/winIdxs.length);};
-  var maxArr=function(arr){return Math.max.apply(null,winIdxs.map(function(i){return arr[i];}));};
+  var avg=function(arr){return Math.round(winIdxs.reduce(function(s,i){return s+(arr[i]||0);},0)/winIdxs.length);};
+  var maxArr=function(arr){return Math.max.apply(null,winIdxs.map(function(i){return arr[i]||0;}));};
   var preTotal=0;for(var p=Math.max(0,idx-6);p<idx;p++){preTotal+=precip[p];}
-  return{rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),windChillF:Math.round(avg(appTemp)*9/5+32)};
+  // Thunderstorm weather codes: 95=storm, 96/99=storm+hail
+  var stormCodes=[95,96,99];
+  var isThunderstorm=winIdxs.some(function(i){return stormCodes.indexOf(codes[i])!==-1;});
+  var lightningPotential=maxArr(ltng); // J/kg — >10 is notable, >100 is significant
+  return{
+    rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),
+    windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),
+    windChillF:Math.round(avg(appTemp)*9/5+32),
+    isThunderstorm:isThunderstorm,lightningPotential:lightningPotential
+  };
 }
 
-function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF){
+function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential){
   var cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard,s=100;
   s-=rainPct*0.72*cfg.duringMult;
   s-=Math.min(precipMm*16,26)*cfg.duringMult;
   s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,32)*cfg.preMult;
   s-=Math.max(0,(windKph-32)*0.5)*cfg.windMult;
   if(windChillF<40){s-=Math.min((40-windChillF)*2.5,40);}
+  // Lightning: thunderstorm code = hard cap at 5%. High lightning potential = soft penalty.
+  if(isThunderstorm){s=Math.min(s,5);}
+  else if(lightningPotential>100){s-=40;}
+  else if(lightningPotential>10){s-=Math.min(lightningPotential*0.3,25);}
   return Math.max(0,Math.min(100,Math.round(s)));
 }
 
@@ -541,7 +640,7 @@ async function doCheck(){
   var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
-    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF);
+    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
   }catch(e){errBox.textContent="\u26A0 "+e.message;errBox.style.display="block";}
   finally{btn.disabled=false;btn.innerHTML="CHECK PLAY PROBABILITY";}
@@ -579,9 +678,156 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   setPill("pill-precip","pv-precip",mmToIn(wx.precipMm),wx.precipMm>2);
   setPill("pill-wind","pv-wind",kphToMph(wx.windKph)+" mph",wx.windKph>40);
   document.getElementById("result-coords").textContent="Surface: "+sl.name+" ("+sl.desc+")\nWeather: Open-Meteo \xb7 "+field.lat.toFixed(4)+", "+field.lon.toFixed(4)+" \xb7 Always confirm with your league director.";
+
+  // Lightning pill
+  var ltngPill=document.getElementById("pill-lightning");
+  if(wx.isThunderstorm){
+    ltngPill.style.display="";ltngPill.classList.add("lightning");
+    document.getElementById("pv-lightning").textContent="WARNING";
+  } else if(wx.lightningPotential>10){
+    ltngPill.style.display="";ltngPill.classList.add("lightning");
+    document.getElementById("pv-lightning").textContent=wx.lightningPotential>100?"HIGH":"POSSIBLE";
+  } else {
+    ltngPill.style.display="none";ltngPill.classList.remove("lightning");
+  }
+
+  // Profile button
+  document.getElementById("profile-btn").onclick=function(){ openProfile(field); };
+
   card.style.display="block";card.className="";void card.getBoundingClientRect();card.className="result-enter";
   card.scrollIntoView({behavior:"smooth",block:"nearest"});
+}// ── Supabase config ──
+var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
+
+async function supaFetch(path, opts){
+  var res = await fetch(SUPA_URL+'/rest/v1/'+path, Object.assign({
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
+  }, opts||{}));
+  return res;
 }
+
+// ── Rating state ──
+var currentProfileField = null;
+var selectedStars = 0;
+var selectedReason = null;
+
+function selectStar(n){
+  selectedStars = n;
+  document.querySelectorAll('.star-sel-btn').forEach(function(b){
+    b.classList.toggle('active', Number(b.dataset.val) <= n);
+  });
+  checkRatingReady();
+}
+
+function selectReason(el){
+  selectedReason = el.dataset.reason;
+  document.querySelectorAll('.reason-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  checkRatingReady();
+}
+
+function checkRatingReady(){
+  document.getElementById('submit-rating-btn').disabled = !(selectedStars > 0 && selectedReason);
+}
+
+async function loadRatings(parkId, parkName){
+  var summary = document.getElementById('pm-rating-summary');
+  var starsDisplay = document.getElementById('pm-stars-display');
+  var breakdown = document.getElementById('pm-rating-breakdown');
+  summary.textContent = 'Loading...';
+  starsDisplay.innerHTML = '';
+  breakdown.textContent = '';
+  try{
+    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=stars,reason');
+    if(!res.ok) throw new Error('fetch failed');
+    var rows = await res.json();
+    if(!rows.length){
+      summary.textContent = 'No ratings yet — be the first!';
+      starsDisplay.innerHTML = '⚾⚾⚾⚾⚾';
+      starsDisplay.style.opacity = '0.2';
+      return;
+    }
+    starsDisplay.style.opacity = '1';
+    var avg = rows.reduce(function(s,r){return s+r.stars;},0)/rows.length;
+    var rounded = Math.round(avg);
+    summary.textContent = avg.toFixed(1)+' / 5  ('+rows.length+' rating'+(rows.length!==1?'s':'')+')';
+    starsDisplay.innerHTML = [1,2,3,4,5].map(function(i){
+      return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
+    }).join('');
+    // Reason breakdown
+    var counts = {};
+    rows.forEach(function(r){ counts[r.reason]=(counts[r.reason]||0)+1; });
+    breakdown.textContent = Object.keys(counts).map(function(k){
+      return k+': '+counts[k];
+    }).join('  ·  ');
+  }catch(e){
+    summary.textContent = 'Could not load ratings.';
+  }
+}
+
+async function submitRating(){
+  if(!selectedStars||!selectedReason||!currentProfileField) return;
+  var btn = document.getElementById('submit-rating-btn');
+  var msg = document.getElementById('rating-msg');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try{
+    var res = await supaFetch('ratings', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({
+        park_id: currentProfileField.id,
+        park_name: currentProfileField.name,
+        stars: selectedStars,
+        reason: selectedReason
+      })
+    });
+    if(!res.ok) throw new Error('Submit failed');
+    msg.style.color='#00a846'; msg.textContent='✓ Rating submitted — thanks!'; msg.style.display='block';
+    // Reset selectors
+    selectedStars=0; selectedReason=null;
+    document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('active');});
+    // Reload ratings
+    await loadRatings(currentProfileField.id, currentProfileField.name);
+  }catch(e){
+    msg.style.color='#dc2626'; msg.textContent='⚠ Could not submit. Please try again.'; msg.style.display='block';
+    btn.disabled=false; btn.textContent='Submit Rating';
+  }
+}
+
+function openProfile(field){
+  currentProfileField = field;
+  selectedStars=0; selectedReason=null;
+  document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('active');});
+  document.getElementById('submit-rating-btn').disabled=true;
+  document.getElementById('rating-msg').style.display='none';
+  document.getElementById('submit-rating-btn').textContent='Submit Rating';
+
+  document.getElementById('pm-name').textContent = field.name;
+  document.getElementById('pm-city').textContent = field.city + (field.state ? ', '+field.state : '');
+
+  // RainViewer radar iframe centered on park coordinates
+  var radarUrl = 'https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
+  document.getElementById('radar-iframe').src = radarUrl;
+
+  loadRatings(field.id, field.name);
+  document.getElementById('profile-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeProfile(){
+  document.getElementById('profile-modal').style.display='none';
+  document.body.style.overflow='';
+  document.getElementById('radar-iframe').src='';
+}
+
+  // Modal backdrop click
+  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
+
+
+
 </script>
 </body>
 </html>
