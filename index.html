@@ -420,9 +420,11 @@
     </div>
     <div class="rank-filter-bar" style="margin-top:16px;">
       <button type="button" class="rank-tab active" onclick="switchRankCat('overall')">Overall</button>
-      <button type="button" class="rank-tab" onclick="switchRankCat('surface')">🏟 Playing Surface</button>
-      <button type="button" class="rank-tab" onclick="switchRankCat('tournament')">📋 Tournament Director</button>
-      <button type="button" class="rank-tab" onclick="switchRankCat('league')">🏆 League Director</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('surface')">🏟 Surface</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('tournament')">📋 Tournament</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('league')">🏆 League</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('bathrooms')">🚻 Bathrooms</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('concessions')">🌭 Concessions</button>
     </div>
     <div id="rankings-loading">&#8635; Loading rankings...</div>
     <div id="rankings-empty">No parks have enough ratings yet.<br><span style="font-size:12px;">Rate a park to get things started!</span></div>
@@ -1013,7 +1015,7 @@ async function loadRankings(){
   document.getElementById('rankings-error').style.display='none';
   document.getElementById('rankings-list').innerHTML='';
   try{
-    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars');
+    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
     if(!res.ok) throw new Error('fetch failed');
     var rows = await res.json();
     window._rankData = rows;
@@ -1053,13 +1055,16 @@ function renderRankings(rows){
     var tourAvg  = avg(p.ratings, 'tournament_stars');
     var leagAvg  = avg(p.ratings, 'league_stars');
     // Overall = average of available category averages
-    var cats = [surfAvg, tourAvg, leagAvg].filter(function(v){return v!==null;});
+    var bathAvg  = avg(p.ratings, 'bathroom_stars');
+    var concAvg  = avg(p.ratings, 'concession_stars');
+    var cats = [surfAvg, tourAvg, leagAvg, bathAvg, concAvg].filter(function(v){return v!==null;});
     var overall = cats.length ? cats.reduce(function(s,v){return s+v;},0)/cats.length : null;
-    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg};
+    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg, bathrooms:bathAvg, concessions:concAvg};
   });
 
   // Filter by active category having enough ratings
-  var catKey = activeRankCat==='overall' ? null : activeRankCat+'_stars';
+  var catKeyMap = {surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
+  var catKey = activeRankCat==='overall' ? null : catKeyMap[activeRankCat];
   var filtered = scored.filter(function(p){
     if(activeRankCat==='overall') return p.count >= MIN_RATINGS && p.overall !== null;
     var vals = rows.filter(function(r){return String(r.park_id)===String(p.pid) && r[catKey]!==null;});
@@ -1102,6 +1107,8 @@ function renderRankings(rows){
           +'<span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span>'
           +'<span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span>'
           +'<span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span>'
+          +'<span class="rank-cat-pill">🚻 '+starsHtml(p.bathrooms)+'</span>'
+          +'<span class="rank-cat-pill">🌭 '+starsHtml(p.concessions)+'</span>'
         +'</div>'
       +'</div>'
       +'<div class="rank-right">'
