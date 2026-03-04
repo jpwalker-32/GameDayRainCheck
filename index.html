@@ -61,6 +61,57 @@
     border-bottom:1px solid #e2e8f0;
     position:sticky; top:0; z-index:100;
   }
+  /* ── Tab bar ── */
+  #tab-bar {
+    display:flex; gap:0;
+    background:#ffffff;
+    border-bottom:1px solid #e2e8f0;
+    position:sticky; top:56px; z-index:99;
+    padding:0 20px;
+  }
+  .tab-btn {
+    padding:13px 20px; border:none; background:none; cursor:pointer;
+    font-family:'Outfit',sans-serif; font-size:14px; font-weight:600;
+    color:#94a3b8; border-bottom:2px solid transparent;
+    transition:all .15s; white-space:nowrap; margin-bottom:-1px;
+  }
+  .tab-btn:hover { color:#475569; }
+  .tab-btn.active { color:#00c853; border-bottom-color:#00c853; }
+  /* ── Tab panels ── */
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  /* ── Rankings page ── */
+  #rankings-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
+  .rank-filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .rank-tab {
+    padding:7px 16px; border-radius:20px; border:1px solid #e2e8f0;
+    background:#f8fafc; color:#64748b; font-family:'Outfit',sans-serif;
+    font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .rank-tab:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .rank-tab.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
+  .rank-card {
+    background:#ffffff; border:1px solid #e2e8f0; border-radius:12px;
+    padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px;
+    transition:box-shadow .15s;
+  }
+  .rank-card:hover { box-shadow:0 2px 12px rgba(0,0,0,0.07); }
+  .rank-num {
+    font-family:'Outfit',sans-serif; font-weight:800; font-size:22px;
+    color:#e2e8f0; min-width:32px; text-align:center; line-height:1;
+  }
+  .rank-num.top3 { color:#00c853; }
+  .rank-info { flex:1; min-width:0; }
+  .rank-name { font-family:'Outfit',sans-serif; font-weight:700; font-size:14px; color:#0b1929; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rank-city { font-size:12px; color:#94a3b8; font-weight:500; margin-top:2px; }
+  .rank-right { text-align:right; flex-shrink:0; }
+  .rank-score { font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; color:#0b1929; line-height:1; }
+  .rank-count { font-size:11px; color:#94a3b8; margin-top:2px; }
+  .rank-cats { display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .rank-cat-pill { font-size:10px; font-weight:600; color:#64748b; display:flex; align-items:center; gap:3px; }
+  #rankings-loading { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#94a3b8; }
+  #rankings-empty { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#94a3b8; display:none; }
+  #rankings-error { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#dc2626; display:none; }
   .logo-icon { font-size:22px; }
   .logo-a { font-family:'Outfit',sans-serif; font-weight:800; font-size:17px; letter-spacing:-.02em; color:#0b1929; }
   .logo-a span { color:var(--green); }
@@ -266,6 +317,11 @@
   <span class="nav-sub">Oklahoma &amp; Region</span>
   <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
 </div>
+<div id="tab-bar">
+  <button type="button" class="tab-btn active" onclick="switchTab('forecast')">&#9918; Game Forecast</button>
+  <button type="button" class="tab-btn" onclick="switchTab('rankings')">&#127942; Park Rankings</button>
+</div>
+<div class="tab-panel active" id="panel-forecast">
 <div id="main">
   <div id="hero">
     <h1>WILL YOUR<br><span>GAME</span> BE PLAYED?</h1>
@@ -328,8 +384,30 @@
     <p id="result-coords"></p>
     <button type="button" id="profile-btn" onclick="" style="margin-top:12px;width:100%;padding:11px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#1e3a5f;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;">&#9420; View Park Profile &amp; Ratings</button>
   </div>
-  </div>
 </div>
+
+</div><!-- /main -->
+</div><!-- /panel-forecast -->
+
+<!-- ══ RANKINGS PANEL ══ -->
+<div class="tab-panel" id="panel-rankings">
+  <div id="rankings-wrap">
+    <div style="margin-bottom:6px;">
+      <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;letter-spacing:-.02em;">Park Rankings</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px;">Ranked by community ratings. Minimum 3 ratings required.</div>
+    </div>
+    <div class="rank-filter-bar" style="margin-top:16px;">
+      <button type="button" class="rank-tab active" onclick="switchRankCat('overall')">Overall</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('surface')">🏟 Playing Surface</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('tournament')">📋 Tournament Director</button>
+      <button type="button" class="rank-tab" onclick="switchRankCat('league')">🏆 League Director</button>
+    </div>
+    <div id="rankings-loading">&#8635; Loading rankings...</div>
+    <div id="rankings-empty">No parks have enough ratings yet.<br><span style="font-size:12px;">Rate a park to get things started!</span></div>
+    <div id="rankings-error">Could not load rankings. Please try again.</div>
+    <div id="rankings-list"></div>
+  </div>
+</div><!-- /panel-rankings -->
 
 <!-- ══ PARK PROFILE MODAL ══ -->
 <div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(11,25,41,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
@@ -361,28 +439,45 @@
     <!-- Rate this field -->
     <div style="padding:16px 20px 20px;">
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
-        <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:12px;">Rate This Field</div>
-        <!-- Star selector -->
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Your Rating</div>
-          <div id="star-selector" style="display:flex;gap:8px;">
-            <button type="button" class="star-sel-btn" data-val="1" onclick="selectStar(1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-val="2" onclick="selectStar(2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-val="3" onclick="selectStar(3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-val="4" onclick="selectStar(4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-val="5" onclick="selectStar(5)">⚾</button>
-          </div>
-        </div>
-        <!-- Reason selector -->
+        <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:4px;">Rate This Field</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:14px;">Rate only the categories you have experience with. Skip any you don't know.</div>
+
+        <!-- Surface rating -->
         <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Reason</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;" id="reason-chips">
-            <button type="button" class="reason-chip" data-reason="Tournament Director" onclick="selectReason(this)">Tournament Director</button>
-            <button type="button" class="reason-chip" data-reason="League Director" onclick="selectReason(this)">League Director</button>
-            <button type="button" class="reason-chip" data-reason="Playing Surface" onclick="selectReason(this)">Playing Surface</button>
-            <button type="button" class="reason-chip" data-reason="Other" onclick="selectReason(this)">Other</button>
+          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏟 Playing Surface</div>
+          <div class="cat-star-row" id="stars-surface" data-cat="surface" style="display:flex;gap:6px;">
+            <button type="button" class="star-sel-btn" data-cat="surface" data-val="1" onclick="selectCatStar('surface',1)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="surface" data-val="2" onclick="selectCatStar('surface',2)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="surface" data-val="3" onclick="selectCatStar('surface',3)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="surface" data-val="4" onclick="selectCatStar('surface',4)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="surface" data-val="5" onclick="selectCatStar('surface',5)">⚾</button>
           </div>
         </div>
+
+        <!-- Tournament Director rating -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">📋 Tournament Director</div>
+          <div class="cat-star-row" id="stars-tournament" data-cat="tournament" style="display:flex;gap:6px;">
+            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="1" onclick="selectCatStar('tournament',1)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="2" onclick="selectCatStar('tournament',2)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="3" onclick="selectCatStar('tournament',3)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="4" onclick="selectCatStar('tournament',4)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="5" onclick="selectCatStar('tournament',5)">⚾</button>
+          </div>
+        </div>
+
+        <!-- League Director rating -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏆 League Director</div>
+          <div class="cat-star-row" id="stars-league" data-cat="league" style="display:flex;gap:6px;">
+            <button type="button" class="star-sel-btn" data-cat="league" data-val="1" onclick="selectCatStar('league',1)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="league" data-val="2" onclick="selectCatStar('league',2)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="league" data-val="3" onclick="selectCatStar('league',3)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="league" data-val="4" onclick="selectCatStar('league',4)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="league" data-val="5" onclick="selectCatStar('league',5)">⚾</button>
+          </div>
+        </div>
+
         <button type="button" id="submit-rating-btn" onclick="submitRating()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;" disabled>Submit Rating</button>
         <div id="rating-msg" style="margin-top:8px;text-align:center;font-size:12px;font-weight:600;display:none;"></div>
       </div>
@@ -709,26 +804,20 @@ async function supaFetch(path, opts){
 
 // ── Rating state ──
 var currentProfileField = null;
-var selectedStars = 0;
-var selectedReason = null;
+var catStars = {surface:0, tournament:0, league:0};
 
-function selectStar(n){
-  selectedStars = n;
-  document.querySelectorAll('.star-sel-btn').forEach(function(b){
+function selectCatStar(cat, n){
+  catStars[cat] = n;
+  document.querySelectorAll('.star-sel-btn[data-cat="'+cat+'"]').forEach(function(b){
     b.classList.toggle('active', Number(b.dataset.val) <= n);
   });
   checkRatingReady();
 }
 
-function selectReason(el){
-  selectedReason = el.dataset.reason;
-  document.querySelectorAll('.reason-chip').forEach(function(c){ c.classList.remove('active'); });
-  el.classList.add('active');
-  checkRatingReady();
-}
-
 function checkRatingReady(){
-  document.getElementById('submit-rating-btn').disabled = !(selectedStars > 0 && selectedReason);
+  // At least one category must be rated
+  var hasAny = catStars.surface > 0 || catStars.tournament > 0 || catStars.league > 0;
+  document.getElementById('submit-rating-btn').disabled = !hasAny;
 }
 
 async function loadRatings(parkId, parkName){
@@ -739,57 +828,71 @@ async function loadRatings(parkId, parkName){
   starsDisplay.innerHTML = '';
   breakdown.textContent = '';
   try{
-    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=stars,reason');
+    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars');
     if(!res.ok) throw new Error('fetch failed');
     var rows = await res.json();
     if(!rows.length){
       summary.textContent = 'No ratings yet — be the first!';
-      starsDisplay.innerHTML = '⚾⚾⚾⚾⚾';
-      starsDisplay.style.opacity = '0.2';
+      starsDisplay.innerHTML = '<span style="opacity:0.2">⚾⚾⚾⚾⚾</span>';
+      breakdown.textContent = '';
       return;
     }
-    starsDisplay.style.opacity = '1';
-    var avg = rows.reduce(function(s,r){return s+r.stars;},0)/rows.length;
-    var rounded = Math.round(avg);
-    summary.textContent = avg.toFixed(1)+' / 5  ('+rows.length+' rating'+(rows.length!==1?'s':'')+')';
-    starsDisplay.innerHTML = [1,2,3,4,5].map(function(i){
-      return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
-    }).join('');
-    // Reason breakdown
-    var counts = {};
-    rows.forEach(function(r){ counts[r.reason]=(counts[r.reason]||0)+1; });
-    breakdown.textContent = Object.keys(counts).map(function(k){
-      return k+': '+counts[k];
-    }).join('  ·  ');
+
+    function catAvg(key){
+      var vals = rows.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
+      if(!vals.length) return null;
+      return vals.reduce(function(s,v){return s+v;},0)/vals.length;
+    }
+
+    function renderStars(avg){
+      if(avg===null) return '<span style="color:#94a3b8;font-size:12px;">No ratings</span>';
+      var rounded = Math.round(avg);
+      return [1,2,3,4,5].map(function(i){
+        return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
+      }).join('')+' <span style="font-size:12px;color:#64748b;font-weight:600;">'+avg.toFixed(1)+'</span>';
+    }
+
+    var surfAvg = catAvg('surface_stars');
+    var tourAvg = catAvg('tournament_stars');
+    var leagAvg = catAvg('league_stars');
+
+    summary.textContent = rows.length+' rating'+(rows.length!==1?'s':'');
+    starsDisplay.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(surfAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(tourAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(leagAvg)+'</div>'
+      +'</div>';
   }catch(e){
     summary.textContent = 'Could not load ratings.';
   }
 }
 
 async function submitRating(){
-  if(!selectedStars||!selectedReason||!currentProfileField) return;
+  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0;
+  if(!hasAny||!currentProfileField) return;
   var btn = document.getElementById('submit-rating-btn');
   var msg = document.getElementById('rating-msg');
   btn.disabled = true; btn.textContent = 'Submitting...';
   try{
+    var payload = {
+      park_id: currentProfileField.id,
+      park_name: currentProfileField.name,
+      surface_stars: catStars.surface||null,
+      tournament_stars: catStars.tournament||null,
+      league_stars: catStars.league||null
+    };
     var res = await supaFetch('ratings', {
       method:'POST',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({
-        park_id: currentProfileField.id,
-        park_name: currentProfileField.name,
-        stars: selectedStars,
-        reason: selectedReason
-      })
+      body:JSON.stringify(payload)
     });
     if(!res.ok) throw new Error('Submit failed');
     msg.style.color='#00a846'; msg.textContent='✓ Rating submitted — thanks!'; msg.style.display='block';
-    // Reset selectors
-    selectedStars=0; selectedReason=null;
+    catStars={surface:0,tournament:0,league:0};
     document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
-    document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('active');});
-    // Reload ratings
     await loadRatings(currentProfileField.id, currentProfileField.name);
+    btn.textContent='Submit Rating';
   }catch(e){
     msg.style.color='#dc2626'; msg.textContent='⚠ Could not submit. Please try again.'; msg.style.display='block';
     btn.disabled=false; btn.textContent='Submit Rating';
@@ -798,9 +901,8 @@ async function submitRating(){
 
 function openProfile(field){
   currentProfileField = field;
-  selectedStars=0; selectedReason=null;
+  catStars={surface:0,tournament:0,league:0};
   document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
-  document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('active');});
   document.getElementById('submit-rating-btn').disabled=true;
   document.getElementById('rating-msg').style.display='none';
   document.getElementById('submit-rating-btn').textContent='Submit Rating';
@@ -826,6 +928,131 @@ function closeProfile(){
   // Modal backdrop click
   document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
 
+
+// ── Tab switching ──
+var rankingsLoaded = false;
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelector('.tab-btn[onclick*="\''+tab+'\'"]').classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='rankings' && !rankingsLoaded){ loadRankings(); rankingsLoaded=true; }
+}
+
+// ── Rankings ──
+var activeRankCat = 'overall';
+
+function switchRankCat(cat){
+  activeRankCat = cat;
+  document.querySelectorAll('.rank-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelector('.rank-tab[onclick*="\''+cat+'\'"]').classList.add('active');
+  renderRankings(window._rankData || []);
+}
+
+async function loadRankings(){
+  document.getElementById('rankings-loading').style.display='block';
+  document.getElementById('rankings-empty').style.display='none';
+  document.getElementById('rankings-error').style.display='none';
+  document.getElementById('rankings-list').innerHTML='';
+  try{
+    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars');
+    if(!res.ok) throw new Error('fetch failed');
+    var rows = await res.json();
+    window._rankData = rows;
+    document.getElementById('rankings-loading').style.display='none';
+    renderRankings(rows);
+  }catch(e){
+    document.getElementById('rankings-loading').style.display='none';
+    document.getElementById('rankings-error').style.display='block';
+    console.error('Rankings load error:', e);
+  }
+}
+
+function renderRankings(rows){
+  var list = document.getElementById('rankings-list');
+  var empty = document.getElementById('rankings-empty');
+  list.innerHTML = '';
+
+  // Group by park_id
+  var parks = {};
+  rows.forEach(function(r){
+    if(!parks[r.park_id]) parks[r.park_id] = {name:r.park_name, ratings:[]};
+    parks[r.park_id].ratings.push(r);
+  });
+
+  var MIN_RATINGS = 3;
+
+  function avg(arr, key){
+    var vals = arr.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
+    if(vals.length < 1) return null;
+    return vals.reduce(function(s,v){return s+v;},0)/vals.length;
+  }
+
+  // Build scored list
+  var scored = Object.keys(parks).map(function(pid){
+    var p = parks[pid];
+    var surfAvg  = avg(p.ratings, 'surface_stars');
+    var tourAvg  = avg(p.ratings, 'tournament_stars');
+    var leagAvg  = avg(p.ratings, 'league_stars');
+    // Overall = average of available category averages
+    var cats = [surfAvg, tourAvg, leagAvg].filter(function(v){return v!==null;});
+    var overall = cats.length ? cats.reduce(function(s,v){return s+v;},0)/cats.length : null;
+    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg};
+  });
+
+  // Filter by active category having enough ratings
+  var catKey = activeRankCat==='overall' ? null : activeRankCat+'_stars';
+  var filtered = scored.filter(function(p){
+    if(activeRankCat==='overall') return p.count >= MIN_RATINGS && p.overall !== null;
+    var vals = rows.filter(function(r){return String(r.park_id)===String(p.pid) && r[catKey]!==null;});
+    return vals.length >= MIN_RATINGS;
+  });
+
+  // Sort
+  filtered.sort(function(a,b){
+    var av = activeRankCat==='overall' ? a.overall : a[activeRankCat];
+    var bv = activeRankCat==='overall' ? b.overall : b[activeRankCat];
+    return (bv||0)-(av||0);
+  });
+
+  if(!filtered.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+
+  function starsHtml(val){
+    if(val===null) return '<span style="color:#e2e8f0;font-size:11px;">—</span>';
+    var r = Math.round(val);
+    return [1,2,3,4,5].map(function(i){return '<span style="opacity:'+(i<=r?'1':'0.15')+';font-size:13px;">⚾</span>';}).join('');
+  }
+
+  filtered.forEach(function(p, idx){
+    var rank = idx+1;
+    var score = activeRankCat==='overall' ? p.overall : p[activeRankCat];
+    var card = document.createElement('div');
+    card.className = 'rank-card';
+    // Find the field in FIELDS for city info
+    var field = FIELDS.find(function(f){return String(f.id)===String(p.pid);});
+    var cityStr = field ? field.city+(field.state?', '+field.state:'') : '';
+    card.innerHTML =
+      '<div class="rank-num'+(rank<=3?' top3':'')+'">'+rank+'</div>'
+      +'<div class="rank-info">'
+        +'<div class="rank-name">'+p.name+'</div>'
+        +(cityStr?'<div class="rank-city">'+cityStr+'</div>':'')
+        +'<div class="rank-cats">'
+          +'<span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span>'
+          +'<span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span>'
+          +'<span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="rank-right">'
+        +'<div class="rank-score">'+(score!==null?score.toFixed(1):'—')+'</div>'
+        +'<div class="rank-count">'+p.count+' rating'+(p.count!==1?'s':'')+'</div>'
+      +'</div>';
+    list.appendChild(card);
+  });
+}
 
 
 </script>
