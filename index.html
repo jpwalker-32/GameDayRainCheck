@@ -299,7 +299,18 @@
   .stat-pill.cold .sp-value { color:#3b82f6; }
   .stat-pill .sp-label { font-size:9px; font-weight:700; color:var(--text-4); letter-spacing:.06em; text-transform:uppercase; text-align:center; }
 
-  /* ── Result footer ── */
+  /* ── Result action buttons ── */
+  #gauge-col { display:flex; flex-direction:column; align-items:center; gap:10px; flex-shrink:0; }
+  #action-btns { display:flex; gap:8px; }
+  .action-btn {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 10px; border-radius:10px; border:1px solid #e2e8f0;
+    background:#f8fafc; cursor:pointer; transition:all .15s;
+    min-width:62px;
+  }
+  .action-btn:hover { background:#f1f5f9; border-color:#cbd5e1; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .action-icon { font-size:20px; line-height:1; }
+  .action-label { font-family:'Outfit',sans-serif; font-size:10px; font-weight:700; color:#475569; letter-spacing:.02em; white-space:nowrap; }
   #result-footer { padding:0 20px 16px; }
   #result-footer p { font-size:11px; color:#94a3b8; line-height:1.8; white-space:pre-wrap; font-weight:400; }
 
@@ -362,12 +373,24 @@
   <div id="result-card" class="gc-card">
     <div id="result-header"><div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div><span id="wx-icon"></span></div>
     <div id="result-body">
-      <svg id="gauge-svg" width="125" height="125" viewBox="0 0 130 130">
-        <circle cx="65" cy="65" r="52" fill="none" stroke="#1a2230" stroke-width="10"/>
-        <circle id="gauge-arc" cx="65" cy="65" r="52" fill="none" stroke="#4ade80" stroke-width="10" stroke-dasharray="0 999" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dasharray 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
-        <text id="gauge-pct" x="65" y="61" text-anchor="middle" font-size="28" fill="#4ade80">0%</text>
-        <text x="65" y="78" text-anchor="middle" font-size="9" fill="#2a3d50" style="font-family:'DM Mono',monospace;letter-spacing:.06em">PLAY CHANCE</text>
-      </svg>
+      <div id="gauge-col">
+        <svg id="gauge-svg" width="115" height="115" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="52" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+          <circle id="gauge-arc" cx="65" cy="65" r="52" fill="none" stroke="#4ade80" stroke-width="10" stroke-dasharray="0 999" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dasharray 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
+          <text id="gauge-pct" x="65" y="61" text-anchor="middle" font-size="28" fill="#4ade80">0%</text>
+          <text x="65" y="78" text-anchor="middle" font-size="9" fill="#94a3b8" style="font-family:'Outfit',sans-serif;letter-spacing:.06em;font-weight:600">PLAY CHANCE</text>
+        </svg>
+        <div id="action-btns">
+          <button type="button" class="action-btn" id="btn-radar" onclick="">
+            <span class="action-icon">📡</span>
+            <span class="action-label">Live Radar</span>
+          </button>
+          <button type="button" class="action-btn" id="btn-rate" onclick="">
+            <span class="action-icon">⚾</span>
+            <span class="action-label">Rate Park</span>
+          </button>
+        </div>
+      </div>
       <div id="verdict-wrap">
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
@@ -382,7 +405,6 @@
     </div>
     <div id="result-footer">
     <p id="result-coords"></p>
-    <button type="button" id="profile-btn" onclick="" style="margin-top:12px;width:100%;padding:11px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#1e3a5f;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;">&#9420; View Park Profile &amp; Ratings</button>
   </div>
 </div>
 
@@ -437,7 +459,7 @@
       <div id="pm-rating-breakdown" style="font-size:12px;color:#64748b;"></div>
     </div>
     <!-- Rate this field -->
-    <div style="padding:16px 20px 20px;">
+    <div id="pm-rate-section" style="padding:16px 20px 20px;">
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
         <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:4px;">Rate This Field</div>
         <div style="font-size:11px;color:#94a3b8;margin-bottom:14px;">Rate only the categories you have experience with. Skip any you don't know.</div>
@@ -467,7 +489,7 @@
         </div>
 
         <!-- League Director rating -->
-        <div style="margin-bottom:16px;">
+        <div style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏆 League Director</div>
           <div class="cat-star-row" id="stars-league" data-cat="league" style="display:flex;gap:6px;">
             <button type="button" class="star-sel-btn" data-cat="league" data-val="1" onclick="selectCatStar('league',1)">⚾</button>
@@ -475,6 +497,30 @@
             <button type="button" class="star-sel-btn" data-cat="league" data-val="3" onclick="selectCatStar('league',3)">⚾</button>
             <button type="button" class="star-sel-btn" data-cat="league" data-val="4" onclick="selectCatStar('league',4)">⚾</button>
             <button type="button" class="star-sel-btn" data-cat="league" data-val="5" onclick="selectCatStar('league',5)">⚾</button>
+          </div>
+        </div>
+
+        <!-- Bathrooms rating -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🚻 Bathrooms</div>
+          <div class="cat-star-row" id="stars-bathrooms" data-cat="bathrooms" style="display:flex;gap:6px;">
+            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="1" onclick="selectCatStar('bathrooms',1)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="2" onclick="selectCatStar('bathrooms',2)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="3" onclick="selectCatStar('bathrooms',3)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="4" onclick="selectCatStar('bathrooms',4)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="5" onclick="selectCatStar('bathrooms',5)">⚾</button>
+          </div>
+        </div>
+
+        <!-- Concessions rating -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🌭 Concessions</div>
+          <div class="cat-star-row" id="stars-concessions" data-cat="concessions" style="display:flex;gap:6px;">
+            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="1" onclick="selectCatStar('concessions',1)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="2" onclick="selectCatStar('concessions',2)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="3" onclick="selectCatStar('concessions',3)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="4" onclick="selectCatStar('concessions',4)">⚾</button>
+            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="5" onclick="selectCatStar('concessions',5)">⚾</button>
           </div>
         </div>
 
@@ -786,8 +832,9 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
     ltngPill.style.display="none";ltngPill.classList.remove("lightning");
   }
 
-  // Profile button
-  document.getElementById("profile-btn").onclick=function(){ openProfile(field); };
+  // Action buttons
+  document.getElementById("btn-radar").onclick=function(){ openProfile(field,'radar'); };
+  document.getElementById("btn-rate").onclick=function(){ openProfile(field,'rate'); };
 
   card.style.display="block";card.className="";void card.getBoundingClientRect();card.className="result-enter";
   card.scrollIntoView({behavior:"smooth",block:"nearest"});
@@ -816,7 +863,7 @@ function selectCatStar(cat, n){
 
 function checkRatingReady(){
   // At least one category must be rated
-  var hasAny = catStars.surface > 0 || catStars.tournament > 0 || catStars.league > 0;
+  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
   document.getElementById('submit-rating-btn').disabled = !hasAny;
 }
 
@@ -828,7 +875,7 @@ async function loadRatings(parkId, parkName){
   starsDisplay.innerHTML = '';
   breakdown.textContent = '';
   try{
-    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars');
+    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
     if(!res.ok) throw new Error('fetch failed');
     var rows = await res.json();
     if(!rows.length){
@@ -857,11 +904,15 @@ async function loadRatings(parkId, parkName){
     var leagAvg = catAvg('league_stars');
 
     summary.textContent = rows.length+' rating'+(rows.length!==1?'s':'');
+    var bathAvg = catAvg('bathroom_stars');
+    var concAvg = catAvg('concession_stars');
     starsDisplay.innerHTML =
       '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
       +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(surfAvg)+'</div>'
       +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(tourAvg)+'</div>'
       +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(leagAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🚻 Bathrooms</span>'+renderStars(bathAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🌭 Concessions</span>'+renderStars(concAvg)+'</div>'
       +'</div>';
   }catch(e){
     summary.textContent = 'Could not load ratings.';
@@ -869,7 +920,7 @@ async function loadRatings(parkId, parkName){
 }
 
 async function submitRating(){
-  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0;
+  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
   if(!hasAny||!currentProfileField) return;
   var btn = document.getElementById('submit-rating-btn');
   var msg = document.getElementById('rating-msg');
@@ -880,7 +931,9 @@ async function submitRating(){
       park_name: currentProfileField.name,
       surface_stars: catStars.surface||null,
       tournament_stars: catStars.tournament||null,
-      league_stars: catStars.league||null
+      league_stars: catStars.league||null,
+      bathroom_stars: catStars.bathrooms||null,
+      concession_stars: catStars.concessions||null
     };
     var res = await supaFetch('ratings', {
       method:'POST',
@@ -899,9 +952,9 @@ async function submitRating(){
   }
 }
 
-function openProfile(field){
+function openProfile(field, mode){
   currentProfileField = field;
-  catStars={surface:0,tournament:0,league:0};
+  catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
   document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('submit-rating-btn').disabled=true;
   document.getElementById('rating-msg').style.display='none';
@@ -910,15 +963,20 @@ function openProfile(field){
   document.getElementById('pm-name').textContent = field.name;
   document.getElementById('pm-city').textContent = field.city + (field.state ? ', '+field.state : '');
 
-  // RainViewer radar iframe centered on park coordinates
   var radarUrl = 'https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
   document.getElementById('radar-iframe').src = radarUrl;
 
   loadRatings(field.id, field.name);
   document.getElementById('profile-modal').style.display='block';
   document.body.style.overflow='hidden';
-}
 
+  setTimeout(function(){
+    if(mode==='rate'){
+      var rateEl=document.getElementById('pm-rate-section');
+      if(rateEl) rateEl.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }, 120);
+}
 function closeProfile(){
   document.getElementById('profile-modal').style.display='none';
   document.body.style.overflow='';
