@@ -334,6 +334,52 @@
   .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
   #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
 
+  /* ── Submit panel ── */
+  #submit-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
+  .sub-field { margin-bottom:16px; }
+  .sub-input {
+    width:100%; padding:11px 14px; background:#f8fafc; border:1px solid #cbd5e1;
+    border-radius:8px; color:#0b1929; font-size:14px; font-family:'Outfit',sans-serif;
+    font-weight:500; transition:border-color .15s; box-sizing:border-box;
+  }
+  .sub-input:focus { outline:none; border-color:#00c853; }
+  .sub-type-btn {
+    padding:8px 16px; border-radius:20px; border:1px solid #e2e8f0; background:#fff;
+    color:#475569; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .sub-type-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
+  #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
+
+  /* ── Admin panel ── */
+  #admin-wrap { min-height:300px; }
+  .pending-card {
+    background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+    padding:16px; margin-bottom:12px;
+  }
+  .pending-card.approved { border-color:#bbf7d0; background:#f0fdf4; }
+  .pending-card.rejected { border-color:#fecaca; background:#fef2f2; opacity:0.6; }
+  .pending-name { font-family:'Outfit',sans-serif; font-weight:800; font-size:15px; color:#0b1929; }
+  .pending-meta { font-size:12px; color:#64748b; margin-top:3px; margin-bottom:10px; }
+  .pending-detail { font-size:12px; color:#475569; margin-bottom:10px; line-height:1.6; }
+  .pending-actions { display:flex; gap:8px; }
+  .btn-approve {
+    flex:1; padding:9px; border-radius:8px; border:none;
+    background:#00c853; color:#002010; font-family:'Outfit',sans-serif;
+    font-size:13px; font-weight:800; cursor:pointer; transition:all .15s;
+  }
+  .btn-approve:hover { background:#00a846; }
+  .btn-reject {
+    flex:1; padding:9px; border-radius:8px; border:1px solid #fecaca;
+    background:#fff; color:#dc2626; font-family:'Outfit',sans-serif;
+    font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .btn-reject:hover { background:#fef2f2; }
+  .pending-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+  .pending-status.approved { background:#bbf7d0; color:#166534; }
+  .pending-status.rejected { background:#fecaca; color:#991b1b; }
+
   @media(max-width:520px){
     .dt-row { flex-direction:column; }
     #field-grid { grid-template-columns:1fr; }
@@ -651,95 +697,42 @@ var TYPE_LABELS={hs:"High School",col:"College",yr:"Youth / Rec"};
 var TYPE_CLS={hs:"ft-hs",col:"ft-col",yr:"ft-yr"};
 
 var FIELDS=[];
-var SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vRZxDFJM55pQ6yC2dp1qyhv9Vtn4ds53hU_SrsgA9IisqVurStvlA3OhxuNn9wFDw/pub?gid=915517523&single=true&output=csv';
-
-function parseCSV(text){
-  var lines=text.trim().split('\n');
-  var result=[];
-  var typeMap={'youth':'yr','youth / recreation':'yr','youth / rec':'yr',
-               'high school':'hs','hs':'hs','col':'col','college':'col',
-               'college / univ.':'col','university':'col','yr':'yr'};
-  for(var i=1;i<lines.length;i++){
-    var cols=splitCSVLine(lines[i]);
-    if(cols.length<8)continue;
-    var active=cols.length>=11?(cols[10]||'Y').trim().toUpperCase():'Y';
-    if(active==='N')continue;
-    var id=parseInt(cols[0],10);
-    var lat=parseFloat(cols[6]);
-    var lon=parseFloat(cols[7]);
-    if(!id||isNaN(lat)||isNaN(lon))continue;
-    var rawType=(cols[3]||'').trim().toLowerCase();
-    var ftype=typeMap[rawType]||rawType;
-    result.push({
-      id:id, state:(cols[1]||'').trim(), region:(cols[2]||'').trim(),
-      type:ftype, name:(cols[4]||'').trim(), city:(cols[5]||'').trim(),
-      lat:lat, lon:lon,
-      surface:cols.length>=9?(cols[8]||'').trim():'',
-      notes:cols.length>=10?(cols[9]||'').trim():'',
-    });
-  }
-  return result;
-}
-
-function splitCSVLine(line){
-  var cols=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var c=line[i];
-    if(c==='"'){inQ=!inQ;}
-    else if(c===','&&!inQ){cols.push(cur);cur='';}
-    else{cur+=c;}
-  }
-  cols.push(cur);
-  return cols;
-}
 
 async function loadParks(){
   var grid=document.getElementById('field-grid');
-  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#3a5268;">&#8635; Loading ballparks...</div>';
-
-  var baseURL = SHEET_CSV_URL;
-  var proxies = [
-    baseURL,
-    'https://corsproxy.io/?' + encodeURIComponent(baseURL),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseURL),
-    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(baseURL),
-  ];
-
-  var text = null;
-  var lastErr = null;
-  for(var p=0; p<proxies.length; p++){
-    try{
-      var res = await fetch(proxies[p], {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      text = await res.text();
-      if(text && text.length > 10) break;
-    }catch(e){
-      lastErr = e;
-      console.warn('Fetch attempt '+(p+1)+' failed:', e.message);
-    }
-  }
-
-  if(!text){
-    console.error('All fetch attempts failed:', lastErr);
+  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-size:13px;color:#64748b;">&#8635; Loading ballparks...</div>';
+  try{
+    var res = await supaFetch('parks?"Active (Y/N)"=eq.true&select=id,"State","Region","Type","Park Name","City","Latitude","Longitude","Surface Type","Notes / Field Condition"&order="Park Name".asc&limit=1000');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var rows = await res.json();
+    if(!rows.length) throw new Error('No parks returned from database.');
+    FIELDS = rows.map(function(r, i){
+      return {
+        _idx: i,
+        id: r['id'],
+        state: (r['State']||'').trim(),
+        region: (r['Region']||'').trim(),
+        type: (r['Type']||'').trim(),
+        name: (r['Park Name']||'').trim(),
+        city: (r['City']||'').trim(),
+        lat: parseFloat(r['Latitude']),
+        lon: parseFloat(r['Longitude']),
+        surface: (r['Surface Type']||'').trim(),
+        notes: (r['Notes / Field Condition']||'').trim()
+      };
+    });
+    renderGrids();
+  }catch(e){
+    console.error('Park load error:', e);
     grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;font-family:\'Outfit\',sans-serif;">'
       +'<div style="font-size:22px;margin-bottom:8px;">⚠️</div>'
       +'<div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div>'
-      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">This is a CORS restriction when opening the file directly from your desktop.<br>Push to GitHub Pages and it will work automatically.</div>'
+      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div>'
       +'<button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button>'
       +'</div>';
-    return;
-  }
-
-  try{
-    var parsed = parseCSV(text);
-    if(parsed.length === 0) throw new Error('Spreadsheet returned 0 parks — check Active column and CSV publish settings.');
-    FIELDS = parsed.map(function(f,i){f._idx=i;return f;});
-    renderGrids();
-  }catch(e){
-    console.error('Park parse error:', e);
-    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#f87171;">&#9888; ' + e.message + '</div>';
   }
 }
+
 
 var STATUSES={on:{label:"&#9918; Play Ball",sub:"Conditions look favorable",color:"#00c853",glow:"rgba(0,200,83,0.12)"},questionable:{label:"&#9888; Questionable",sub:"Monitor conditions closely",color:"#ffd600",glow:"rgba(255,214,0,0.12)"},cancelled:{label:"&#127783; Likely Cancelled",sub:"High chance of rain or delay",color:"#ff3d57",glow:"rgba(255,61,87,0.12)"}};
 var SURFACE_CFG={standard:{duringMult:1.00,preMult:1.00,windMult:1.00},allDirt:{duringMult:1.20,preMult:1.45,windMult:0.85},infieldTurf:{duringMult:0.72,preMult:0.45,windMult:1.00},fullTurf:{duringMult:0.38,preMult:0.10,windMult:1.00}};
@@ -1221,12 +1214,10 @@ async function submitPark(){
   }
 }
 
-
 var rankingsLoaded = false;
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  // Activate matching tab button
   document.querySelectorAll('.tab-btn').forEach(function(b){
     if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1) b.classList.add('active');
   });
