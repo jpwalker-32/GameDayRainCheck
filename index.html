@@ -128,30 +128,34 @@
   #error-box{display:none;margin-bottom:12px;padding:12px 16px;border-radius:var(--radius-sm);background:#fff0f3;border:1px solid #fecdd3;color:#be123c;font-size:13px;font-weight:600;}
   /* RESULT CARD */
   #result-card{display:none;margin-bottom:16px;}
-  #result-header{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;justify-content:space-between;}
-  .rh-field{font-size:14px;font-weight:800;color:var(--text-1);}
-  .rh-date{font-size:12px;color:var(--text-3);margin-top:3px;}
-  #wx-icon{font-size:32px;margin-left:12px;flex-shrink:0;}
-  #result-body{padding:18px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;}
-  #gauge-col{display:flex;flex-direction:column;align-items:center;gap:12px;}
-  #verdict-wrap{display:flex;flex-direction:column;gap:6px;}
-  #verdict-label{font-size:20px;font-weight:800;letter-spacing:-.01em;}
-  #verdict-sub{font-size:13px;color:var(--text-3);}
-  #stat-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
-  .stat-pill{display:flex;flex-direction:column;align-items:center;padding:8px 10px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid var(--border);min-width:64px;}
+  #result-header{padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .rh-field{font-size:14px;font-weight:800;color:var(--text-1);line-height:1.3;}
+  .rh-date{font-size:11px;color:var(--text-3);margin-top:3px;}
+  #wx-icon{font-size:28px;flex-shrink:0;}
+  /* Top section: gauge left, verdict right */
+  #result-top{padding:16px 16px 12px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;}
+  #gauge-col{display:flex;flex-direction:column;align-items:center;gap:0;}
+  #verdict-wrap{display:flex;flex-direction:column;gap:4px;}
+  #verdict-label{font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
+  #verdict-sub{font-size:12px;color:var(--text-3);}
+  /* Stat pills: 2x2 grid */
+  #stat-pills{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 16px 14px;}
+  .stat-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid var(--border);}
   .stat-pill.warn{background:#fff7ed;border-color:#fed7aa;}
   .stat-pill.cold{background:#eff6ff;border-color:#bfdbfe;}
-  .stat-pill.lightning{background:#fef9c3;border-color:#fde047;}
-  .sp-icon{font-size:16px;}
-  .sp-value{font-size:14px;font-weight:800;color:var(--text-1);margin:2px 0;}
-  .sp-label{font-size:9px;font-weight:700;color:var(--text-4);letter-spacing:.05em;}
-  #result-footer{padding:14px 18px;border-top:1px solid #f1f5f9;}
-  #result-coords{font-size:11px;color:var(--text-4);line-height:1.5;white-space:pre-line;}
-  #action-btns{display:flex;gap:8px;}
-  .action-btn{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;gap:3px;}
+  .stat-pill.lightning{background:#fef9c3;border-color:#fde047;grid-column:1/-1;}
+  .sp-icon{font-size:20px;flex-shrink:0;}
+  .sp-text{display:flex;flex-direction:column;}
+  .sp-value{font-size:15px;font-weight:800;color:var(--text-1);line-height:1.2;}
+  .sp-label{font-size:9px;font-weight:700;color:var(--text-4);letter-spacing:.05em;margin-top:1px;}
+  /* Action buttons: horizontal row */
+  #action-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 14px;}
+  .action-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
   .action-btn:hover{border-color:var(--green);background:rgba(0,200,83,0.06);}
   .action-icon{font-size:18px;}
-  .action-label{font-size:10px;font-weight:700;color:var(--text-2);letter-spacing:.03em;}
+  .action-label{font-size:12px;font-weight:700;color:var(--text-2);}
+  #result-footer{padding:12px 16px;border-top:1px solid #f1f5f9;}
+  #result-coords{font-size:11px;color:var(--text-4);line-height:1.5;white-space:pre-line;}
   /* RANKINGS */
   #rankings-wrap,#submit-wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px;}
   .rank-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
@@ -265,30 +269,33 @@
       <div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div>
       <span id="wx-icon"></span>
     </div>
-    <div id="result-body">
+    <!-- Gauge + verdict side by side -->
+    <div id="result-top">
       <div id="gauge-col">
-        <svg id="gauge-svg" width="115" height="115" viewBox="0 0 130 130">
+        <svg id="gauge-svg" width="110" height="110" viewBox="0 0 130 130">
           <circle cx="65" cy="65" r="52" fill="none" stroke="#f1f5f9" stroke-width="10"/>
           <circle id="gauge-arc" cx="65" cy="65" r="52" fill="none" stroke="#4ade80" stroke-width="10" stroke-dasharray="0 999" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dasharray 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
           <text id="gauge-pct" x="65" y="61" text-anchor="middle" font-size="28" fill="#4ade80">0%</text>
           <text x="65" y="78" text-anchor="middle" font-size="9" fill="#94a3b8" style="font-family:'Outfit',sans-serif;letter-spacing:.06em;font-weight:600">PLAY CHANCE</text>
         </svg>
-        <div id="action-btns">
-          <button type="button" class="action-btn" id="btn-radar"><span class="action-icon">📡</span><span class="action-label">Live Radar</span></button>
-          <button type="button" class="action-btn" id="btn-rate"><span class="action-icon">⚾</span><span class="action-label">Rate Park</span></button>
-        </div>
       </div>
       <div id="verdict-wrap">
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
-        <div id="stat-pills">
-          <div class="stat-pill" id="pill-temp"><span class="sp-icon" id="temp-icon">🌡️</span><span class="sp-value" id="pv-temp">—</span><span class="sp-label">FEELS LIKE</span></div>
-          <div class="stat-pill" id="pill-rain"><span class="sp-icon">🌧</span><span class="sp-value" id="pv-rain">—</span><span class="sp-label">RAIN CHANCE</span></div>
-          <div class="stat-pill" id="pill-precip"><span class="sp-icon">💧</span><span class="sp-value" id="pv-precip">—</span><span class="sp-label">GAME PRECIP</span></div>
-          <div class="stat-pill" id="pill-wind"><span class="sp-icon">💨</span><span class="sp-value" id="pv-wind">—</span><span class="sp-label">WIND mph</span></div>
-          <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div>
-        </div>
       </div>
+    </div>
+    <!-- Stat pills: 2-column grid -->
+    <div id="stat-pills">
+      <div class="stat-pill" id="pill-temp"><span class="sp-icon" id="temp-icon">🌡️</span><div class="sp-text"><span class="sp-value" id="pv-temp">—</span><span class="sp-label">FEELS LIKE</span></div></div>
+      <div class="stat-pill" id="pill-rain"><span class="sp-icon">🌧</span><div class="sp-text"><span class="sp-value" id="pv-rain">—</span><span class="sp-label">RAIN CHANCE</span></div></div>
+      <div class="stat-pill" id="pill-precip"><span class="sp-icon">💧</span><div class="sp-text"><span class="sp-value" id="pv-precip">—</span><span class="sp-label">GAME PRECIP</span></div></div>
+      <div class="stat-pill" id="pill-wind"><span class="sp-icon">💨</span><div class="sp-text"><span class="sp-value" id="pv-wind">—</span><span class="sp-label">WIND</span></div></div>
+      <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><div class="sp-text"><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div></div>
+    </div>
+    <!-- Action buttons -->
+    <div id="action-btns">
+      <button type="button" class="action-btn" id="btn-radar"><span class="action-icon">📡</span><span class="action-label">Live Radar</span></button>
+      <button type="button" class="action-btn" id="btn-rate"><span class="action-icon">⚾</span><span class="action-label">Rate Park</span></button>
     </div>
     <div id="result-footer">
       <p id="result-coords"></p>
@@ -580,9 +587,11 @@ function checkReady(){var ok=document.getElementById('date-input').value&&select
   loadParks().then(loadFromUrlParams);
   document.getElementById('submit-btn').addEventListener('click',doCheck);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfile();});
-  // Admin tab: show only if URL has ?admin=1
-  if(new URLSearchParams(window.location.search).get('admin')==='1'){
+  // Admin tab: show if URL has ?admin=1 or #admin
+  var _isAdmin = new URLSearchParams(window.location.search).get('admin')==='1' || window.location.hash==='#admin';
+  if(_isAdmin){
     document.getElementById('admin-tab-btn').style.display='';
+    switchTab('admin');
   }
   // PWA service worker
   if('serviceWorker' in navigator){
@@ -891,7 +900,7 @@ async function loadPending(){
   var count=document.getElementById('admin-count');
   loading.style.display='block';empty.style.display='none';list.innerHTML='';
   try{
-    var res=await supaFetch('pending_parks?status=eq.pending&order=submitted_at.asc&select=*');
+    var res=await supaFetch('pending_parks?order=submitted_at.asc&select=*');
     if(!res.ok)throw new Error('HTTP '+res.status);
     var rows=await res.json();
     loading.style.display='none';
@@ -943,9 +952,9 @@ async function approvepark(id,name,city,state,type,lat,lon,surface,notes){
     var parkPayload={name:name,city:city,state:state,type:type,lat:lat,lon:lon,surface_type:surface||null,notes:notes||null,active:'Y',region:regionForState(state)};
     var r1=await supaFetch('parks',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(parkPayload)});
     if(!r1.ok)throw new Error('Could not insert park (HTTP '+r1.status+')');
-    // Update pending status
-    var r2=await supaFetch('pending_parks?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'approved'})});
-    if(!r2.ok)throw new Error('Park added but status not updated.');
+    // Delete from pending
+    var r2=await supaFetch('pending_parks?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}});
+    if(!r2.ok)throw new Error('Park added but could not remove from pending (HTTP '+r2.status+')');
     msg.style.color='#00a846';msg.textContent='✓ Approved and added to parks database!';msg.style.display='block';
     approveBtn.style.display='none';rejectBtn.style.display='none';
     // Refresh parks in background
@@ -963,7 +972,7 @@ async function rejectPark(id){
   var msg=document.getElementById('admin-msg-'+id);
   approveBtn.disabled=true;rejectBtn.disabled=true;rejectBtn.textContent='Rejecting...';
   try{
-    var r=await supaFetch('pending_parks?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'rejected'})});
+    var r=await supaFetch('pending_parks?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}});
     if(!r.ok)throw new Error('HTTP '+r.status);
     msg.style.color='#64748b';msg.textContent='Rejected.';msg.style.display='block';
     approveBtn.style.display='none';rejectBtn.style.display='none';
