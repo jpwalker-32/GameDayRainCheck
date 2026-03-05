@@ -11,428 +11,191 @@
   <meta name="apple-mobile-web-app-title" content="Easton Play?" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <meta name="description" content="Real time weather updates at this week's game location." />
-  <!-- Open Graph / link preview -->
-  <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://willeastonplay.com/" />
-  <meta property="og:title"       content="Game Forecast — Will Easton Play?" />
-  <meta property="og:description" content="Real time weather updates at this week's game location." />
-  <meta property="og:image"       content="https://willeastonplay.com/icons/og-image.png" />
+  <!-- Open Graph -->
+  <meta property="og:type"         content="website" />
+  <meta property="og:url"          content="https://willeastonplay.com/" />
+  <meta property="og:title"        content="Game Forecast — Will Easton Play?" />
+  <meta property="og:description"  content="Real time weather updates at this week's game location." />
+  <meta property="og:image"        content="https://willeastonplay.com/icons/og-image.png" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
-  <!-- Twitter / iMessage card -->
+  <!-- Twitter / iMessage -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Game Forecast — Will Easton Play?" />
   <meta name="twitter:description" content="Real time weather updates at this week's game location." />
   <meta name="twitter:image"       content="https://willeastonplay.com/icons/og-image.png" />
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-46C23W9PFV"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-46C23W9PFV');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-46C23W9PFV');</script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-  :root {
-    --navy:       #0b1929;
-    --navy-2:     #122035;
-    --navy-3:     #1a2d47;
-    --navy-4:     #1f3554;
-    --navy-5:     #263f63;
-    --green:      #00c853;
-    --green-d:    #00a846;
-    --green-glow: rgba(0,200,83,0.15);
-    --blue-acc:   #2196f3;
-    --yellow:     #ffd600;
-    --red:        #ff3d57;
-    --text-1:     #0b1929;
-    --text-2:     #1e3a5f;
-    --text-3:     #475569;
-    --text-4:     #94a3b8;
-    --border:     #e2e8f0;
-    --border-2:   #cbd5e1;
-    --radius:     12px;
-    --radius-sm:  8px;
-    --shadow:     0 4px 24px rgba(0,0,0,0.35);
-  }
-  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-  html, body { min-height:100%; }
-  body { font-family:'Outfit',sans-serif; color:#0b1929; background:#f0f4f8; }
-  select, input { color-scheme:light; }
-  input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(0.4); cursor:pointer; }
-  ::-webkit-scrollbar { width:4px; }
-  ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
-
-  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes spin    { to{transform:rotate(360deg)} }
-  @keyframes popIn   { 0%{transform:scale(0.6);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
-  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
-  .result-enter { animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
-
-  /* ── PWA notification banner ── */
-  #notif-banner {
-    display:none; position:fixed; bottom:0; left:0; right:0; z-index:9000;
-    background:#0b1929; border-top:1px solid #1e3a5f;
-    padding:14px 20px; padding-bottom:calc(14px + env(safe-area-inset-bottom));
-    display:flex; align-items:center; gap:12px;
-    box-shadow:0 -4px 24px rgba(0,0,0,0.3);
-    transform:translateY(100%); transition:transform .3s cubic-bezier(0.22,1,0.36,1);
-  }
-  #notif-banner.show { transform:translateY(0); }
-  .notif-icon { font-size:28px; flex-shrink:0; }
-  .notif-text { flex:1; }
-  .notif-title { font-weight:800; font-size:13px; color:#fff; margin-bottom:2px; }
-  .notif-sub { font-size:11px; color:#6b8daa; line-height:1.4; }
-  .notif-yes {
-    padding:9px 16px; border-radius:8px; border:none; background:#00c853;
-    color:#002010; font-family:'Outfit',sans-serif; font-size:13px; font-weight:800;
-    cursor:pointer; white-space:nowrap; flex-shrink:0;
-  }
-  .notif-no {
-    padding:9px; border-radius:8px; border:1px solid #1e3a5f; background:transparent;
-    color:#6b8daa; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600;
-    cursor:pointer; white-space:nowrap; flex-shrink:0;
-  }
-
-  /* ── Nav ── */
-  #nav {
-    padding:0 20px;
-    height:56px;
-    display:flex; align-items:center; gap:10px;
-    background:#ffffff;
-    border-bottom:1px solid #e2e8f0;
-    position:sticky; top:0; z-index:100;
-  }
-  /* ── Tab bar ── */
-  #tab-bar {
-    display:flex; gap:0;
-    background:#ffffff;
-    border-bottom:1px solid #e2e8f0;
-    position:sticky; top:56px; z-index:99;
-    padding:0 20px;
-  }
-  .tab-btn {
-    padding:13px 20px; border:none; background:none; cursor:pointer;
-    font-family:'Outfit',sans-serif; font-size:14px; font-weight:600;
-    color:#94a3b8; border-bottom:2px solid transparent;
-    transition:all .15s; white-space:nowrap; margin-bottom:-1px;
-  }
-  .tab-btn:hover { color:#475569; }
-  .tab-btn.active { color:#00c853; border-bottom-color:#00c853; }
-  /* ── Tab panels ── */
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
-  /* ── Rankings page ── */
-  #rankings-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
-  .rank-filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-  .rank-tab {
-    padding:7px 16px; border-radius:20px; border:1px solid #e2e8f0;
-    background:#f8fafc; color:#64748b; font-family:'Outfit',sans-serif;
-    font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
-  }
-  .rank-tab:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .rank-tab.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
-  .rank-card {
-    background:#ffffff; border:1px solid #e2e8f0; border-radius:12px;
-    padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px;
-    transition:box-shadow .15s;
-  }
-  .rank-card:hover { box-shadow:0 2px 12px rgba(0,0,0,0.07); }
-  .rank-num {
-    font-family:'Outfit',sans-serif; font-weight:800; font-size:22px;
-    color:#e2e8f0; min-width:32px; text-align:center; line-height:1;
-  }
-  .rank-num.top3 { color:#00c853; }
-  .rank-info { flex:1; min-width:0; }
-  .rank-name { font-family:'Outfit',sans-serif; font-weight:700; font-size:14px; color:#0b1929; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .rank-city { font-size:12px; color:#94a3b8; font-weight:500; margin-top:2px; }
-  .rank-right { text-align:right; flex-shrink:0; }
-  .rank-score { font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; color:#0b1929; line-height:1; }
-  .rank-count { font-size:11px; color:#94a3b8; margin-top:2px; }
-  .rank-cats { display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
-  .rank-cat-pill { font-size:10px; font-weight:600; color:#64748b; display:flex; align-items:center; gap:3px; }
-  #rankings-loading { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#94a3b8; }
-  #rankings-empty { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#94a3b8; display:none; }
-  #rankings-error { text-align:center; padding:40px; font-family:'Outfit',sans-serif; font-size:14px; color:#dc2626; display:none; }
-  .logo-icon { font-size:22px; }
-  .logo-a { font-family:'Outfit',sans-serif; font-weight:800; font-size:17px; letter-spacing:-.02em; color:#0b1929; }
-  .logo-a span { color:var(--green); }
-  .nav-sub { margin-left:auto; font-size:11px; font-weight:500; color:var(--text-4); letter-spacing:.04em; text-transform:uppercase; }
-  #feedback-btn {
-    margin-left:12px; padding:6px 14px; border-radius:20px;
-    border:1px solid #e2e8f0; background:#f8fafc;
-    color:#475569; font-family:'Outfit',sans-serif; font-size:12px;
-    font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap;
-    letter-spacing:.01em;
-  }
-  #feedback-btn:hover { background:#f1f5f9; border-color:#cbd5e1; color:#0b1929; }
-
-  /* ── Layout ── */
-  #main { max-width:680px; margin:0 auto; padding:28px 16px 72px; }
-
-  /* ── Hero ── */
-  #hero { margin-bottom:24px; text-align:center; }
-  #hero h1 {
-    font-family:'Outfit',sans-serif; font-weight:800;
-    font-size:clamp(32px,7vw,54px);
-    letter-spacing:-.03em; line-height:1.05; color:#0b1929;
-  }
-  #hero h1 span { color:var(--green); }
-  #hero p { margin-top:10px; color:#475569; font-size:14px; font-weight:400; }
-
-  /* ── Card ── */
-  .gc-card {
-    background:#ffffff;
-    border:1px solid #e2e8f0;
-    border-radius:var(--radius);
-    overflow:hidden;
-  }
-
-  /* ── Section labels ── */
-  .sec-label {
-    display:block; font-size:11px; font-weight:700;
-    color:var(--text-3); letter-spacing:.08em;
-    text-transform:uppercase; margin-bottom:10px;
-  }
-
-  /* ── Date + Time ── */
-  .dt-row { display:flex; gap:10px; margin-bottom:20px; }
-  .dt-row > div { flex:1; }
-  input[type="date"], select.time-sel, select.state-sel {
-    width:100%; padding:11px 14px;
-    background:#f8fafc; border:1px solid #cbd5e1;
-    border-radius:var(--radius-sm); color:#0b1929;
-    font-size:14px; font-family:'Outfit',sans-serif;
-    font-weight:500; cursor:pointer; transition:border-color .15s;
-  }
-  input[type="date"]:focus, select.time-sel:focus, select.state-sel:focus {
-    outline:none; border-color:var(--green);
-    box-shadow:0 0 0 3px rgba(0,200,83,0.15);
-  }
-
-  /* ── Surface selector ── */
-  #surface-wrap { margin-bottom:22px; }
-  #surface-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .surf-btn {
-    padding:11px 13px; border-radius:var(--radius-sm); cursor:pointer;
-    text-align:left; border:1px solid #e2e8f0;
-    background:#f8fafc; transition:all .15s;
-  }
-  .surf-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .surf-btn.active { background:rgba(0,200,83,0.1); border-color:var(--green); }
-  .surf-btn .sn { font-size:13px; font-weight:700; color:#334155; display:flex; align-items:center; gap:7px; line-height:1.2; }
-  .surf-btn.active .sn { color:var(--green); }
-  .surf-btn .sd { font-size:11px; color:var(--text-4); margin-top:3px; font-weight:400; }
-  .sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-
-  /* ── 3-Tier Filter ── */
-  #filter-wrap { margin-bottom:16px; }
-  .filter-row { margin-bottom:13px; }
-  .chip-row { display:flex; flex-wrap:wrap; gap:6px; }
-  .fchip {
-    padding:6px 13px; border-radius:20px; cursor:pointer;
-    font-size:12px; font-weight:600; letter-spacing:.01em;
-    border:1px solid #e2e8f0; background:#f8fafc;
-    color:#64748b; transition:all .15s; white-space:nowrap;
-  }
-  .fchip:hover { background:#f1f5f9; color:#334155; border-color:#cbd5e1; }
-  .fchip.active { background:rgba(33,150,243,0.15); border-color:var(--blue-acc); color:var(--blue-acc); }
-  .fchip.type-hs.active  { background:rgba(255,214,0,0.1);   border-color:rgba(255,214,0,0.6);   color:var(--yellow); }
-  .fchip.type-col.active { background:rgba(33,150,243,0.1);  border-color:rgba(33,150,243,0.6);  color:var(--blue-acc); }
-  .fchip.type-yr.active  { background:rgba(0,200,83,0.1);    border-color:rgba(0,200,83,0.6);    color:var(--green); }
-
-  /* ── Grid header ── */
-  .grid-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
-  #park-count { font-size:12px; font-weight:600; color:#94a3b8; }
-  .hint-text  { font-size:11px; color:#94a3b8; }
-
-  /* ── Badge chips ── */
-  .chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
-  .chip.fav   { color:var(--yellow); background:rgba(255,214,0,0.1); border:1px solid rgba(255,214,0,0.25); }
-  .chip.all   { color:#64748b; background:#f8fafc; border:1px solid #e2e8f0; }
-
-  /* ── Fav strip ── */
-  #fav-section { margin-bottom:14px; }
-  #fav-section.hidden { display:none; }
-  #fav-grid { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; }
-
-  /* ── Park grid ── */
-  #field-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-height:340px; overflow-y:auto; padding-right:2px; }
-  #no-results { display:none; padding:28px; text-align:center; font-size:13px; color:#94a3b8; }
-
-  /* ── Field button ── */
-  .field-btn {
-    position:relative; padding:11px 34px 11px 13px;
-    border-radius:var(--radius-sm); border:1px solid var(--border);
-    background:#f8fafc; cursor:pointer; text-align:left;
-    transition:background .12s, border-color .12s;
-  }
-  .field-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .field-btn.selected { background:rgba(0,200,83,0.08) !important; border-color:var(--green) !important; }
-  .field-btn .fn { font-size:13px; font-weight:700; color:#1e3a5f; line-height:1.3; }
-  .field-btn.selected .fn { color:var(--green-d); }
-  .field-btn .fc { font-size:11px; color:#94a3b8; margin-top:2px; font-weight:500; }
-  .field-btn .ft { font-size:10px; font-weight:700; margin-top:3px; letter-spacing:.04em; text-transform:uppercase; }
-  .ft-hs  { color:#c9a800; }
-  .ft-col { color:#5b9bd5; }
-  .ft-yr  { color:#00a846; }
-  #fav-grid .field-btn { min-width:158px; max-width:158px; flex-shrink:0; border-color:rgba(202,138,4,0.3); background:rgba(254,249,195,0.5); }
-  #fav-grid .field-btn:hover { background:rgba(254,249,195,0.8); border-color:rgba(202,138,4,0.5); }
-
-  /* ── Star ── */
-  .star-btn { position:absolute; top:8px; right:8px; background:none; border:none; padding:2px; font-size:14px; line-height:1; cursor:pointer; color:#cbd5e1; transition:color .12s,transform .12s; }
-  .star-btn:hover { color:var(--yellow); transform:scale(1.2); }
-  .field-btn.favorited .star-btn { color:var(--yellow); }
-
-  /* ── Form card inner padding ── */
-  #form-inner { padding:20px; }
-
-  /* ── Submit ── */
-  #submit-btn {
-    margin-top:20px; width:100%; padding:14px;
-    border:none; border-radius:var(--radius-sm);
-    font-family:'Outfit',sans-serif; font-size:16px; font-weight:800;
-    letter-spacing:.02em; cursor:pointer; transition:all .2s;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-  }
-  #submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
-  #submit-btn:not(:disabled) {
-    background:var(--green); color:#002010;
-    box-shadow:0 4px 20px rgba(0,200,83,0.3);
-  }
-  #submit-btn:not(:disabled):hover { background:var(--green-d); box-shadow:0 6px 28px rgba(0,200,83,0.4); transform:translateY(-1px); }
-  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#002010; border-radius:50%; animation:spin .7s linear infinite; }
-
-  /* ── Error ── */
-  #error-box { display:none; margin-top:12px; padding:14px 16px; background:#fff5f5; border:1px solid #fecaca; border-radius:var(--radius-sm); color:#dc2626; font-size:13px; font-weight:500; }
-
-  /* ── Result card ── */
-  #result-card { display:none; margin-top:16px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
-  #result-header { padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-  .rh-field { font-size:14px; font-weight:700; color:#0b1929; margin-bottom:3px; }
-  .rh-date  { font-size:12px; font-weight:500; color:#64748b; }
-  #wx-icon  { font-size:36px; }
-  #result-body { padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
-  #gauge-svg text { font-family:'Outfit',sans-serif; }
-  #verdict-wrap { flex:1; min-width:175px; }
-  #verdict-label { font-family:'Outfit',sans-serif; font-weight:800; font-size:clamp(24px,5vw,36px); line-height:1.1; margin-bottom:4px; letter-spacing:-.02em; }
-  #verdict-sub   { font-size:13px; font-weight:500; margin-bottom:14px; color:#475569; }
-
-  /* ── Stat pills ── */
-  #stat-pills { display:flex; gap:7px; flex-wrap:wrap; }
-  .stat-pill { display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 11px; border-radius:var(--radius-sm); flex:1; min-width:64px; border:1px solid #e2e8f0; background:#f8fafc; }
-  .stat-pill.warn { background:rgba(255,61,87,0.08); border-color:rgba(255,61,87,0.3); }
-  .stat-pill.cold { background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.3); }
-  .stat-pill.lightning { background:rgba(234,179,8,0.1); border-color:rgba(234,179,8,0.4); }
-  .stat-pill.lightning .sp-value { color:#ca8a04; }
-
-  /* Star selector */
-  .star-sel-btn { font-size:28px; background:none; border:none; cursor:pointer; opacity:0.25; transition:opacity .1s,transform .1s; padding:0; }
-  .star-sel-btn.active { opacity:1; transform:scale(1.15); }
-  .star-sel-btn:hover { opacity:0.8; }
-
-  /* Reason chips */
-  .reason-chip { padding:7px 13px; border-radius:20px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
-  .reason-chip:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .reason-chip.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
-  .stat-pill .sp-icon  { font-size:16px; }
-  .stat-pill .sp-value { font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; color:#0b1929; line-height:1; }
-  .stat-pill.warn .sp-value { color:#ff3d57; }
-  .stat-pill.cold .sp-value { color:#3b82f6; }
-  .stat-pill .sp-label { font-size:9px; font-weight:700; color:var(--text-4); letter-spacing:.06em; text-transform:uppercase; text-align:center; }
-
-  /* ── Result action buttons ── */
-  #gauge-col { display:flex; flex-direction:column; align-items:center; gap:10px; flex-shrink:0; }
-  #action-btns { display:flex; gap:8px; }
-  .action-btn {
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    padding:8px 10px; border-radius:10px; border:1px solid #e2e8f0;
-    background:#f8fafc; cursor:pointer; transition:all .15s;
-    min-width:62px;
-  }
-  .action-btn:hover { background:#f1f5f9; border-color:#cbd5e1; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .action-icon { font-size:20px; line-height:1; }
-  .action-label { font-family:'Outfit',sans-serif; font-size:10px; font-weight:700; color:#475569; letter-spacing:.02em; white-space:nowrap; }
-  #result-footer { padding:0 20px 16px; }
-  #result-footer p { font-size:11px; color:#94a3b8; line-height:1.8; white-space:pre-wrap; font-weight:400; }
-
-  /* ── Submit panel ── */
-  #submit-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
-  .sub-field { margin-bottom:16px; }
-  .sub-input {
-    width:100%; padding:11px 14px; background:#f8fafc; border:1px solid #cbd5e1;
-    border-radius:8px; color:#0b1929; font-size:14px; font-family:'Outfit',sans-serif;
-    font-weight:500; transition:border-color .15s; box-sizing:border-box;
-  }
-  .sub-input:focus { outline:none; border-color:#00c853; }
-  .sub-type-btn {
-    padding:8px 16px; border-radius:20px; border:1px solid #e2e8f0; background:#fff;
-    color:#475569; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
-    cursor:pointer; transition:all .15s;
-  }
-  .sub-type-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
-  #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
-
-  /* ── Submit panel ── */
-  #submit-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
-  .sub-field { margin-bottom:16px; }
-  .sub-input {
-    width:100%; padding:11px 14px; background:#f8fafc; border:1px solid #cbd5e1;
-    border-radius:8px; color:#0b1929; font-size:14px; font-family:'Outfit',sans-serif;
-    font-weight:500; transition:border-color .15s; box-sizing:border-box;
-  }
-  .sub-input:focus { outline:none; border-color:#00c853; }
-  .sub-type-btn {
-    padding:8px 16px; border-radius:20px; border:1px solid #e2e8f0; background:#fff;
-    color:#475569; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
-    cursor:pointer; transition:all .15s;
-  }
-  .sub-type-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
-  #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
-
-  /* ── Admin panel ── */
-  #admin-wrap { min-height:300px; }
-  .pending-card {
-    background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-    padding:16px; margin-bottom:12px;
-  }
-  .pending-card.approved { border-color:#bbf7d0; background:#f0fdf4; }
-  .pending-card.rejected { border-color:#fecaca; background:#fef2f2; opacity:0.6; }
-  .pending-name { font-family:'Outfit',sans-serif; font-weight:800; font-size:15px; color:#0b1929; }
-  .pending-meta { font-size:12px; color:#64748b; margin-top:3px; margin-bottom:10px; }
-  .pending-detail { font-size:12px; color:#475569; margin-bottom:10px; line-height:1.6; }
-  .pending-actions { display:flex; gap:8px; }
-  .btn-approve {
-    flex:1; padding:9px; border-radius:8px; border:none;
-    background:#00c853; color:#002010; font-family:'Outfit',sans-serif;
-    font-size:13px; font-weight:800; cursor:pointer; transition:all .15s;
-  }
-  .btn-approve:hover { background:#00a846; }
-  .btn-reject {
-    flex:1; padding:9px; border-radius:8px; border:1px solid #fecaca;
-    background:#fff; color:#dc2626; font-family:'Outfit',sans-serif;
-    font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
-  }
-  .btn-reject:hover { background:#fef2f2; }
-  .pending-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
-  .pending-status.approved { background:#bbf7d0; color:#166534; }
-  .pending-status.rejected { background:#fecaca; color:#991b1b; }
-
-  @media(max-width:520px){
-    .dt-row { flex-direction:column; }
-    #field-grid { grid-template-columns:1fr; }
-    #result-body { flex-direction:column; align-items:flex-start; }
-  }
-</style>
+  :root{--navy:#0b1929;--navy-2:#122035;--navy-3:#1a2d47;--navy-4:#1f3554;--navy-5:#263f63;--green:#00c853;--green-d:#00a846;--green-glow:rgba(0,200,83,0.15);--blue-acc:#2196f3;--yellow:#ffd600;--red:#ff3d57;--text-1:#0b1929;--text-2:#1e3a5f;--text-3:#475569;--text-4:#94a3b8;--border:#e2e8f0;--border-2:#cbd5e1;--radius:12px;--radius-sm:8px;--shadow:0 4px 24px rgba(0,0,0,0.35);}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;}
+  body{font-family:'Outfit',sans-serif;color:#0b1929;background:#f0f4f8;}
+  select,input{color-scheme:light;}
+  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4);cursor:pointer;}
+  ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes popIn{0%{transform:scale(0.6);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .result-enter{animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards;}
+  /* NAV */
+  #nav{background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+  .logo-icon{font-size:22px;}
+  .logo-a{font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:-.02em;}
+  .logo-a span{color:var(--green);}
+  .nav-sub{font-size:11px;color:#4a7090;font-weight:500;margin-left:2px;}
+  #feedback-btn{margin-left:auto;padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.7);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+  #feedback-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+  /* NOTIF BANNER */
+  #notif-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:#0b1929;border-top:1px solid #1e3a5f;padding:14px 20px;padding-bottom:calc(14px + env(safe-area-inset-bottom));display:none;align-items:center;gap:12px;animation:slideUp .3s ease;}
+  .notif-icon{font-size:24px;flex-shrink:0;}
+  .notif-text{flex:1;}.notif-title{font-size:14px;font-weight:700;color:#fff;}.notif-sub{font-size:11px;color:#4a7090;margin-top:2px;}
+  .notif-yes{padding:8px 16px;border-radius:20px;border:none;background:var(--green);color:#002010;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+  .notif-no{padding:8px 12px;border-radius:20px;border:none;background:transparent;color:#4a7090;font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;}
+  /* TABS */
+  #tab-bar{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:57px;z-index:99;}
+  #tab-bar::-webkit-scrollbar{display:none;}
+  .tab-btn{flex-shrink:0;padding:14px 18px;border:none;background:transparent;color:var(--text-3);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+  .tab-btn.active{color:var(--navy);border-bottom-color:var(--green);font-weight:800;}
+  .tab-panel{display:none;}.tab-panel.active{display:block;}
+  /* MAIN / CARDS */
+  #main{max-width:640px;margin:0 auto;padding:16px 16px 40px;}
+  .gc-card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,0.07);border:1px solid var(--border);}
+  #hero{padding:24px 0 16px;text-align:center;}
+  #hero h1{font-size:28px;font-weight:800;color:var(--navy);letter-spacing:-.03em;line-height:1.15;}
+  #hero h1 span{color:var(--green);}
+  #hero p{font-size:14px;color:var(--text-3);margin-top:8px;}
+  #form-card{margin-bottom:16px;}
+  #form-inner{padding:20px;}
+  .sec-label{display:block;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+  .dt-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+  input[type=date],select,.time-sel{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;background:#fff;color:var(--text-1);-webkit-appearance:none;appearance:none;}
+  input[type=date]:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow);}
+  /* SURFACE */
+  #surface-wrap{margin-bottom:18px;}
+  #surface-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .surf-btn{padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;text-align:left;transition:all .15s;font-family:'Outfit',sans-serif;}
+  .surf-btn.active{border-color:var(--green);background:rgba(0,200,83,0.06);box-shadow:0 0 0 1px var(--green);}
+  .sn{font-size:13px;font-weight:700;color:var(--text-1);display:flex;align-items:center;gap:6px;}
+  .sd{font-size:11px;color:var(--text-3);margin-top:2px;}
+  .sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  /* FILTERS */
+  #filter-wrap{margin-bottom:18px;}
+  .filter-row{margin-bottom:12px;}
+  .state-sel{width:100%;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .fchip{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:#f8fafc;color:var(--text-2);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .fchip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .fchip.type-hs.active{background:#7c3aed;border-color:#7c3aed;}
+  .fchip.type-col.active{background:#1d4ed8;border-color:#1d4ed8;}
+  .fchip.type-yr.active{background:#0891b2;border-color:#0891b2;}
+  /* GRID */
+  .grid-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .hint-text{font-size:11px;color:var(--text-4);}
+  .chip{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;}
+  .chip.fav{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
+  .chip.all{background:#f1f5f9;color:var(--text-3);border:1px solid var(--border);}
+  #fav-section.hidden{display:none;}
+  #field-grid,#fav-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+  .field-btn{position:relative;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#f8fafc;cursor:pointer;text-align:left;transition:all .15s;font-family:'Outfit',sans-serif;}
+  .field-btn:hover{border-color:#94a3b8;background:#f1f5f9;}
+  .field-btn.selected{border-color:var(--green);background:rgba(0,200,83,0.06);box-shadow:0 0 0 1px var(--green);}
+  .field-btn.favorited{background:#fffbeb;}
+  .fn{font-size:13px;font-weight:700;color:var(--text-1);line-height:1.3;padding-right:24px;}
+  .fc{font-size:11px;color:var(--text-3);margin-top:2px;}
+  .ft{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:4px;letter-spacing:.03em;}
+  .ft-hs{background:#ede9fe;color:#6d28d9;}
+  .ft-col{background:#dbeafe;color:#1d4ed8;}
+  .ft-yr{background:#e0f2fe;color:#0369a1;}
+  .star-btn{position:absolute;top:8px;right:8px;background:transparent;border:none;font-size:16px;cursor:pointer;padding:2px;color:#fbbf24;opacity:0.5;transition:opacity .15s;}
+  .field-btn.favorited .star-btn,.star-btn:hover{opacity:1;}
+  #no-results{display:none;padding:20px;text-align:center;font-size:13px;color:var(--text-3);grid-column:1/-1;}
+  #park-count{font-size:11px;color:var(--text-4);font-weight:500;}
+  /* SUBMIT BTN */
+  #submit-btn{margin-top:20px;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  #submit-btn:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed;}
+  #submit-btn:not(:disabled){background:var(--green);color:#002010;box-shadow:0 4px 20px rgba(0,200,83,0.3);}
+  #submit-btn:not(:disabled):hover{background:var(--green-d);box-shadow:0 6px 28px rgba(0,200,83,0.4);}
+  /* SPINNER */
+  .spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,0.2);border-top-color:#002010;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
+  /* ERROR BOX */
+  #error-box{display:none;margin-bottom:12px;padding:12px 16px;border-radius:var(--radius-sm);background:#fff0f3;border:1px solid #fecdd3;color:#be123c;font-size:13px;font-weight:600;}
+  /* RESULT CARD */
+  #result-card{display:none;margin-bottom:16px;}
+  #result-header{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:flex-start;justify-content:space-between;}
+  .rh-field{font-size:14px;font-weight:800;color:var(--text-1);}
+  .rh-date{font-size:12px;color:var(--text-3);margin-top:3px;}
+  #wx-icon{font-size:32px;margin-left:12px;flex-shrink:0;}
+  #result-body{padding:18px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;}
+  #gauge-col{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  #verdict-wrap{display:flex;flex-direction:column;gap:6px;}
+  #verdict-label{font-size:20px;font-weight:800;letter-spacing:-.01em;}
+  #verdict-sub{font-size:13px;color:var(--text-3);}
+  #stat-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .stat-pill{display:flex;flex-direction:column;align-items:center;padding:8px 10px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid var(--border);min-width:64px;}
+  .stat-pill.warn{background:#fff7ed;border-color:#fed7aa;}
+  .stat-pill.cold{background:#eff6ff;border-color:#bfdbfe;}
+  .stat-pill.lightning{background:#fef9c3;border-color:#fde047;}
+  .sp-icon{font-size:16px;}
+  .sp-value{font-size:14px;font-weight:800;color:var(--text-1);margin:2px 0;}
+  .sp-label{font-size:9px;font-weight:700;color:var(--text-4);letter-spacing:.05em;}
+  #result-footer{padding:14px 18px;border-top:1px solid #f1f5f9;}
+  #result-coords{font-size:11px;color:var(--text-4);line-height:1.5;white-space:pre-line;}
+  #action-btns{display:flex;gap:8px;}
+  .action-btn{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;gap:3px;}
+  .action-btn:hover{border-color:var(--green);background:rgba(0,200,83,0.06);}
+  .action-icon{font-size:18px;}
+  .action-label{font-size:10px;font-weight:700;color:var(--text-2);letter-spacing:.03em;}
+  /* RANKINGS */
+  #rankings-wrap,#submit-wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px;}
+  .rank-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .rank-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#f8fafc;color:var(--text-2);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+  .rank-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  #rankings-loading,#rankings-empty,#rankings-error{padding:24px;text-align:center;font-size:13px;color:var(--text-3);display:none;}
+  .rank-card{display:flex;align-items:flex-start;gap:14px;padding:14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .rank-num{width:32px;height:32px;border-radius:50%;background:#f1f5f9;color:var(--text-3);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .rank-num.top3{background:var(--navy);color:#fff;}
+  .rank-info{flex:1;min-width:0;}
+  .rank-name{font-size:14px;font-weight:800;color:var(--text-1);}
+  .rank-city{font-size:11px;color:var(--text-3);margin-top:2px;}
+  .rank-cats{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .rank-cat-pill{font-size:11px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:2px 7px;}
+  .rank-right{text-align:right;flex-shrink:0;}
+  .rank-score{font-size:22px;font-weight:800;color:var(--navy);}
+  .rank-count{font-size:11px;color:var(--text-4);}
+  /* SUBMIT PARK */
+  .sub-field{margin-bottom:16px;}
+  .sub-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;background:#fff;color:var(--text-1);}
+  .sub-input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow);}
+  .sub-type-btn{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:#f8fafc;color:var(--text-2);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .sub-type-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  /* PROFILE MODAL */
+  #profile-modal{display:none;position:fixed;inset:0;z-index:999;background:rgba(11,25,41,0.7);backdrop-filter:blur(4px);overflow-y:auto;}
+  .pm-inner{max-width:660px;margin:32px auto 32px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.25);}
+  .star-sel-btn{font-size:22px;background:transparent;border:none;cursor:pointer;padding:2px;opacity:0.2;transition:opacity .1s;}
+  .star-sel-btn.active{opacity:1;}
+  /* ADMIN */
+  #admin-wrap{max-width:720px;margin:0 auto;padding:16px 16px 40px;}
+  .admin-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .admin-card-header{padding:14px 16px;background:#f8fafc;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .admin-card-body{padding:14px 16px;}
+  .admin-field{font-size:12px;color:var(--text-3);margin-bottom:4px;}
+  .admin-field strong{color:var(--text-1);}
+  .admin-actions{display:flex;gap:8px;margin-top:12px;}
+  .btn-approve{padding:8px 18px;border-radius:8px;border:none;background:var(--green);color:#002010;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+  .btn-reject{padding:8px 18px;border-radius:8px;border:none;background:#fee2e2;color:#991b1b;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn-approve:disabled,.btn-reject:disabled{opacity:0.5;cursor:not-allowed;}
+  #admin-login{max-width:360px;margin:60px auto;background:#fff;border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);}
+  </style>
 </head>
 <body>
+
 <div id="nav">
   <span class="logo-icon">⚾</span>
   <span class="logo-a">Will Easton <span>Play?</span></span>
@@ -440,8 +203,8 @@
   <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
 </div>
 
-<!-- PWA notification opt-in banner -->
-<div id="notif-banner" role="banner" aria-label="Enable notifications">
+<!-- PWA Notification Banner -->
+<div id="notif-banner" role="banner">
   <div class="notif-icon">🔔</div>
   <div class="notif-text">
     <div class="notif-title">Get game day alerts</div>
@@ -450,11 +213,15 @@
   <button type="button" class="notif-yes" onclick="requestNotifPermission()">Enable</button>
   <button type="button" class="notif-no" onclick="dismissNotifBanner()">Not now</button>
 </div>
+
 <div id="tab-bar">
-  <button type="button" class="tab-btn active" onclick="switchTab('forecast')">&#9918; Game Forecast</button>
-  <button type="button" class="tab-btn" onclick="switchTab('rankings')">&#127942; Park Rankings</button>
-  <button type="button" class="tab-btn" onclick="switchTab('submit')">&#43; Add a Ballpark</button>
+  <button type="button" class="tab-btn active" onclick="switchTab('forecast')">⚾ Game Forecast</button>
+  <button type="button" class="tab-btn" onclick="switchTab('rankings')">🏆 Park Rankings</button>
+  <button type="button" class="tab-btn" onclick="switchTab('submit')">+ Add a Ballpark</button>
+  <button type="button" class="tab-btn" id="admin-tab-btn" onclick="switchTab('admin')" style="display:none;">🔒 Admin</button>
 </div>
+
+<!-- ══ FORECAST PANEL ══ -->
 <div class="tab-panel active" id="panel-forecast">
 <div id="main">
   <div id="hero">
@@ -490,11 +257,14 @@
     <div id="field-grid"></div>
     <div id="no-results">No parks match the current filters.</div>
     <button type="button" id="submit-btn" disabled>Check Play Probability</button>
-  </div><!-- /form-inner -->
-  </div><!-- /form-card -->
+  </div>
+  </div>
   <div id="error-box"></div>
   <div id="result-card" class="gc-card">
-    <div id="result-header"><div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div><span id="wx-icon"></span></div>
+    <div id="result-header">
+      <div><div class="rh-field" id="rh-field"></div><div class="rh-date" id="rh-date"></div></div>
+      <span id="wx-icon"></span>
+    </div>
     <div id="result-body">
       <div id="gauge-col">
         <svg id="gauge-svg" width="115" height="115" viewBox="0 0 130 130">
@@ -504,39 +274,32 @@
           <text x="65" y="78" text-anchor="middle" font-size="9" fill="#94a3b8" style="font-family:'Outfit',sans-serif;letter-spacing:.06em;font-weight:600">PLAY CHANCE</text>
         </svg>
         <div id="action-btns">
-          <button type="button" class="action-btn" id="btn-radar" onclick="">
-            <span class="action-icon">📡</span>
-            <span class="action-label">Live Radar</span>
-          </button>
-          <button type="button" class="action-btn" id="btn-rate" onclick="">
-            <span class="action-icon">⚾</span>
-            <span class="action-label">Rate Park</span>
-          </button>
+          <button type="button" class="action-btn" id="btn-radar"><span class="action-icon">📡</span><span class="action-label">Live Radar</span></button>
+          <button type="button" class="action-btn" id="btn-rate"><span class="action-icon">⚾</span><span class="action-label">Rate Park</span></button>
         </div>
       </div>
       <div id="verdict-wrap">
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
         <div id="stat-pills">
-          <div class="stat-pill" id="pill-temp"><span class="sp-icon" id="temp-icon">🌡️</span><span class="sp-value" id="pv-temp">&#8212;</span><span class="sp-label">FEELS LIKE</span></div>
-          <div class="stat-pill" id="pill-rain"><span class="sp-icon">&#127783;</span><span class="sp-value" id="pv-rain">&#8212;</span><span class="sp-label">RAIN CHANCE</span></div>
-          <div class="stat-pill" id="pill-precip"><span class="sp-icon">&#128167;</span><span class="sp-value" id="pv-precip">&#8212;</span><span class="sp-label">GAME PRECIP</span></div>
-          <div class="stat-pill" id="pill-wind"><span class="sp-icon">&#128168;</span><span class="sp-value" id="pv-wind">&#8212;</span><span class="sp-label">WIND mph</span></div>
-          <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">&#9889;</span><span class="sp-value" id="pv-lightning">&#8212;</span><span class="sp-label">LIGHTNING</span></div>
+          <div class="stat-pill" id="pill-temp"><span class="sp-icon" id="temp-icon">🌡️</span><span class="sp-value" id="pv-temp">—</span><span class="sp-label">FEELS LIKE</span></div>
+          <div class="stat-pill" id="pill-rain"><span class="sp-icon">🌧</span><span class="sp-value" id="pv-rain">—</span><span class="sp-label">RAIN CHANCE</span></div>
+          <div class="stat-pill" id="pill-precip"><span class="sp-icon">💧</span><span class="sp-value" id="pv-precip">—</span><span class="sp-label">GAME PRECIP</span></div>
+          <div class="stat-pill" id="pill-wind"><span class="sp-icon">💨</span><span class="sp-value" id="pv-wind">—</span><span class="sp-label">WIND mph</span></div>
+          <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div>
         </div>
       </div>
     </div>
     <div id="result-footer">
-    <p id="result-coords"></p>
-    <button type="button" id="share-btn" onclick="shareforecast()" style="display:none;margin-top:12px;width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.02em;">
-      &#128279; Share This Forecast
-    </button>
-    <div id="share-copied" style="display:none;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:#00a846;">✓ Link copied to clipboard!</div>
+      <p id="result-coords"></p>
+      <button type="button" id="share-btn" onclick="shareforecast()" style="display:none;margin-top:12px;width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.02em;">
+        🔗 Share This Forecast
+      </button>
+      <div id="share-copied" style="display:none;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:#00a846;">✓ Link copied to clipboard!</div>
+    </div>
   </div>
 </div>
-
-</div><!-- /main -->
-</div><!-- /panel-forecast -->
+</div>
 
 <!-- ══ RANKINGS PANEL ══ -->
 <div class="tab-panel" id="panel-rankings">
@@ -553,12 +316,12 @@
       <button type="button" class="rank-tab" onclick="switchRankCat('bathrooms')">🚻 Bathrooms</button>
       <button type="button" class="rank-tab" onclick="switchRankCat('concessions')">🌭 Concessions</button>
     </div>
-    <div id="rankings-loading">&#8635; Loading rankings...</div>
-    <div id="rankings-empty">No parks have enough ratings yet.<br><span style="font-size:12px;">Rate a park to get things started!</span></div>
-    <div id="rankings-error">Could not load rankings. Please try again.</div>
+    <div id="rankings-loading" style="display:none">↻ Loading rankings...</div>
+    <div id="rankings-empty" style="display:none">No parks have enough ratings yet.<br><span style="font-size:12px;">Rate a park to get things started!</span></div>
+    <div id="rankings-error" style="display:none">Could not load rankings. Please try again.</div>
     <div id="rankings-list"></div>
   </div>
-</div><!-- /panel-rankings -->
+</div>
 
 <!-- ══ SUBMIT PANEL ══ -->
 <div class="tab-panel" id="panel-submit">
@@ -567,182 +330,115 @@
       <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;letter-spacing:-.02em;">Add a Ballpark</div>
       <div style="font-size:13px;color:#64748b;margin-top:4px;">Help grow the community database. All submissions are reviewed before going live.</div>
     </div>
-
     <div class="gc-card" style="padding:20px;">
-
-      <!-- Park Name -->
       <div class="sub-field">
         <label class="sec-label" for="sub-name">Park / Complex Name <span style="color:#dc2626">*</span></label>
         <input type="text" id="sub-name" class="sub-input" placeholder="e.g. Charlie & Willie George Park" maxlength="100"/>
       </div>
-
-      <!-- City + State row -->
       <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <div style="flex:2;">
-          <label class="sec-label" for="sub-city">City <span style="color:#dc2626">*</span></label>
-          <input type="text" id="sub-city" class="sub-input" placeholder="e.g. Tulsa" maxlength="60" style="margin-bottom:0;"/>
-        </div>
-        <div style="flex:1;">
-          <label class="sec-label" for="sub-state">State <span style="color:#dc2626">*</span></label>
+        <div style="flex:2;"><label class="sec-label" for="sub-city">City <span style="color:#dc2626">*</span></label><input type="text" id="sub-city" class="sub-input" placeholder="e.g. Tulsa" maxlength="60" style="margin-bottom:0;"/></div>
+        <div style="flex:1;"><label class="sec-label" for="sub-state">State <span style="color:#dc2626">*</span></label>
           <select id="sub-state" class="sub-input" style="margin-bottom:0;">
-            <option value="">Select</option>
-            <option value="OK">Oklahoma</option>
-            <option value="AR">Arkansas</option>
-            <option value="TX">Texas</option>
-            <option value="KS">Kansas</option>
-            <option value="MO">Missouri</option>
+            <option value="">Select</option><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas</option><option value="KS">Kansas</option><option value="MO">Missouri</option>
           </select>
         </div>
       </div>
-
-      <!-- Facility Type -->
       <div class="sub-field">
         <label class="sec-label">Facility Type <span style="color:#dc2626">*</span></label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sub-type-chips">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button type="button" class="sub-type-btn" data-type="yr" onclick="selectSubType(this)">⚾ Youth / Rec</button>
           <button type="button" class="sub-type-btn" data-type="hs" onclick="selectSubType(this)">🏫 High School</button>
           <button type="button" class="sub-type-btn" data-type="col" onclick="selectSubType(this)">🎓 College</button>
         </div>
       </div>
-
-      <!-- Surface Type -->
       <div class="sub-field">
         <label class="sec-label" for="sub-surface">Playing Surface</label>
         <select id="sub-surface" class="sub-input">
-          <option value="">Unknown</option>
-          <option value="standard">Standard (Grass / Dirt Infield)</option>
-          <option value="allDirt">All Dirt Infield</option>
-          <option value="infieldTurf">Infield Turf</option>
-          <option value="fullTurf">Full Turf</option>
+          <option value="">Unknown</option><option value="standard">Standard (Grass / Dirt Infield)</option><option value="allDirt">All Dirt Infield</option><option value="infieldTurf">Infield Turf</option><option value="fullTurf">Full Turf</option>
         </select>
       </div>
-
-      <!-- Notes -->
       <div class="sub-field">
         <label class="sec-label" for="sub-notes">Notes <span style="font-weight:400;color:#94a3b8;">(optional)</span></label>
         <textarea id="sub-notes" class="sub-input" rows="2" placeholder="Drainage issues, parking notes, field condition info..." maxlength="200" style="resize:vertical;"></textarea>
       </div>
-
-      <!-- Map pin -->
       <div class="sub-field">
         <label class="sec-label">Pin the Location <span style="color:#dc2626">*</span></label>
         <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Search for the park, then click the map to drop a pin on the exact field location.</div>
-        <!-- Search bar -->
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <input type="text" id="map-search-input" class="sub-input" placeholder="Search address or park name..." style="margin-bottom:0;flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();searchMapLocation();}"/>
           <button type="button" onclick="searchMapLocation()" style="padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">🔍 Search</button>
         </div>
         <div id="sub-map" style="height:280px;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;"></div>
-        <div id="sub-coords-display" style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-family:'Outfit',sans-serif;font-weight:600;color:#64748b;display:none;">
+        <div id="sub-coords-display" style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600;color:#64748b;display:none;">
           📍 <span id="sub-lat-display"></span>, <span id="sub-lon-display"></span>
         </div>
-        <input type="hidden" id="sub-lat"/>
-        <input type="hidden" id="sub-lon"/>
+        <input type="hidden" id="sub-lat"/><input type="hidden" id="sub-lon"/>
       </div>
-
-      <!-- Submit button -->
-      <button type="button" id="sub-submit-btn" onclick="submitPark()" disabled style="width:100%;padding:13px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;margin-top:4px;">Submit Ballpark</button>
+      <button type="button" id="sub-submit-btn" onclick="submitPark()" disabled style="width:100%;padding:13px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px;">Submit Ballpark</button>
       <div id="sub-msg" style="margin-top:10px;text-align:center;font-size:13px;font-weight:600;display:none;"></div>
-
     </div>
   </div>
-</div><!-- /panel-submit -->
+</div>
 
+<!-- ══ ADMIN PANEL ══ -->
+<div class="tab-panel" id="panel-admin">
+  <div id="admin-wrap">
+    <!-- Login screen -->
+    <div id="admin-login">
+      <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:#0b1929;margin-bottom:4px;">🔒 Admin</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:20px;">Enter password to manage pending submissions.</div>
+      <input type="password" id="admin-pw-input" class="sub-input" placeholder="Password" style="margin-bottom:12px;" onkeydown="if(event.key==='Enter')adminLogin()"/>
+      <button type="button" onclick="adminLogin()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0b1929;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">Sign In</button>
+      <div id="admin-login-err" style="margin-top:8px;text-align:center;font-size:12px;color:#dc2626;display:none;">Incorrect password.</div>
+    </div>
+    <!-- Dashboard (hidden until logged in) -->
+    <div id="admin-dashboard" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;">Pending Submissions</div>
+          <div id="admin-count" style="font-size:13px;color:#64748b;margin-top:2px;"></div>
+        </div>
+        <button type="button" onclick="loadPending()" style="padding:8px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Refresh</button>
+      </div>
+      <div id="admin-loading" style="padding:24px;text-align:center;font-size:13px;color:#64748b;display:none;">Loading submissions...</div>
+      <div id="admin-empty" style="padding:24px;text-align:center;font-size:13px;color:#64748b;display:none;">No pending submissions. ✓</div>
+      <div id="admin-list"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ PARK PROFILE MODAL ══ -->
 <div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(11,25,41,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
-  <div style="max-width:660px;margin:32px auto 32px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-    <!-- Modal header -->
+  <div class="pm-inner">
     <div id="pm-header" style="padding:18px 20px;background:#0b1929;display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div id="pm-name" style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:#fff;"></div>
         <div id="pm-city" style="font-size:12px;color:#6b8daa;margin-top:2px;font-weight:500;"></div>
       </div>
-      <button onclick="closeProfile()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1;font-family:'Outfit',sans-serif;">&#x2715;</button>
+      <button onclick="closeProfile()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;">&#x2715;</button>
     </div>
-    <!-- Live Radar -->
     <div style="padding:16px 20px 0;">
       <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;">Live Radar</div>
-      <div id="radar-wrap" style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;height:280px;background:#e8f0f8;position:relative;">
+      <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;height:280px;background:#e8f0f8;">
         <iframe id="radar-iframe" style="width:100%;height:100%;border:none;" src="" title="Live radar"></iframe>
       </div>
     </div>
-    <!-- Community Rating display -->
     <div style="padding:16px 20px 0;">
       <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-        Community Field Rating
-        <span id="pm-rating-summary" style="font-size:12px;font-weight:500;color:#64748b;"></span>
+        Community Field Rating <span id="pm-rating-summary" style="font-size:12px;font-weight:500;color:#64748b;"></span>
       </div>
       <div id="pm-stars-display" style="display:flex;gap:6px;margin-bottom:6px;font-size:26px;"></div>
-      <div id="pm-rating-breakdown" style="font-size:12px;color:#64748b;"></div>
     </div>
-    <!-- Rate this field -->
     <div id="pm-rate-section" style="padding:16px 20px 20px;">
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
         <div style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:#0b1929;margin-bottom:4px;">Rate This Field</div>
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:14px;">Rate only the categories you have experience with. Skip any you don't know.</div>
-
-        <!-- Surface rating -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏟 Playing Surface</div>
-          <div class="cat-star-row" id="stars-surface" data-cat="surface" style="display:flex;gap:6px;">
-            <button type="button" class="star-sel-btn" data-cat="surface" data-val="1" onclick="selectCatStar('surface',1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="surface" data-val="2" onclick="selectCatStar('surface',2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="surface" data-val="3" onclick="selectCatStar('surface',3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="surface" data-val="4" onclick="selectCatStar('surface',4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="surface" data-val="5" onclick="selectCatStar('surface',5)">⚾</button>
-          </div>
-        </div>
-
-        <!-- Tournament Director rating -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">📋 Tournament Director</div>
-          <div class="cat-star-row" id="stars-tournament" data-cat="tournament" style="display:flex;gap:6px;">
-            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="1" onclick="selectCatStar('tournament',1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="2" onclick="selectCatStar('tournament',2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="3" onclick="selectCatStar('tournament',3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="4" onclick="selectCatStar('tournament',4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="tournament" data-val="5" onclick="selectCatStar('tournament',5)">⚾</button>
-          </div>
-        </div>
-
-        <!-- League Director rating -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏆 League Director</div>
-          <div class="cat-star-row" id="stars-league" data-cat="league" style="display:flex;gap:6px;">
-            <button type="button" class="star-sel-btn" data-cat="league" data-val="1" onclick="selectCatStar('league',1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="league" data-val="2" onclick="selectCatStar('league',2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="league" data-val="3" onclick="selectCatStar('league',3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="league" data-val="4" onclick="selectCatStar('league',4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="league" data-val="5" onclick="selectCatStar('league',5)">⚾</button>
-          </div>
-        </div>
-
-        <!-- Bathrooms rating -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🚻 Bathrooms</div>
-          <div class="cat-star-row" id="stars-bathrooms" data-cat="bathrooms" style="display:flex;gap:6px;">
-            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="1" onclick="selectCatStar('bathrooms',1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="2" onclick="selectCatStar('bathrooms',2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="3" onclick="selectCatStar('bathrooms',3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="4" onclick="selectCatStar('bathrooms',4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="5" onclick="selectCatStar('bathrooms',5)">⚾</button>
-          </div>
-        </div>
-
-        <!-- Concessions rating -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🌭 Concessions</div>
-          <div class="cat-star-row" id="stars-concessions" data-cat="concessions" style="display:flex;gap:6px;">
-            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="1" onclick="selectCatStar('concessions',1)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="2" onclick="selectCatStar('concessions',2)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="3" onclick="selectCatStar('concessions',3)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="4" onclick="selectCatStar('concessions',4)">⚾</button>
-            <button type="button" class="star-sel-btn" data-cat="concessions" data-val="5" onclick="selectCatStar('concessions',5)">⚾</button>
-          </div>
-        </div>
-
-        <button type="button" id="submit-rating-btn" onclick="submitRating()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;" disabled>Submit Rating</button>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:14px;">Rate only the categories you have experience with.</div>
+        <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏟 Playing Surface</div><div style="display:flex;gap:6px;" id="stars-surface"><button type="button" class="star-sel-btn" data-cat="surface" data-val="1" onclick="selectCatStar('surface',1)">⚾</button><button type="button" class="star-sel-btn" data-cat="surface" data-val="2" onclick="selectCatStar('surface',2)">⚾</button><button type="button" class="star-sel-btn" data-cat="surface" data-val="3" onclick="selectCatStar('surface',3)">⚾</button><button type="button" class="star-sel-btn" data-cat="surface" data-val="4" onclick="selectCatStar('surface',4)">⚾</button><button type="button" class="star-sel-btn" data-cat="surface" data-val="5" onclick="selectCatStar('surface',5)">⚾</button></div></div>
+        <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">📋 Tournament Director</div><div style="display:flex;gap:6px;"><button type="button" class="star-sel-btn" data-cat="tournament" data-val="1" onclick="selectCatStar('tournament',1)">⚾</button><button type="button" class="star-sel-btn" data-cat="tournament" data-val="2" onclick="selectCatStar('tournament',2)">⚾</button><button type="button" class="star-sel-btn" data-cat="tournament" data-val="3" onclick="selectCatStar('tournament',3)">⚾</button><button type="button" class="star-sel-btn" data-cat="tournament" data-val="4" onclick="selectCatStar('tournament',4)">⚾</button><button type="button" class="star-sel-btn" data-cat="tournament" data-val="5" onclick="selectCatStar('tournament',5)">⚾</button></div></div>
+        <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🏆 League Director</div><div style="display:flex;gap:6px;"><button type="button" class="star-sel-btn" data-cat="league" data-val="1" onclick="selectCatStar('league',1)">⚾</button><button type="button" class="star-sel-btn" data-cat="league" data-val="2" onclick="selectCatStar('league',2)">⚾</button><button type="button" class="star-sel-btn" data-cat="league" data-val="3" onclick="selectCatStar('league',3)">⚾</button><button type="button" class="star-sel-btn" data-cat="league" data-val="4" onclick="selectCatStar('league',4)">⚾</button><button type="button" class="star-sel-btn" data-cat="league" data-val="5" onclick="selectCatStar('league',5)">⚾</button></div></div>
+        <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🚻 Bathrooms</div><div style="display:flex;gap:6px;"><button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="1" onclick="selectCatStar('bathrooms',1)">⚾</button><button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="2" onclick="selectCatStar('bathrooms',2)">⚾</button><button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="3" onclick="selectCatStar('bathrooms',3)">⚾</button><button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="4" onclick="selectCatStar('bathrooms',4)">⚾</button><button type="button" class="star-sel-btn" data-cat="bathrooms" data-val="5" onclick="selectCatStar('bathrooms',5)">⚾</button></div></div>
+        <div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;">🌭 Concessions</div><div style="display:flex;gap:6px;"><button type="button" class="star-sel-btn" data-cat="concessions" data-val="1" onclick="selectCatStar('concessions',1)">⚾</button><button type="button" class="star-sel-btn" data-cat="concessions" data-val="2" onclick="selectCatStar('concessions',2)">⚾</button><button type="button" class="star-sel-btn" data-cat="concessions" data-val="3" onclick="selectCatStar('concessions',3)">⚾</button><button type="button" class="star-sel-btn" data-cat="concessions" data-val="4" onclick="selectCatStar('concessions',4)">⚾</button><button type="button" class="star-sel-btn" data-cat="concessions" data-val="5" onclick="selectCatStar('concessions',5)">⚾</button></div></div>
+        <button type="button" id="submit-rating-btn" onclick="submitRating()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;" disabled>Submit Rating</button>
         <div id="rating-msg" style="margin-top:8px;text-align:center;font-size:12px;font-weight:600;display:none;"></div>
       </div>
     </div>
@@ -751,276 +447,173 @@
 
 <script>
 "use strict";
-// ── Supabase config ──
+
+// ══════════════════════════════════════════
+//  SUPABASE CONFIG
+// ══════════════════════════════════════════
 var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
 
-// ── PWA: VAPID public key ──
-var VAPID_PUBLIC_KEY = 'z4b5o7Lo313TQSjdj67SOjJp8jtda26YsqJrfSjj7ZfkH1hGPlE7GPLJEEv-Q48kqHQVe4m52KK3dc92OXXz7g';
-
-// ── PWA: Service worker registration ──
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('/sw.js').then(function(reg){
-      console.log('SW registered:', reg.scope);
-      // Show notification banner after 8 seconds if not already decided
-      setTimeout(maybeShowNotifBanner, 8000);
-    }).catch(function(err){
-      console.warn('SW registration failed:', err);
-    });
-  });
+function supaFetch(path, opts){
+  var url = SUPA_URL+'/rest/v1/'+path;
+  var headers = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
+  return fetch(url, Object.assign({headers:headers}, opts||{}));
 }
 
-function urlBase64ToUint8Array(base64String){
-  var padding = '='.repeat((4 - base64String.length % 4) % 4);
-  var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  var rawData = window.atob(base64);
-  var outputArray = new Uint8Array(rawData.length);
-  for(var i = 0; i < rawData.length; ++i){ outputArray[i] = rawData.charCodeAt(i); }
-  return outputArray;
-}
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+var REGIONS={OK:[{id:'all',label:'All Regions'},{id:'ne-ok',label:'Northeastern OK'},{id:'c-ok',label:'Central OK'},{id:'se-ok',label:'Southeastern OK'},{id:'w-ok',label:'Western OK'}],AR:[{id:'all',label:'All Regions'},{id:'nw-ar',label:'NW Arkansas'},{id:'fs-ar',label:'Fort Smith'},{id:'c-ar',label:'Central AR'}],TX:[{id:'all',label:'All Regions'},{id:'dfw-tx',label:'DFW'}],KS:[{id:'all',label:'All Regions'},{id:'s-ks',label:'South KS'}],MO:[{id:'all',label:'All Regions'},{id:'sw-mo',label:'SW Missouri'}]};
+var TYPES=[{id:'all',label:'All Types',cls:''},{id:'hs',label:'High School',cls:'type-hs'},{id:'col',label:'College / Univ.',cls:'type-col'},{id:'yr',label:'Youth / Recreation',cls:'type-yr'}];
+var TYPE_LABELS={hs:'High School',col:'College',yr:'Youth / Rec'};
+var TYPE_CLS={hs:'ft-hs',col:'ft-col',yr:'ft-yr'};
 
-// ── Notification banner ──
-function maybeShowNotifBanner(){
-  if(!('Notification' in window)) return;
-  if(Notification.permission !== 'default') return;       // already decided
-  if(localStorage.getItem('notif-dismissed')) return;     // user dismissed
-  var banner = document.getElementById('notif-banner');
-  if(banner){ banner.style.display='flex'; setTimeout(function(){ banner.classList.add('show'); }, 50); }
-}
+var STATUSES={on:{label:'&#9918; Play Ball',sub:'Conditions look favorable',color:'#00c853',glow:'rgba(0,200,83,0.12)'},questionable:{label:'&#9888; Questionable',sub:'Monitor conditions closely',color:'#ffd600',glow:'rgba(255,214,0,0.12)'},cancelled:{label:'&#127783; Likely Cancelled',sub:'High chance of rain or delay',color:'#ff3d57',glow:'rgba(255,61,87,0.12)'}};
 
-function dismissNotifBanner(){
-  localStorage.setItem('notif-dismissed', '1');
-  hideBanner();
-}
-
-function hideBanner(){
-  var banner = document.getElementById('notif-banner');
-  if(banner){ banner.classList.remove('show'); setTimeout(function(){ banner.style.display='none'; }, 350); }
-}
-
-async function requestNotifPermission(){
-  if(!('Notification' in window)){ hideBanner(); return; }
-  var permission = await Notification.requestPermission();
-  if(permission === 'granted'){
-    hideBanner();
-    await subscribeToPush();
-  } else {
-    hideBanner();
-    localStorage.setItem('notif-dismissed', '1');
-  }
-}
-
-async function subscribeToPush(){
-  try{
-    var reg = await navigator.serviceWorker.ready;
-    var existing = await reg.pushManager.getSubscription();
-    if(existing){ await saveSubscription(existing); return; }
-    var sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
-    await saveSubscription(sub);
-    console.log('Push subscription saved');
-  }catch(e){
-    console.warn('Push subscription failed:', e);
-  }
-}
-
-async function saveSubscription(sub){
-  var json = sub.toJSON();
-  await supaFetch('push_subscriptions', {
-    method: 'POST',
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body: JSON.stringify({
-      endpoint: json.endpoint,
-      p256dh:   json.keys ? json.keys.p256dh   : null,
-      auth:     json.keys ? json.keys.auth      : null,
-      user_agent: navigator.userAgent.substring(0, 200)
-    })
-  });
-}
-
-
-
-async function supaFetch(path, opts){
-  var res = await fetch(SUPA_URL+'/rest/v1/'+path, Object.assign({
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
-  }, opts||{}));
-  return res;
-}
-
-
-
-var REGIONS={OK:[{id:"all",label:"All Regions"},{id:"ne-ok",label:"Northeastern OK"},{id:"c-ok",label:"Central OK"},{id:"se-ok",label:"Southeastern OK"},{id:"w-ok",label:"Western OK"}],AR:[{id:"all",label:"All Regions"},{id:"nw-ar",label:"NW Arkansas"},{id:"fs-ar",label:"Fort Smith"},{id:"c-ar",label:"Central AR"}],TX:[{id:"all",label:"All Regions"},{id:"dfw-tx",label:"DFW"}],KS:[{id:"all",label:"All Regions"},{id:"s-ks",label:"South KS"}],MO:[{id:"all",label:"All Regions"},{id:"sw-mo",label:"SW Missouri"}]};
-var TYPES=[{id:"all",label:"All Types",cls:""},{id:"hs",label:"High School",cls:"type-hs"},{id:"col",label:"College / Univ.",cls:"type-col"},{id:"yr",label:"Youth / Recreation",cls:"type-yr"}];
-var TYPE_LABELS={hs:"High School",col:"College",yr:"Youth / Rec"};
-var TYPE_CLS={hs:"ft-hs",col:"ft-col",yr:"ft-yr"};
-
-var FIELDS=[];
-
-async function loadParks(){
-  var grid=document.getElementById('field-grid');
-  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-size:13px;color:#64748b;">&#8635; Loading ballparks...</div>';
-  try{
-    var res = await supaFetch('parks?select=id,state,region,type,name,city,lat,lon,surface_type,notes&order=name.asc&limit=1000');
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    var rows = await res.json();
-    if(!rows.length) throw new Error('No parks returned from database.');
-    FIELDS = rows.map(function(r, i){
-      return {
-        _idx: i,
-        id: r.id,
-        state: (r.state||'').trim(),
-        region: (r.region||'').trim(),
-        type: (r.type||'').trim(),
-        name: (r.name||'').trim(),
-        city: (r.city||'').trim(),
-        lat: parseFloat(r.lat),
-        lon: parseFloat(r.lon),
-        surface: (r.surface_type||'').trim(),
-        notes: (r.notes||'').trim()
-      };
-    });
-    renderGrids();
-  }catch(e){
-    console.error('Park load error:', e);
-    grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;font-family:\'Outfit\',sans-serif;">'
-      +'<div style="font-size:22px;margin-bottom:8px;">⚠️</div>'
-      +'<div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div>'
-      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div>'
-      +'<button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button>'
-      +'</div>';
-  }
-}
-
-
-var STATUSES={on:{label:"&#9918; Play Ball",sub:"Conditions look favorable",color:"#00c853",glow:"rgba(0,200,83,0.12)"},questionable:{label:"&#9888; Questionable",sub:"Monitor conditions closely",color:"#ffd600",glow:"rgba(255,214,0,0.12)"},cancelled:{label:"&#127783; Likely Cancelled",sub:"High chance of rain or delay",color:"#ff3d57",glow:"rgba(255,61,87,0.12)"}};
 var SURFACE_CFG={standard:{duringMult:1.00,preMult:1.00,windMult:1.00},allDirt:{duringMult:1.20,preMult:1.45,windMult:0.85},infieldTurf:{duringMult:0.72,preMult:0.45,windMult:1.00},fullTurf:{duringMult:0.38,preMult:0.10,windMult:1.00}};
-var SURFACE_LABELS={standard:{name:"Standard",icon:"&#128994;",desc:"Grass / Dirt Infield"},allDirt:{name:"All Dirt",icon:"&#128997;",desc:"Full Dirt Infield"},infieldTurf:{name:"Infield Turf",icon:"&#128995;",desc:"Turf Infield / Grass OF"},fullTurf:{name:"Full Turf",icon:"&#128274;",desc:"100% Artificial Turf"}};
-var TIME_OPTIONS=[];
-for(var _h=6;_h<=21;_h++){for(var _m=0;_m<60;_m+=15){var _ap=_h<12?"AM":"PM";var _lbl=(_h%12===0?12:_h%12)+":"+(_m<10?"0"+_m:_m)+" "+_ap;TIME_OPTIONS.push({label:_lbl,hour:_h});}}
+var SURFACE_LABELS={standard:{name:'Standard',icon:'&#128994;',desc:'Grass / Dirt Infield'},allDirt:{name:'All Dirt',icon:'&#128997;',desc:'Full Dirt Infield'},infieldTurf:{name:'Infield Turf',icon:'&#128995;',desc:'Turf Infield / Grass OF'},fullTurf:{name:'Full Turf',icon:'&#128274;',desc:'100% Artificial Turf'}};
 
-var FAV_KEY="grc_favs_v3";
+var TIME_OPTIONS=[];
+for(var _h=6;_h<=21;_h++){for(var _m=0;_m<60;_m+=15){var _ap=_h<12?'AM':'PM';var _lbl=(_h%12===0?12:_h%12)+':'+(_m<10?'0'+_m:_m)+' '+_ap;TIME_OPTIONS.push({label:_lbl,hour:_h});}}
+
+var FAV_KEY='grc_favs_v3';
 function loadFavs(){try{return new Set(JSON.parse(localStorage.getItem(FAV_KEY))||[]);}catch(e){return new Set();}}
 function saveFavs(s){try{localStorage.setItem(FAV_KEY,JSON.stringify([...s]));}catch(e){}}
 var favorites=loadFavs();
 
-var selectedFieldId=null,activeState="OK",activeRegion="all",activeType="all",selectedSurface="standard";
+var FIELDS=[];
+var selectedFieldId=null,activeState='OK',activeRegion='all',activeType='all',selectedSurface='standard';
 
+// ══════════════════════════════════════════
+//  LOAD PARKS FROM SUPABASE
+// ══════════════════════════════════════════
+async function loadParks(){
+  var grid=document.getElementById('field-grid');
+  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-size:13px;color:#64748b;">↻ Loading ballparks...</div>';
+  try{
+    var res=await supaFetch('parks?select=id,state,region,type,name,city,lat,lon,surface_type,notes&order=name.asc&limit=1000');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var rows=await res.json();
+    if(!rows.length) throw new Error('No parks returned.');
+    FIELDS=rows.map(function(r,i){
+      return{_idx:i,id:r.id,state:(r.state||'').trim(),region:(r.region||'').trim(),type:(r.type||'').trim(),name:(r.name||'').trim(),city:(r.city||'').trim(),lat:parseFloat(r.lat),lon:parseFloat(r.lon),surface:(r.surface_type||'').trim(),notes:(r.notes||'').trim()};
+    });
+    renderGrids();
+  }catch(e){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;"><div style="font-size:22px;margin-bottom:8px;">⚠️</div><div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div><div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div><button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button></div>';
+  }
+}
+
+// ══════════════════════════════════════════
+//  FIELD GRID
+// ══════════════════════════════════════════
 function buildRegionChips(){
-  var wrap=document.getElementById("region-chips");wrap.innerHTML="";
-  var regions=REGIONS[activeState]||REGIONS.OK;
-  regions.forEach(function(r){
-    var btn=document.createElement("button");btn.type="button";
-    btn.className="fchip"+(r.id===activeRegion?" active":"");btn.dataset.region=r.id;btn.textContent=r.label;
-    btn.addEventListener("click",function(){
-      activeRegion=r.id;
-      document.querySelectorAll(".fchip[data-region]").forEach(function(b){b.classList.toggle("active",b.dataset.region===r.id);});
-      renderGrids();
-    });
+  var wrap=document.getElementById('region-chips');wrap.innerHTML='';
+  (REGIONS[activeState]||REGIONS.OK).forEach(function(r){
+    var btn=document.createElement('button');btn.type='button';
+    btn.className='fchip'+(r.id===activeRegion?' active':'');btn.dataset.region=r.id;btn.textContent=r.label;
+    btn.addEventListener('click',function(){activeRegion=r.id;document.querySelectorAll('.fchip[data-region]').forEach(function(b){b.classList.toggle('active',b.dataset.region===r.id);});renderGrids();});
     wrap.appendChild(btn);
   });
 }
-
 function buildTypeChips(){
-  var wrap=document.getElementById("type-chips");wrap.innerHTML="";
+  var wrap=document.getElementById('type-chips');wrap.innerHTML='';
   TYPES.forEach(function(t){
-    var btn=document.createElement("button");btn.type="button";
-    btn.className="fchip "+(t.cls||"")+(t.id===activeType?" active":"");btn.dataset.typeId=t.id;btn.textContent=t.label;
-    btn.addEventListener("click",function(){
-      activeType=t.id;
-      document.querySelectorAll(".fchip[data-type-id]").forEach(function(b){b.classList.toggle("active",b.dataset.typeId===t.id);});
-      renderGrids();
-    });
+    var btn=document.createElement('button');btn.type='button';
+    btn.className='fchip '+(t.cls||'')+(t.id===activeType?' active':'');btn.dataset.typeId=t.id;btn.textContent=t.label;
+    btn.addEventListener('click',function(){activeType=t.id;document.querySelectorAll('.fchip[data-type-id]').forEach(function(b){b.classList.toggle('active',b.dataset.typeId===t.id);});renderGrids();});
     wrap.appendChild(btn);
   });
 }
-
 function makeBtn(f){
   var isFav=favorites.has(f.id);
-  var btn=document.createElement("button");btn.type="button";
-  btn.className="field-btn"+(isFav?" favorited":"");btn.dataset.id=String(f._idx);
-  var nd=document.createElement("div");nd.className="fn";nd.textContent=f.name;
-  var cd=document.createElement("div");cd.className="fc";cd.textContent=f.city;
-  var td=document.createElement("div");td.className="ft "+(TYPE_CLS[f.type]||"");td.textContent=TYPE_LABELS[f.type]||"";
-  var star=document.createElement("button");star.type="button";star.className="star-btn";
-  star.title=isFav?"Remove from favorites":"Pin to favorites";star.textContent=isFav?"\u2605":"\u2606";
-  star.addEventListener("click",function(e){e.stopPropagation();toggleFav(f.id);});
+  var btn=document.createElement('button');btn.type='button';
+  btn.className='field-btn'+(isFav?' favorited':'');btn.dataset.id=String(f._idx);
+  var nd=document.createElement('div');nd.className='fn';nd.textContent=f.name;
+  var cd=document.createElement('div');cd.className='fc';cd.textContent=f.city;
+  var td=document.createElement('div');td.className='ft '+(TYPE_CLS[f.type]||'');td.textContent=TYPE_LABELS[f.type]||'';
+  var star=document.createElement('button');star.type='button';star.className='star-btn';
+  star.title=isFav?'Remove from favorites':'Pin to favorites';star.textContent=isFav?'★':'☆';
+  star.addEventListener('click',function(e){e.stopPropagation();toggleFav(f.id);});
   btn.appendChild(nd);btn.appendChild(cd);btn.appendChild(td);btn.appendChild(star);
-  btn.addEventListener("click",function(){selectField(f._idx);});
+  btn.addEventListener('click',function(){selectField(f._idx);});
   return btn;
 }
-
 function renderGrids(){
-  var favGrid=document.getElementById("fav-grid"),allGrid=document.getElementById("field-grid");
-  var favSect=document.getElementById("fav-section"),noRes=document.getElementById("no-results");
-  var counter=document.getElementById("park-count");
-  favGrid.innerHTML="";allGrid.innerHTML="";
+  var favGrid=document.getElementById('fav-grid'),allGrid=document.getElementById('field-grid');
+  var favSect=document.getElementById('fav-section'),noRes=document.getElementById('no-results');
+  var counter=document.getElementById('park-count');
+  favGrid.innerHTML='';allGrid.innerHTML='';
   var favFields=FIELDS.filter(function(f){return favorites.has(f.id);});
-  if(favFields.length>0){favSect.classList.remove("hidden");favFields.forEach(function(f){favGrid.appendChild(makeBtn(f));});}
-  else{favSect.classList.add("hidden");}
+  if(favFields.length>0){favSect.classList.remove('hidden');favFields.forEach(function(f){favGrid.appendChild(makeBtn(f));});}
+  else{favSect.classList.add('hidden');}
   var filtered=FIELDS.filter(function(f){
     if(f.state!==activeState)return false;
-    if(activeRegion!=="all"&&f.region!==activeRegion)return false;
-    if(activeType!=="all"&&f.type!==activeType)return false;
+    if(activeRegion!=='all'&&f.region!==activeRegion)return false;
+    if(activeType!=='all'&&f.type!==activeType)return false;
     return true;
   }).sort(function(a,b){return a.city.localeCompare(b.city)||a.name.localeCompare(b.name);});
-  counter.textContent=filtered.length+" parks";
-  if(filtered.length===0){noRes.style.display="block";}
-  else{noRes.style.display="none";filtered.forEach(function(f){allGrid.appendChild(makeBtn(f));});}
+  counter.textContent=filtered.length+' parks';
+  if(filtered.length===0){noRes.style.display='block';}
+  else{noRes.style.display='none';filtered.forEach(function(f){allGrid.appendChild(makeBtn(f));});}
   syncSelected();
 }
-
-function syncSelected(){document.querySelectorAll(".field-btn").forEach(function(b){b.classList.toggle("selected",Number(b.dataset.id)===selectedFieldId);});}
+function syncSelected(){document.querySelectorAll('.field-btn').forEach(function(b){b.classList.toggle('selected',Number(b.dataset.id)===selectedFieldId);});}
 function toggleFav(id){if(favorites.has(id)){favorites.delete(id);}else{favorites.add(id);}saveFavs(favorites);renderGrids();}
 function selectField(idx){selectedFieldId=idx;syncSelected();checkReady();}
-function checkReady(){var ok=document.getElementById("date-input").value&&selectedFieldId!==null;document.getElementById("submit-btn").disabled=!ok;}
+function checkReady(){var ok=document.getElementById('date-input').value&&selectedFieldId!==null;document.getElementById('submit-btn').disabled=!ok;}
 
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
 (function init(){
-  var today=new Date().toISOString().split("T")[0];
-  var di=document.getElementById("date-input");di.value=today;di.addEventListener("change",checkReady);
-  var ts=document.getElementById("time-sel");
-  TIME_OPTIONS.forEach(function(t,i){var o=document.createElement("option");o.value=String(i);o.textContent=t.label;ts.appendChild(o);});
-  ts.value="16";ts.addEventListener("change",checkReady);
-  document.querySelectorAll(".surf-btn").forEach(function(btn){
-    btn.addEventListener("click",function(){selectedSurface=btn.dataset.surface;document.querySelectorAll(".surf-btn").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");});
+  var today=new Date().toISOString().split('T')[0];
+  var di=document.getElementById('date-input');di.value=today;di.addEventListener('change',checkReady);
+  var ts=document.getElementById('time-sel');
+  TIME_OPTIONS.forEach(function(t,i){var o=document.createElement('option');o.value=String(i);o.textContent=t.label;ts.appendChild(o);});
+  ts.value='16';ts.addEventListener('change',checkReady);
+  document.querySelectorAll('.surf-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){selectedSurface=btn.dataset.surface;document.querySelectorAll('.surf-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');});
   });
-  document.getElementById("state-sel").addEventListener("change",function(){
-    activeState=this.value;activeRegion="all";activeType="all";
-    buildRegionChips();buildTypeChips();renderGrids();
-  });
-  buildRegionChips();buildTypeChips();loadParks().then(loadFromUrlParams);
-  document.getElementById("submit-btn").addEventListener("click",doCheck);
-  // Modal backdrop click
-  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
+  document.getElementById('state-sel').addEventListener('change',function(){activeState=this.value;activeRegion='all';activeType='all';buildRegionChips();buildTypeChips();renderGrids();});
+  buildRegionChips();buildTypeChips();
+  loadParks().then(loadFromUrlParams);
+  document.getElementById('submit-btn').addEventListener('click',doCheck);
+  document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfile();});
+  // Admin tab: show only if URL has ?admin=1
+  if(new URLSearchParams(window.location.search).get('admin')==='1'){
+    document.getElementById('admin-tab-btn').style.display='';
+  }
+  // PWA service worker
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  }
+  // Notification banner
+  setTimeout(maybeShowNotifBanner, 8000);
 })();
 
+// ══════════════════════════════════════════
+//  WEATHER + FORECAST
+// ══════════════════════════════════════════
 async function fetchWeather(lat,lon,date,hour){
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
-    +"&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature,lightning_potential"
-    +"&timezone=auto&forecast_days=7";
-  var res=await fetch(url);if(!res.ok)throw new Error("Weather service unavailable. Please try again.");
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+    +'&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature,lightning_potential'
+    +'&timezone=auto&forecast_days=7';
+  var res=await fetch(url);if(!res.ok)throw new Error('Weather service unavailable. Please try again.');
   var data=await res.json();
   var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,
       wind=data.hourly.windspeed_10m,codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature,
       ltng=data.hourly.lightning_potential||[];
-  var target=date+"T"+String(hour).padStart(2,"0")+":00";
-  var idx=hours.indexOf(target);if(idx===-1)throw new Error("Date is outside the 7-day forecast window.");
+  var target=date+'T'+String(hour).padStart(2,'0')+':00';
+  var idx=hours.indexOf(target);if(idx===-1)throw new Error('Date is outside the 7-day forecast window.');
   var winIdxs=[-1,0,1,2].map(function(o){return Math.max(0,Math.min(idx+o,hours.length-1));});
   var avg=function(arr){return Math.round(winIdxs.reduce(function(s,i){return s+(arr[i]||0);},0)/winIdxs.length);};
   var maxArr=function(arr){return Math.max.apply(null,winIdxs.map(function(i){return arr[i]||0;}));};
   var preTotal=0;for(var p=Math.max(0,idx-6);p<idx;p++){preTotal+=precip[p];}
-  // Thunderstorm weather codes: 95=storm, 96/99=storm+hail
   var stormCodes=[95,96,99];
   var isThunderstorm=winIdxs.some(function(i){return stormCodes.indexOf(codes[i])!==-1;});
-  var lightningPotential=maxArr(ltng); // J/kg — >10 is notable, >100 is significant
-  return{
-    rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),
-    windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),
-    windChillF:Math.round(avg(appTemp)*9/5+32),
-    isThunderstorm:isThunderstorm,lightningPotential:lightningPotential
-  };
+  var lightningPotential=maxArr(ltng);
+  return{rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),windChillF:Math.round(avg(appTemp)*9/5+32),isThunderstorm:isThunderstorm,lightningPotential:lightningPotential};
 }
 
 function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential){
@@ -1030,216 +623,182 @@ function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunder
   s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,32)*cfg.preMult;
   s-=Math.max(0,(windKph-32)*0.5)*cfg.windMult;
   if(windChillF<40){s-=Math.min((40-windChillF)*2.5,40);}
-  // Lightning: thunderstorm code = hard cap at 5%. High lightning potential = soft penalty.
   if(isThunderstorm){s=Math.min(s,5);}
   else if(lightningPotential>100){s-=40;}
   else if(lightningPotential>10){s-=Math.min(lightningPotential*0.3,25);}
   return Math.max(0,Math.min(100,Math.round(s)));
 }
 
-function wxEmoji(c){if(c===0)return"\u2600\uFE0F";if(c<=3)return"\u26C5";if(c<=48)return"\uD83C\uDF2B";if(c<=67)return"\uD83C\uDF27";if(c<=77)return"\u2744\uFE0F";if(c<=82)return"\uD83C\uDF26";return"\u26C8";}
+function wxEmoji(c){if(c===0)return'\u2600\uFE0F';if(c<=3)return'\u26C5';if(c<=48)return'\uD83C\uDF2B';if(c<=67)return'\uD83C\uDF27';if(c<=77)return'\u2744\uFE0F';if(c<=82)return'\uD83C\uDF26';return'\u26C8';}
 
 async function doCheck(){
-  var btn=document.getElementById("submit-btn"),errBox=document.getElementById("error-box"),resCard=document.getElementById("result-card");
-  errBox.style.display="none";resCard.style.display="none";btn.disabled=true;
+  var btn=document.getElementById('submit-btn'),errBox=document.getElementById('error-box'),resCard=document.getElementById('result-card');
+  errBox.style.display='none';resCard.style.display='none';btn.disabled=true;
   btn.innerHTML='<div class="spinner"></div> FETCHING WEATHER...';
-  var dateVal=document.getElementById("date-input").value,timeIdx=Number(document.getElementById("time-sel").value),timeOpt=TIME_OPTIONS[timeIdx];
+  var dateVal=document.getElementById('date-input').value,timeIdx=Number(document.getElementById('time-sel').value),timeOpt=TIME_OPTIONS[timeIdx];
   var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
     var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
-    // Update URL with shareable params
-    var shareUrl = new URL(window.location.href);
-    shareUrl.searchParams.set('park', field.id);
-    shareUrl.searchParams.set('date', dateVal);
-    shareUrl.searchParams.set('time', document.getElementById('time-sel').value);
-    window.history.replaceState({}, '', shareUrl.toString());
-    document.getElementById('share-btn').style.display = 'block';
-    document.getElementById('share-copied').style.display = 'none';
-  }catch(e){errBox.textContent="\u26A0 "+e.message;errBox.style.display="block";}
-  finally{btn.disabled=false;btn.innerHTML="CHECK PLAY PROBABILITY";}
+    // Update URL for sharing
+    var shareUrl=new URL(window.location.href);
+    shareUrl.searchParams.set('park',field.id);
+    shareUrl.searchParams.set('date',dateVal);
+    shareUrl.searchParams.set('time',document.getElementById('time-sel').value);
+    window.history.replaceState({},'',shareUrl.toString());
+    document.getElementById('share-btn').style.display='block';
+    document.getElementById('share-copied').style.display='none';
+  }catch(e){errBox.textContent='\u26A0 '+e.message;errBox.style.display='block';}
+  finally{btn.disabled=false;btn.innerHTML='CHECK PLAY PROBABILITY';}
 }
 
 function renderResult(field,dateVal,timeLabel,wx,prob,surface){
-  var key=prob>=75?"on":prob>=45?"questionable":"cancelled";
-  var st=STATUSES[key],sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard,cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard;
-  var card=document.getElementById("result-card");
-  card.style.background="#ffffff";card.style.border="1px solid "+st.color+"33";card.style.boxShadow="0 0 50px "+st.glow;
-  document.getElementById("result-header").style.background="linear-gradient(90deg,"+st.glow+",transparent)";
-  document.getElementById("rh-field").textContent=field.name+" \xb7 "+field.city;
-  var dateObj=new Date(dateVal+"T12:00:00");
-  document.getElementById("rh-date").textContent=dateObj.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})+" at "+timeLabel+"  \xb7  "+sl.name;
-  document.getElementById("wx-icon").textContent=wxEmoji(wx.weatherCode);
-  var circ=2*Math.PI*52,arc=document.getElementById("gauge-arc");
-  arc.setAttribute("stroke",st.color);arc.setAttribute("stroke-dasharray","0 999");
+  var key=prob>=75?'on':prob>=45?'questionable':'cancelled';
+  var st=STATUSES[key],sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard;
+  var card=document.getElementById('result-card');
+  card.style.background='#ffffff';card.style.border='1px solid '+st.color+'33';card.style.boxShadow='0 0 50px '+st.glow;
+  document.getElementById('result-header').style.background='linear-gradient(90deg,'+st.glow+',transparent)';
+  document.getElementById('rh-field').textContent=field.name+' \xb7 '+field.city;
+  var dateObj=new Date(dateVal+'T12:00:00');
+  document.getElementById('rh-date').textContent=dateObj.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+' at '+timeLabel+'  \xb7  '+sl.name;
+  document.getElementById('wx-icon').textContent=wxEmoji(wx.weatherCode);
+  var circ=2*Math.PI*52,arc=document.getElementById('gauge-arc');
+  arc.setAttribute('stroke',st.color);arc.setAttribute('stroke-dasharray','0 999');
   void arc.getBoundingClientRect();
-  setTimeout(function(){arc.setAttribute("stroke-dasharray",(prob/100*circ)+" "+circ);},30);
-  document.getElementById("gauge-pct").textContent=prob+"%";
-  document.getElementById("gauge-pct").setAttribute("fill",st.color);
-  document.getElementById("verdict-label").innerHTML=st.label;
-  document.getElementById("verdict-label").style.color=st.color;
-  document.getElementById("verdict-sub").textContent=st.sub;
+  setTimeout(function(){arc.setAttribute('stroke-dasharray',(prob/100*circ)+' '+circ);},30);
+  document.getElementById('gauge-pct').textContent=prob+'%';
+  document.getElementById('gauge-pct').setAttribute('fill',st.color);
+  document.getElementById('verdict-label').innerHTML=st.label;
+  document.getElementById('verdict-label').style.color=st.color;
+  document.getElementById('verdict-sub').textContent=st.sub;
   function mmToIn(mm){return(mm*0.0393701).toFixed(2)+'"';}
   function kphToMph(k){return Math.round(k*0.621371);}
-  function setPill(pid,vid,val,warn){document.getElementById(pid).classList.toggle("warn",warn);document.getElementById(vid).textContent=val;}
+  function setPill(pid,vid,val,warn){document.getElementById(pid).classList.toggle('warn',warn);document.getElementById(vid).textContent=val;}
   var isCold=wx.windChillF<40;
-  var tempPill=document.getElementById("pill-temp");
-  tempPill.classList.toggle("cold",isCold);
-  tempPill.classList.remove("warn");
-  document.getElementById("temp-icon").textContent=isCold?"🥶":"🌡️";
-  document.getElementById("pv-temp").textContent=wx.windChillF+"\xb0F";
-  setPill("pill-rain","pv-rain",wx.rainPct+"%",wx.rainPct>60);
-  setPill("pill-precip","pv-precip",mmToIn(wx.precipMm),wx.precipMm>2);
-  setPill("pill-wind","pv-wind",kphToMph(wx.windKph)+" mph",wx.windKph>40);
-  document.getElementById("result-coords").textContent="Surface: "+sl.name+" ("+sl.desc+")\nWeather: Open-Meteo \xb7 "+field.lat.toFixed(4)+", "+field.lon.toFixed(4)+" \xb7 Always confirm with your league director.";
-
-  // Lightning pill
-  var ltngPill=document.getElementById("pill-lightning");
-  if(wx.isThunderstorm){
-    ltngPill.style.display="";ltngPill.classList.add("lightning");
-    document.getElementById("pv-lightning").textContent="WARNING";
-  } else if(wx.lightningPotential>10){
-    ltngPill.style.display="";ltngPill.classList.add("lightning");
-    document.getElementById("pv-lightning").textContent=wx.lightningPotential>100?"HIGH":"POSSIBLE";
-  } else {
-    ltngPill.style.display="none";ltngPill.classList.remove("lightning");
-  }
-
-  // Action buttons
-  document.getElementById("btn-radar").onclick=function(){ openProfile(field,'radar'); };
-  document.getElementById("btn-rate").onclick=function(){ openProfile(field,'rate'); };
-
-  card.style.display="block";card.className="";void card.getBoundingClientRect();card.className="result-enter";
-  card.scrollIntoView({behavior:"smooth",block:"nearest"});
+  document.getElementById('pill-temp').classList.toggle('cold',isCold);
+  document.getElementById('pill-temp').classList.remove('warn');
+  document.getElementById('temp-icon').textContent=isCold?'🥶':'🌡️';
+  document.getElementById('pv-temp').textContent=wx.windChillF+'\xb0F';
+  setPill('pill-rain','pv-rain',wx.rainPct+'%',wx.rainPct>60);
+  setPill('pill-precip','pv-precip',mmToIn(wx.precipMm),wx.precipMm>2);
+  setPill('pill-wind','pv-wind',kphToMph(wx.windKph)+' mph',wx.windKph>40);
+  document.getElementById('result-coords').textContent='Surface: '+sl.name+' ('+sl.desc+')\nWeather: Open-Meteo \xb7 '+field.lat.toFixed(4)+', '+field.lon.toFixed(4)+' \xb7 Always confirm with your league director.';
+  var ltngPill=document.getElementById('pill-lightning');
+  if(wx.isThunderstorm){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent='WARNING';}
+  else if(wx.lightningPotential>10){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent=wx.lightningPotential>100?'HIGH':'POSSIBLE';}
+  else{ltngPill.style.display='none';ltngPill.classList.remove('lightning');}
+  document.getElementById('btn-radar').onclick=function(){openProfile(field,'radar');};
+  document.getElementById('btn-rate').onclick=function(){openProfile(field,'rate');};
+  card.style.display='block';card.className='';void card.getBoundingClientRect();card.className='result-enter';
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-// ── Rating state ──
-var currentProfileField = null;
-var catStars = {surface:0, tournament:0, league:0};
 
-function selectCatStar(cat, n){
-  catStars[cat] = n;
-  document.querySelectorAll('.star-sel-btn[data-cat="'+cat+'"]').forEach(function(b){
-    b.classList.toggle('active', Number(b.dataset.val) <= n);
-  });
+// ══════════════════════════════════════════
+//  SHARE
+// ══════════════════════════════════════════
+function shareforecast(){
+  var url=window.location.href;
+  var copied=document.getElementById('share-copied');
+  var btn=document.getElementById('share-btn');
+  if(navigator.share){
+    var field=FIELDS[selectedFieldId];
+    navigator.share({title:'Will Easton Play?',text:field?'Check out the game forecast for '+field.name:'Check out your game forecast',url:url}).catch(function(){});
+    return;
+  }
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){
+      copied.style.display='block';btn.innerHTML='✓ Copied!';
+      setTimeout(function(){copied.style.display='none';btn.innerHTML='🔗 Share This Forecast';},3000);
+    });
+  }else{window.prompt('Copy this link:',url);}
+}
+
+// ══════════════════════════════════════════
+//  DEEP LINK
+// ══════════════════════════════════════════
+function loadFromUrlParams(){
+  var params=new URLSearchParams(window.location.search);
+  var parkId=params.get('park'),date=params.get('date'),timeIdx=params.get('time');
+  if(!parkId)return;
+  if(date){var di=document.getElementById('date-input');if(di)di.value=date;}
+  if(timeIdx!==null){var ts=document.getElementById('time-sel');if(ts)ts.value=timeIdx;}
+  function trySelect(){
+    var field=FIELDS.find(function(f){return String(f.id)===String(parkId);});
+    if(!field){if(trySelect._n<30){trySelect._n++;setTimeout(trySelect,200);}return;}
+    selectedFieldId=field._idx;
+    syncSelected();checkReady();
+    var card=document.querySelector('.field-btn[data-id="'+field._idx+'"]');
+    if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    setTimeout(function(){document.getElementById('submit-btn').click();},300);
+  }
+  trySelect._n=0;trySelect();
+}
+
+// ══════════════════════════════════════════
+//  RATINGS
+// ══════════════════════════════════════════
+var currentProfileField=null;
+var catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
+
+function selectCatStar(cat,n){
+  catStars[cat]=n;
+  document.querySelectorAll('.star-sel-btn[data-cat="'+cat+'"]').forEach(function(b){b.classList.toggle('active',Number(b.dataset.val)<=n);});
   checkRatingReady();
 }
-
 function checkRatingReady(){
-  // At least one category must be rated
-  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
-  document.getElementById('submit-rating-btn').disabled = !hasAny;
+  var hasAny=catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
+  document.getElementById('submit-rating-btn').disabled=!hasAny;
 }
-
-async function loadRatings(parkId, parkName){
-  var summary = document.getElementById('pm-rating-summary');
-  var starsDisplay = document.getElementById('pm-stars-display');
-  var breakdown = document.getElementById('pm-rating-breakdown');
-  summary.textContent = 'Loading...';
-  starsDisplay.innerHTML = '';
-  breakdown.textContent = '';
+async function loadRatings(parkId){
+  var summary=document.getElementById('pm-rating-summary');
+  var starsDisplay=document.getElementById('pm-stars-display');
+  summary.textContent='Loading...';starsDisplay.innerHTML='';
   try{
-    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
-    if(!res.ok) throw new Error('fetch failed');
-    var rows = await res.json();
-    if(!rows.length){
-      summary.textContent = 'No ratings yet — be the first!';
-      starsDisplay.innerHTML = '<span style="opacity:0.2">⚾⚾⚾⚾⚾</span>';
-      breakdown.textContent = '';
-      return;
-    }
-
-    function catAvg(key){
-      var vals = rows.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
-      if(!vals.length) return null;
-      return vals.reduce(function(s,v){return s+v;},0)/vals.length;
-    }
-
-    function renderStars(avg){
-      if(avg===null) return '<span style="color:#94a3b8;font-size:12px;">No ratings</span>';
-      var rounded = Math.round(avg);
-      return [1,2,3,4,5].map(function(i){
-        return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
-      }).join('')+' <span style="font-size:12px;color:#64748b;font-weight:600;">'+avg.toFixed(1)+'</span>';
-    }
-
-    var surfAvg = catAvg('surface_stars');
-    var tourAvg = catAvg('tournament_stars');
-    var leagAvg = catAvg('league_stars');
-
-    summary.textContent = rows.length+' rating'+(rows.length!==1?'s':'');
-    var bathAvg = catAvg('bathroom_stars');
-    var concAvg = catAvg('concession_stars');
-    starsDisplay.innerHTML =
-      '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(surfAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(tourAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(leagAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🚻 Bathrooms</span>'+renderStars(bathAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🌭 Concessions</span>'+renderStars(concAvg)+'</div>'
+    var res=await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
+    if(!res.ok)throw new Error();
+    var rows=await res.json();
+    if(!rows.length){summary.textContent='No ratings yet — be the first!';starsDisplay.innerHTML='<span style="opacity:0.2">⚾⚾⚾⚾⚾</span>';return;}
+    function catAvg(key){var vals=rows.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});if(!vals.length)return null;return vals.reduce(function(s,v){return s+v;},0)/vals.length;}
+    function renderStars(avg){if(avg===null)return'<span style="color:#94a3b8;font-size:12px;">No ratings</span>';var r=Math.round(avg);return[1,2,3,4,5].map(function(i){return'<span style="opacity:'+(i<=r?'1':'0.2')+'">⚾</span>';}).join('')+' <span style="font-size:12px;color:#64748b;font-weight:600;">'+avg.toFixed(1)+'</span>';}
+    summary.textContent=rows.length+' rating'+(rows.length!==1?'s':'');
+    starsDisplay.innerHTML='<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(catAvg('surface_stars'))+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(catAvg('tournament_stars'))+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(catAvg('league_stars'))+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🚻 Bathrooms</span>'+renderStars(catAvg('bathroom_stars'))+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🌭 Concessions</span>'+renderStars(catAvg('concession_stars'))+'</div>'
       +'</div>';
-  }catch(e){
-    summary.textContent = 'Could not load ratings.';
-  }
+  }catch(e){summary.textContent='Could not load ratings.';}
 }
-
 async function submitRating(){
-  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
-  if(!hasAny||!currentProfileField) return;
-  var btn = document.getElementById('submit-rating-btn');
-  var msg = document.getElementById('rating-msg');
-  btn.disabled = true; btn.textContent = 'Submitting...';
+  if(!currentProfileField)return;
+  var btn=document.getElementById('submit-rating-btn'),msg=document.getElementById('rating-msg');
+  btn.disabled=true;btn.textContent='Submitting...';
   try{
-    var payload = {
-      park_id: currentProfileField.id,
-      park_name: currentProfileField.name,
-      surface_stars: catStars.surface||null,
-      tournament_stars: catStars.tournament||null,
-      league_stars: catStars.league||null,
-      bathroom_stars: catStars.bathrooms||null,
-      concession_stars: catStars.concessions||null
-    };
-    var res = await supaFetch('ratings', {
-      method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('Submit failed');
-    msg.style.color='#00a846'; msg.textContent='✓ Rating submitted — thanks!'; msg.style.display='block';
-    catStars={surface:0,tournament:0,league:0};
+    var res=await supaFetch('ratings',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({park_id:currentProfileField.id,park_name:currentProfileField.name,surface_stars:catStars.surface||null,tournament_stars:catStars.tournament||null,league_stars:catStars.league||null,bathroom_stars:catStars.bathrooms||null,concession_stars:catStars.concessions||null})});
+    if(!res.ok)throw new Error();
+    msg.style.color='#00a846';msg.textContent='✓ Rating submitted — thanks!';msg.style.display='block';
+    catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
     document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
-    await loadRatings(currentProfileField.id, currentProfileField.name);
+    await loadRatings(currentProfileField.id);
     btn.textContent='Submit Rating';
-  }catch(e){
-    msg.style.color='#dc2626'; msg.textContent='⚠ Could not submit. Please try again.'; msg.style.display='block';
-    btn.disabled=false; btn.textContent='Submit Rating';
-  }
+  }catch(e){msg.style.color='#dc2626';msg.textContent='⚠ Could not submit. Please try again.';msg.style.display='block';btn.disabled=false;btn.textContent='Submit Rating';}
 }
-
-function openProfile(field, mode){
-  currentProfileField = field;
+function openProfile(field,mode){
+  currentProfileField=field;
   catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
   document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('submit-rating-btn').disabled=true;
   document.getElementById('rating-msg').style.display='none';
   document.getElementById('submit-rating-btn').textContent='Submit Rating';
-
-  document.getElementById('pm-name').textContent = field.name;
-  document.getElementById('pm-city').textContent = field.city + (field.state ? ', '+field.state : '');
-
-  var radarUrl = 'https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
-  document.getElementById('radar-iframe').src = radarUrl;
-
-  loadRatings(field.id, field.name);
+  document.getElementById('pm-name').textContent=field.name;
+  document.getElementById('pm-city').textContent=field.city+(field.state?', '+field.state:'');
+  document.getElementById('radar-iframe').src='https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
+  loadRatings(field.id);
   document.getElementById('profile-modal').style.display='block';
   document.body.style.overflow='hidden';
-
-  setTimeout(function(){
-    if(mode==='rate'){
-      var rateEl=document.getElementById('pm-rate-section');
-      if(rateEl) rateEl.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-  }, 120);
+  if(mode==='rate'){setTimeout(function(){var el=document.getElementById('pm-rate-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},120);}
 }
 function closeProfile(){
   document.getElementById('profile-modal').style.display='none';
@@ -1247,588 +806,280 @@ function closeProfile(){
   document.getElementById('radar-iframe').src='';
 }
 
-  // Modal backdrop click
-  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
-
-
-// ── Add a Ballpark ──
-var subMap = null, subMarker = null, subType = null;
-var subMapInitialized = false;
-
+// ══════════════════════════════════════════
+//  SUBMIT PARK
+// ══════════════════════════════════════════
+var subMap=null,subMarker=null,subType=null,subMapInitialized=false;
 function initSubMap(){
-  if(subMapInitialized) return;
-  subMapInitialized = true;
-  subMap = L.map('sub-map').setView([35.5, -97.5], 7); // Center on Oklahoma
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© OpenStreetMap contributors', maxZoom:19
-  }).addTo(subMap);
-  subMap.on('click', function(e){ placeSubPin(e.latlng.lat, e.latlng.lng); });
-  // Fix Leaflet tile sizing after tab show
-  setTimeout(function(){ subMap.invalidateSize(); }, 50);
+  if(subMapInitialized)return;subMapInitialized=true;
+  subMap=L.map('sub-map').setView([35.5,-97.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(subMap);
+  subMap.on('click',function(e){placeSubPin(e.latlng.lat,e.latlng.lng);});
+  setTimeout(function(){subMap.invalidateSize();},50);
 }
-
-function placeSubPin(lat, lng){
-  if(subMarker) subMap.removeLayer(subMarker);
-  subMarker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className:'',
-      html:'<div style="width:28px;height:28px;background:#00c853;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
-      iconSize:[28,28], iconAnchor:[14,14]
-    })
-  }).addTo(subMap);
-  document.getElementById('sub-lat').value = lat.toFixed(6);
-  document.getElementById('sub-lon').value = lng.toFixed(6);
-  document.getElementById('sub-lat-display').textContent = lat.toFixed(6)+'°N';
-  document.getElementById('sub-lon-display').textContent = Math.abs(lng).toFixed(6)+'°W';
-  document.getElementById('sub-coords-display').style.display = 'block';
+function placeSubPin(lat,lng){
+  if(subMarker)subMap.removeLayer(subMarker);
+  subMarker=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:28px;height:28px;background:#00c853;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',iconSize:[28,28],iconAnchor:[14,14]})}).addTo(subMap);
+  document.getElementById('sub-lat').value=lat.toFixed(6);
+  document.getElementById('sub-lon').value=lng.toFixed(6);
+  document.getElementById('sub-lat-display').textContent=lat.toFixed(6)+'°N';
+  document.getElementById('sub-lon-display').textContent=Math.abs(lng).toFixed(6)+'°W';
+  document.getElementById('sub-coords-display').style.display='block';
   checkSubReady();
 }
-
 async function searchMapLocation(){
-  var q = document.getElementById('map-search-input').value.trim();
-  if(!q) return;
-  var btn = document.querySelector('#sub-map').previousElementSibling.querySelector('button');
-  btn.textContent = '⏳ Searching...'; btn.disabled = true;
+  var q=document.getElementById('map-search-input').value.trim();if(!q)return;
   try{
-    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q), {
-      headers:{'Accept-Language':'en-US'}
-    });
-    var results = await res.json();
-    if(!results.length){ alert('Location not found. Try a more specific search.'); return; }
-    var r = results[0];
-    subMap.setView([r.lat, r.lon], 15);
-    placeSubPin(parseFloat(r.lat), parseFloat(r.lon));
-  }catch(e){
-    alert('Search failed. Please try again.');
-  }finally{
-    btn.textContent = '🔍 Search'; btn.disabled = false;
-  }
+    var res=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q),{headers:{'Accept-Language':'en-US'}});
+    var results=await res.json();
+    if(!results.length){alert('Location not found.');return;}
+    subMap.setView([results[0].lat,results[0].lon],15);
+    placeSubPin(parseFloat(results[0].lat),parseFloat(results[0].lon));
+  }catch(e){alert('Search failed.');}
 }
-
 function selectSubType(el){
-  subType = el.dataset.type;
-  document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
-  el.classList.add('active');
-  checkSubReady();
+  subType=el.dataset.type;
+  document.querySelectorAll('.sub-type-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');checkSubReady();
 }
-
 function checkSubReady(){
-  var name = document.getElementById('sub-name').value.trim();
-  var city = document.getElementById('sub-city').value.trim();
-  var state = document.getElementById('sub-state').value;
-  var lat  = document.getElementById('sub-lat').value;
-  var ok = name && city && state && subType && lat;
-  document.getElementById('sub-submit-btn').disabled = !ok;
+  var ok=document.getElementById('sub-name').value.trim()&&document.getElementById('sub-city').value.trim()&&document.getElementById('sub-state').value&&subType&&document.getElementById('sub-lat').value;
+  document.getElementById('sub-submit-btn').disabled=!ok;
 }
-
-// Wire up live validation on text inputs
-document.addEventListener('DOMContentLoaded', function(){
-  ['sub-name','sub-city','sub-state'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.addEventListener('input', checkSubReady);
-  });
+document.addEventListener('DOMContentLoaded',function(){
+  ['sub-name','sub-city'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',checkSubReady);});
 });
-
 async function submitPark(){
-  var btn = document.getElementById('sub-submit-btn');
-  var msg = document.getElementById('sub-msg');
-  btn.disabled = true; btn.textContent = 'Submitting...';
+  var btn=document.getElementById('sub-submit-btn'),msg=document.getElementById('sub-msg');
+  btn.disabled=true;btn.textContent='Submitting...';
   try{
-    var payload = {
-      park_name: document.getElementById('sub-name').value.trim(),
-      city: document.getElementById('sub-city').value.trim(),
-      state: document.getElementById('sub-state').value,
-      type: subType,
-      lat: parseFloat(document.getElementById('sub-lat').value),
-      lon: parseFloat(document.getElementById('sub-lon').value),
-      surface_type: document.getElementById('sub-surface').value || null,
-      notes: document.getElementById('sub-notes').value.trim() || null
-    };
-    var res = await supaFetch('pending_parks', {
-      method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('Submit failed');
-    msg.style.color='#00a846';
-    msg.innerHTML='✓ Ballpark submitted — thank you! It will appear in the app after review.';
-    msg.style.display='block';
-    // Reset form
-    document.getElementById('sub-name').value='';
-    document.getElementById('sub-city').value='';
-    document.getElementById('sub-state').value='';
-    document.getElementById('sub-surface').value='';
-    document.getElementById('sub-notes').value='';
-    document.getElementById('map-search-input').value='';
-    document.getElementById('sub-coords-display').style.display='none';
-    if(subMarker){ subMap.removeLayer(subMarker); subMarker=null; }
-    subType=null;
-    document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
+    var res=await supaFetch('pending_parks',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({park_name:document.getElementById('sub-name').value.trim(),city:document.getElementById('sub-city').value.trim(),state:document.getElementById('sub-state').value,type:subType,lat:parseFloat(document.getElementById('sub-lat').value),lon:parseFloat(document.getElementById('sub-lon').value),surface_type:document.getElementById('sub-surface').value||null,notes:document.getElementById('sub-notes').value.trim()||null})});
+    if(!res.ok)throw new Error();
+    msg.style.color='#00a846';msg.innerHTML='✓ Ballpark submitted — thank you! It will appear after review.';msg.style.display='block';
+    document.getElementById('sub-name').value='';document.getElementById('sub-city').value='';document.getElementById('sub-state').value='';document.getElementById('sub-surface').value='';document.getElementById('sub-notes').value='';document.getElementById('map-search-input').value='';document.getElementById('sub-coords-display').style.display='none';
+    if(subMarker){subMap.removeLayer(subMarker);subMarker=null;}
+    subType=null;document.querySelectorAll('.sub-type-btn').forEach(function(b){b.classList.remove('active');});
     btn.textContent='Submit Ballpark';
+  }catch(e){msg.style.color='#dc2626';msg.textContent='⚠ Submission failed. Please try again.';msg.style.display='block';btn.disabled=false;btn.textContent='Submit Ballpark';}
+}
+
+// ══════════════════════════════════════════
+//  ADMIN
+// ══════════════════════════════════════════
+var ADMIN_PW='easton2024';
+var adminAuthed=false;
+
+function adminLogin(){
+  var pw=document.getElementById('admin-pw-input').value;
+  var err=document.getElementById('admin-login-err');
+  if(pw===ADMIN_PW){
+    adminAuthed=true;
+    document.getElementById('admin-login').style.display='none';
+    document.getElementById('admin-dashboard').style.display='block';
+    loadPending();
+  }else{
+    err.style.display='block';
+    document.getElementById('admin-pw-input').value='';
+  }
+}
+
+async function loadPending(){
+  if(!adminAuthed)return;
+  var loading=document.getElementById('admin-loading');
+  var empty=document.getElementById('admin-empty');
+  var list=document.getElementById('admin-list');
+  var count=document.getElementById('admin-count');
+  loading.style.display='block';empty.style.display='none';list.innerHTML='';
+  try{
+    var res=await supaFetch('pending_parks?status=eq.pending&order=submitted_at.asc&select=*');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var rows=await res.json();
+    loading.style.display='none';
+    count.textContent=rows.length+' submission'+(rows.length!==1?'s':'')+' pending review';
+    if(!rows.length){empty.style.display='block';return;}
+    rows.forEach(function(r){list.appendChild(makePendingCard(r));});
   }catch(e){
-    msg.style.color='#dc2626';
-    msg.textContent='⚠ Submission failed. Please try again.';
-    msg.style.display='block';
-    btn.disabled=false; btn.textContent='Submit Ballpark';
+    loading.style.display='none';
+    list.innerHTML='<div style="padding:20px;text-align:center;color:#dc2626;font-size:13px;">⚠ Could not load submissions: '+e.message+'</div>';
   }
 }
 
-// ── Shareable forecast link ──
-function shareforecast(){
-  var url = window.location.href;
-  var copied = document.getElementById('share-copied');
-  var btn = document.getElementById('share-btn');
+function makePendingCard(r){
+  var card=document.createElement('div');card.className='admin-card';card.id='pending-'+r.id;
+  var submittedAt=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'Unknown';
+  var mapsUrl='https://www.google.com/maps?q='+r.lat+','+r.lon;
+  card.innerHTML=
+    '<div class="admin-card-header">'
+      +'<div style="font-family:\'Outfit\',sans-serif;font-weight:800;font-size:15px;color:#0b1929;">'+escHtml(r.park_name)+'</div>'
+      +'<div style="font-size:11px;color:#94a3b8;">'+submittedAt+'</div>'
+    +'</div>'
+    +'<div class="admin-card-body">'
+      +'<div class="admin-field"><strong>City / State:</strong> '+escHtml(r.city)+', '+escHtml(r.state)+'</div>'
+      +'<div class="admin-field"><strong>Type:</strong> '+(TYPE_LABELS[r.type]||r.type||'—')+'</div>'
+      +'<div class="admin-field"><strong>Surface:</strong> '+(SURFACE_LABELS[r.surface_type]?SURFACE_LABELS[r.surface_type].name:(r.surface_type||'Unknown'))+'</div>'
+      +(r.notes?'<div class="admin-field"><strong>Notes:</strong> '+escHtml(r.notes)+'</div>':'')
+      +'<div class="admin-field"><strong>Coordinates:</strong> '+r.lat+', '+r.lon
+        +' <a href="'+mapsUrl+'" target="_blank" style="font-size:11px;color:#0891b2;font-weight:700;text-decoration:none;">View on Maps ↗</a>'
+      +'</div>'
+      +'<div class="admin-actions">'
+        +'<button type="button" class="btn-approve" id="approve-'+r.id+'" onclick="approvepark(\''+r.id+'\',\''+escAttr(r.park_name)+'\',\''+escAttr(r.city)+'\',\''+escAttr(r.state)+'\',\''+escAttr(r.type)+'\','+r.lat+','+r.lon+',\''+escAttr(r.surface_type||'')+'\',\''+escAttr(r.notes||'')+'\')">✓ Approve</button>'
+        +'<button type="button" class="btn-reject" id="reject-'+r.id+'" onclick="rejectPark(\''+r.id+'\')">✕ Reject</button>'
+      +'</div>'
+      +'<div id="admin-msg-'+r.id+'" style="font-size:12px;font-weight:600;margin-top:8px;display:none;"></div>'
+    +'</div>';
+  return card;
+}
 
-  // Native share sheet on mobile
-  if(navigator.share){
-    var field = FIELDS[selectedFieldId];
-    navigator.share({
-      title: 'Will Easton Play?',
-      text: field ? 'Check out the game forecast for ' + field.name : 'Check out your game forecast',
-      url: url
-    }).catch(function(){});
-    return;
-  }
-  // Clipboard fallback
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(function(){
-      copied.style.display='block';
-      btn.innerHTML='&#10003; Copied!';
-      setTimeout(function(){
-        copied.style.display='none';
-        btn.innerHTML='&#128279; Share This Forecast';
-      }, 3000);
-    });
-  } else {
-    window.prompt('Copy this link:', url);
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+async function approvepark(id,name,city,state,type,lat,lon,surface,notes){
+  var approveBtn=document.getElementById('approve-'+id);
+  var rejectBtn=document.getElementById('reject-'+id);
+  var msg=document.getElementById('admin-msg-'+id);
+  approveBtn.disabled=true;rejectBtn.disabled=true;approveBtn.textContent='Approving...';
+  try{
+    // Insert into parks table
+    var parkPayload={name:name,city:city,state:state,type:type,lat:lat,lon:lon,surface_type:surface||null,notes:notes||null,active:'Y',region:regionForState(state)};
+    var r1=await supaFetch('parks',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(parkPayload)});
+    if(!r1.ok)throw new Error('Could not insert park (HTTP '+r1.status+')');
+    // Update pending status
+    var r2=await supaFetch('pending_parks?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'approved'})});
+    if(!r2.ok)throw new Error('Park added but status not updated.');
+    msg.style.color='#00a846';msg.textContent='✓ Approved and added to parks database!';msg.style.display='block';
+    approveBtn.style.display='none';rejectBtn.style.display='none';
+    // Refresh parks in background
+    loadParks();
+  }catch(e){
+    msg.style.color='#dc2626';msg.textContent='⚠ '+e.message;msg.style.display='block';
+    approveBtn.disabled=false;rejectBtn.disabled=false;approveBtn.textContent='✓ Approve';
   }
 }
 
-// ── Deep link: auto-load from URL params ──
-function loadFromUrlParams(){
-  var params = new URLSearchParams(window.location.search);
-  var parkId  = params.get('park');
-  var date    = params.get('date');
-  var timeIdx = params.get('time');
-  if(!parkId) return;
-
-  if(date){ var di=document.getElementById('date-input'); if(di) di.value=date; }
-  if(timeIdx!==null){ var ts=document.getElementById('time-sel'); if(ts) ts.value=timeIdx; }
-
-  function trySelect(){
-    var field = FIELDS.find(function(f){ return String(f.id)===String(parkId); });
-    if(!field){
-      if(trySelect._n < 30){ trySelect._n++; setTimeout(trySelect, 200); }
-      return;
-    }
-    selectedFieldId = field.id;
-    syncSelected();
-    checkReady();
-    // Scroll field card into view
-    var card = document.querySelector('.field-btn[data-id="'+field.id+'"]');
-    if(card) card.scrollIntoView({behavior:'smooth', block:'nearest'});
-    setTimeout(function(){ document.getElementById('submit-btn').click(); }, 300);
+async function rejectPark(id){
+  if(!confirm('Reject and delete this submission?'))return;
+  var approveBtn=document.getElementById('approve-'+id);
+  var rejectBtn=document.getElementById('reject-'+id);
+  var msg=document.getElementById('admin-msg-'+id);
+  approveBtn.disabled=true;rejectBtn.disabled=true;rejectBtn.textContent='Rejecting...';
+  try{
+    var r=await supaFetch('pending_parks?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'rejected'})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    msg.style.color='#64748b';msg.textContent='Rejected.';msg.style.display='block';
+    approveBtn.style.display='none';rejectBtn.style.display='none';
+  }catch(e){
+    msg.style.color='#dc2626';msg.textContent='⚠ '+e.message;msg.style.display='block';
+    approveBtn.disabled=false;rejectBtn.disabled=false;rejectBtn.textContent='✕ Reject';
   }
-  trySelect._n = 0;
-  trySelect();
 }
 
-var rankingsLoaded = false;
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b){
-    if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1) b.classList.add('active');
-  });
-  document.getElementById('panel-'+tab).classList.add('active');
-  if(tab==='rankings' && !rankingsLoaded){ loadRankings(); rankingsLoaded=true; }
-  if(tab==='submit'){ setTimeout(initSubMap, 50); }
+function regionForState(state){
+  var defaults={OK:'ne-ok',AR:'nw-ar',TX:'dfw-tx',KS:'s-ks',MO:'sw-mo'};
+  return defaults[state]||'all';
 }
 
-// ── Rankings ──
-var activeRankCat = 'overall';
+// ══════════════════════════════════════════
+//  RANKINGS
+// ══════════════════════════════════════════
+var rankingsLoaded=false;
+var activeRankCat='overall';
 
 function switchRankCat(cat){
-  activeRankCat = cat;
-  document.querySelectorAll('.rank-tab').forEach(function(b){
-    b.classList.remove('active');
-    if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1) b.classList.add('active');
-  });
-  renderRankings(window._rankData || []);
+  activeRankCat=cat;
+  document.querySelectorAll('.rank-tab').forEach(function(b){b.classList.remove('active');if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1)b.classList.add('active');});
+  renderRankings(window._rankData||[]);
 }
-
 async function loadRankings(){
   document.getElementById('rankings-loading').style.display='block';
   document.getElementById('rankings-empty').style.display='none';
   document.getElementById('rankings-error').style.display='none';
   document.getElementById('rankings-list').innerHTML='';
   try{
-    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
-    if(!res.ok) throw new Error('fetch failed');
-    var rows = await res.json();
-    window._rankData = rows;
+    var res=await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
+    if(!res.ok)throw new Error();
+    var rows=await res.json();
+    window._rankData=rows;
     document.getElementById('rankings-loading').style.display='none';
     renderRankings(rows);
-  }catch(e){
-    document.getElementById('rankings-loading').style.display='none';
-    document.getElementById('rankings-error').style.display='block';
-    console.error('Rankings load error:', e);
-  }
+  }catch(e){document.getElementById('rankings-loading').style.display='none';document.getElementById('rankings-error').style.display='block';}
 }
-
 function renderRankings(rows){
-  var list = document.getElementById('rankings-list');
-  var empty = document.getElementById('rankings-empty');
-  list.innerHTML = '';
-
-  // Group by park_id
-  var parks = {};
-  rows.forEach(function(r){
-    if(!parks[r.park_id]) parks[r.park_id] = {name:r.park_name, ratings:[]};
-    parks[r.park_id].ratings.push(r);
+  var list=document.getElementById('rankings-list'),empty=document.getElementById('rankings-empty');
+  list.innerHTML='';
+  var parks={};
+  rows.forEach(function(r){if(!parks[r.park_id])parks[r.park_id]={name:r.park_name,ratings:[]};parks[r.park_id].ratings.push(r);});
+  function avg(arr,key){var vals=arr.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});if(vals.length<1)return null;return vals.reduce(function(s,v){return s+v;},0)/vals.length;}
+  var scored=Object.keys(parks).map(function(pid){
+    var p=parks[pid];
+    var cats=[avg(p.ratings,'surface_stars'),avg(p.ratings,'tournament_stars'),avg(p.ratings,'league_stars'),avg(p.ratings,'bathroom_stars'),avg(p.ratings,'concession_stars')].filter(function(v){return v!==null;});
+    var overall=cats.length?cats.reduce(function(s,v){return s+v;},0)/cats.length:null;
+    return{pid:pid,name:p.name,count:p.ratings.length,overall:overall,surface:avg(p.ratings,'surface_stars'),tournament:avg(p.ratings,'tournament_stars'),league:avg(p.ratings,'league_stars'),bathrooms:avg(p.ratings,'bathroom_stars'),concessions:avg(p.ratings,'concession_stars')};
   });
-
-  var MIN_RATINGS = 3;
-
-  function avg(arr, key){
-    var vals = arr.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
-    if(vals.length < 1) return null;
-    return vals.reduce(function(s,v){return s+v;},0)/vals.length;
-  }
-
-  // Build scored list
-  var scored = Object.keys(parks).map(function(pid){
-    var p = parks[pid];
-    var surfAvg  = avg(p.ratings, 'surface_stars');
-    var tourAvg  = avg(p.ratings, 'tournament_stars');
-    var leagAvg  = avg(p.ratings, 'league_stars');
-    // Overall = average of available category averages
-    var bathAvg  = avg(p.ratings, 'bathroom_stars');
-    var concAvg  = avg(p.ratings, 'concession_stars');
-    var cats = [surfAvg, tourAvg, leagAvg, bathAvg, concAvg].filter(function(v){return v!==null;});
-    var overall = cats.length ? cats.reduce(function(s,v){return s+v;},0)/cats.length : null;
-    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg, bathrooms:bathAvg, concessions:concAvg};
+  var catKeyMap={surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
+  var filtered=scored.filter(function(p){
+    if(activeRankCat==='overall')return p.count>=3&&p.overall!==null;
+    var catKey=catKeyMap[activeRankCat];
+    return rows.filter(function(r){return String(r.park_id)===String(p.pid)&&r[catKey]!==null;}).length>=3;
   });
-
-  // Filter by active category having enough ratings
-  var catKeyMap = {surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
-  var catKey = activeRankCat==='overall' ? null : catKeyMap[activeRankCat];
-  var filtered = scored.filter(function(p){
-    if(activeRankCat==='overall') return p.count >= MIN_RATINGS && p.overall !== null;
-    var vals = rows.filter(function(r){return String(r.park_id)===String(p.pid) && r[catKey]!==null;});
-    return vals.length >= MIN_RATINGS;
-  });
-
-  // Sort
-  filtered.sort(function(a,b){
-    var av = activeRankCat==='overall' ? a.overall : a[activeRankCat];
-    var bv = activeRankCat==='overall' ? b.overall : b[activeRankCat];
-    return (bv||0)-(av||0);
-  });
-
-  if(!filtered.length){
-    empty.style.display='block';
-    return;
-  }
+  filtered.sort(function(a,b){var av=activeRankCat==='overall'?a.overall:a[activeRankCat];var bv=activeRankCat==='overall'?b.overall:b[activeRankCat];return(bv||0)-(av||0);});
+  if(!filtered.length){empty.style.display='block';return;}
   empty.style.display='none';
-
-  function starsHtml(val){
-    if(val===null) return '<span style="color:#e2e8f0;font-size:11px;">—</span>';
-    var r = Math.round(val);
-    return [1,2,3,4,5].map(function(i){return '<span style="opacity:'+(i<=r?'1':'0.15')+';font-size:13px;">⚾</span>';}).join('');
-  }
-
-  filtered.forEach(function(p, idx){
-    var rank = idx+1;
-    var score = activeRankCat==='overall' ? p.overall : p[activeRankCat];
-    var card = document.createElement('div');
-    card.className = 'rank-card';
-    // Find the field in FIELDS for city info
-    var field = FIELDS.find(function(f){return String(f.id)===String(p.pid);});
-    var cityStr = field ? field.city+(field.state?', '+field.state:'') : '';
-    card.innerHTML =
-      '<div class="rank-num'+(rank<=3?' top3':'')+'">'+rank+'</div>'
-      +'<div class="rank-info">'
-        +'<div class="rank-name">'+p.name+'</div>'
-        +(cityStr?'<div class="rank-city">'+cityStr+'</div>':'')
-        +'<div class="rank-cats">'
-          +'<span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span>'
-          +'<span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span>'
-          +'<span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span>'
-          +'<span class="rank-cat-pill">🚻 '+starsHtml(p.bathrooms)+'</span>'
-          +'<span class="rank-cat-pill">🌭 '+starsHtml(p.concessions)+'</span>'
-        +'</div>'
-      +'</div>'
-      +'<div class="rank-right">'
-        +'<div class="rank-score">'+(score!==null?score.toFixed(1):'—')+'</div>'
-        +'<div class="rank-count">'+p.count+' rating'+(p.count!==1?'s':'')+'</div>'
-      +'</div>';
+  function starsHtml(val){if(val===null)return'<span style="color:#e2e8f0;font-size:11px;">—</span>';var r=Math.round(val);return[1,2,3,4,5].map(function(i){return'<span style="opacity:'+(i<=r?'1':'0.15')+';font-size:13px;">⚾</span>';}).join('');}
+  filtered.forEach(function(p,idx){
+    var rank=idx+1,score=activeRankCat==='overall'?p.overall:p[activeRankCat];
+    var field=FIELDS.find(function(f){return String(f.id)===String(p.pid);});
+    var cityStr=field?field.city+(field.state?', '+field.state:''):'';
+    var card=document.createElement('div');card.className='rank-card';
+    card.innerHTML='<div class="rank-num'+(rank<=3?' top3':'')+'">'+rank+'</div>'
+      +'<div class="rank-info"><div class="rank-name">'+escHtml(p.name)+'</div>'+(cityStr?'<div class="rank-city">'+escHtml(cityStr)+'</div>':'')
+      +'<div class="rank-cats"><span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span><span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span><span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span><span class="rank-cat-pill">🚻 '+starsHtml(p.bathrooms)+'</span><span class="rank-cat-pill">🌭 '+starsHtml(p.concessions)+'</span></div></div>'
+      +'<div class="rank-right"><div class="rank-score">'+(score!==null?score.toFixed(1):'—')+'</div><div class="rank-count">'+p.count+' rating'+(p.count!==1?'s':'')+'</div></div>';
     list.appendChild(card);
   });
 }
 
-
-// ── Rating state ──
-var currentProfileField = null;
-var catStars = {surface:0, tournament:0, league:0};
-
-function selectCatStar(cat, n){
-  catStars[cat] = n;
-  document.querySelectorAll('.star-sel-btn[data-cat="'+cat+'"]').forEach(function(b){
-    b.classList.toggle('active', Number(b.dataset.val) <= n);
-  });
-  checkRatingReady();
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1)b.classList.add('active');});
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='rankings'&&!rankingsLoaded){loadRankings();rankingsLoaded=true;}
+  if(tab==='submit'){setTimeout(initSubMap,50);}
+  if(tab==='admin'&&adminAuthed){loadPending();}
 }
 
-function checkRatingReady(){
-  // At least one category must be rated
-  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
-  document.getElementById('submit-rating-btn').disabled = !hasAny;
-}
-
-async function loadRatings(parkId, parkName){
-  var summary = document.getElementById('pm-rating-summary');
-  var starsDisplay = document.getElementById('pm-stars-display');
-  var breakdown = document.getElementById('pm-rating-breakdown');
-  summary.textContent = 'Loading...';
-  starsDisplay.innerHTML = '';
-  breakdown.textContent = '';
-  try{
-    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
-    if(!res.ok) throw new Error('fetch failed');
-    var rows = await res.json();
-    if(!rows.length){
-      summary.textContent = 'No ratings yet — be the first!';
-      starsDisplay.innerHTML = '<span style="opacity:0.2">⚾⚾⚾⚾⚾</span>';
-      breakdown.textContent = '';
-      return;
-    }
-
-    function catAvg(key){
-      var vals = rows.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
-      if(!vals.length) return null;
-      return vals.reduce(function(s,v){return s+v;},0)/vals.length;
-    }
-
-    function renderStars(avg){
-      if(avg===null) return '<span style="color:#94a3b8;font-size:12px;">No ratings</span>';
-      var rounded = Math.round(avg);
-      return [1,2,3,4,5].map(function(i){
-        return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
-      }).join('')+' <span style="font-size:12px;color:#64748b;font-weight:600;">'+avg.toFixed(1)+'</span>';
-    }
-
-    var surfAvg = catAvg('surface_stars');
-    var tourAvg = catAvg('tournament_stars');
-    var leagAvg = catAvg('league_stars');
-
-    summary.textContent = rows.length+' rating'+(rows.length!==1?'s':'');
-    var bathAvg = catAvg('bathroom_stars');
-    var concAvg = catAvg('concession_stars');
-    starsDisplay.innerHTML =
-      '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(surfAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(tourAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(leagAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🚻 Bathrooms</span>'+renderStars(bathAvg)+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🌭 Concessions</span>'+renderStars(concAvg)+'</div>'
-      +'</div>';
-  }catch(e){
-    summary.textContent = 'Could not load ratings.';
+// ══════════════════════════════════════════
+//  PWA / NOTIFICATIONS
+// ══════════════════════════════════════════
+var VAPID_PUBLIC='z4b5o7Lo313TQSjdj67SOjJp8jtda26YsqJrfSjj7ZfkH1hGPlE7GPLJEEv-Q48kqHQVe4m52KK3dc92OXXz7g';
+function urlBase64ToUint8Array(b64){var p=b64.replace(/-/g,'+').replace(/_/g,'/');var r=atob(p);var o=new Uint8Array(r.length);for(var i=0;i<r.length;++i)o[i]=r.charCodeAt(i);return o;}
+function maybeShowNotifBanner(){
+  if(Notification&&Notification.permission==='default'&&!localStorage.getItem('notif-dismissed')){
+    document.getElementById('notif-banner').style.display='flex';
   }
 }
-
-async function submitRating(){
-  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
-  if(!hasAny||!currentProfileField) return;
-  var btn = document.getElementById('submit-rating-btn');
-  var msg = document.getElementById('rating-msg');
-  btn.disabled = true; btn.textContent = 'Submitting...';
+function dismissNotifBanner(){document.getElementById('notif-banner').style.display='none';localStorage.setItem('notif-dismissed','1');}
+function hideBanner(){document.getElementById('notif-banner').style.display='none';}
+async function requestNotifPermission(){
+  hideBanner();
+  if(!('Notification' in window))return;
+  var perm=await Notification.requestPermission();
+  if(perm==='granted')subscribeToPush();
+}
+async function subscribeToPush(){
   try{
-    var payload = {
-      park_id: currentProfileField.id,
-      park_name: currentProfileField.name,
-      surface_stars: catStars.surface||null,
-      tournament_stars: catStars.tournament||null,
-      league_stars: catStars.league||null,
-      bathroom_stars: catStars.bathrooms||null,
-      concession_stars: catStars.concessions||null
-    };
-    var res = await supaFetch('ratings', {
-      method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('Submit failed');
-    msg.style.color='#00a846'; msg.textContent='✓ Rating submitted — thanks!'; msg.style.display='block';
-    catStars={surface:0,tournament:0,league:0};
-    document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
-    await loadRatings(currentProfileField.id, currentProfileField.name);
-    btn.textContent='Submit Rating';
-  }catch(e){
-    msg.style.color='#dc2626'; msg.textContent='⚠ Could not submit. Please try again.'; msg.style.display='block';
-    btn.disabled=false; btn.textContent='Submit Rating';
-  }
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC)});
+    await saveSubscription(sub);
+  }catch(e){console.warn('Push subscribe failed:',e);}
 }
-
-function openProfile(field, mode){
-  currentProfileField = field;
-  catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
-  document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('submit-rating-btn').disabled=true;
-  document.getElementById('rating-msg').style.display='none';
-  document.getElementById('submit-rating-btn').textContent='Submit Rating';
-
-  document.getElementById('pm-name').textContent = field.name;
-  document.getElementById('pm-city').textContent = field.city + (field.state ? ', '+field.state : '');
-
-  var radarUrl = 'https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
-  document.getElementById('radar-iframe').src = radarUrl;
-
-  loadRatings(field.id, field.name);
-  document.getElementById('profile-modal').style.display='block';
-  document.body.style.overflow='hidden';
-
-  setTimeout(function(){
-    if(mode==='rate'){
-      var rateEl=document.getElementById('pm-rate-section');
-      if(rateEl) rateEl.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-  }, 120);
+async function saveSubscription(sub){
+  var keys=sub.toJSON().keys||{};
+  await supaFetch('push_subscriptions',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({endpoint:sub.endpoint,p256dh:keys.p256dh||null,auth:keys.auth||null,user_agent:navigator.userAgent})});
 }
-function closeProfile(){
-  document.getElementById('profile-modal').style.display='none';
-  document.body.style.overflow='';
-  document.getElementById('radar-iframe').src='';
-}
-
-  // Modal backdrop click
-  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
-
-
-// ── Add a Ballpark ──
-var subMap = null, subMarker = null, subType = null;
-var subMapInitialized = false;
-
-function initSubMap(){
-  if(subMapInitialized) return;
-  subMapInitialized = true;
-  subMap = L.map('sub-map').setView([35.5, -97.5], 7); // Center on Oklahoma
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© OpenStreetMap contributors', maxZoom:19
-  }).addTo(subMap);
-  subMap.on('click', function(e){ placeSubPin(e.latlng.lat, e.latlng.lng); });
-  // Fix Leaflet tile sizing after tab show
-  setTimeout(function(){ subMap.invalidateSize(); }, 50);
-}
-
-function placeSubPin(lat, lng){
-  if(subMarker) subMap.removeLayer(subMarker);
-  subMarker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className:'',
-      html:'<div style="width:28px;height:28px;background:#00c853;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
-      iconSize:[28,28], iconAnchor:[14,14]
-    })
-  }).addTo(subMap);
-  document.getElementById('sub-lat').value = lat.toFixed(6);
-  document.getElementById('sub-lon').value = lng.toFixed(6);
-  document.getElementById('sub-lat-display').textContent = lat.toFixed(6)+'°N';
-  document.getElementById('sub-lon-display').textContent = Math.abs(lng).toFixed(6)+'°W';
-  document.getElementById('sub-coords-display').style.display = 'block';
-  checkSubReady();
-}
-
-async function searchMapLocation(){
-  var q = document.getElementById('map-search-input').value.trim();
-  if(!q) return;
-  var btn = document.querySelector('#sub-map').previousElementSibling.querySelector('button');
-  btn.textContent = '⏳ Searching...'; btn.disabled = true;
-  try{
-    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q), {
-      headers:{'Accept-Language':'en-US'}
-    });
-    var results = await res.json();
-    if(!results.length){ alert('Location not found. Try a more specific search.'); return; }
-    var r = results[0];
-    subMap.setView([r.lat, r.lon], 15);
-    placeSubPin(parseFloat(r.lat), parseFloat(r.lon));
-  }catch(e){
-    alert('Search failed. Please try again.');
-  }finally{
-    btn.textContent = '🔍 Search'; btn.disabled = false;
-  }
-}
-
-function selectSubType(el){
-  subType = el.dataset.type;
-  document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
-  el.classList.add('active');
-  checkSubReady();
-}
-
-function checkSubReady(){
-  var name = document.getElementById('sub-name').value.trim();
-  var city = document.getElementById('sub-city').value.trim();
-  var state = document.getElementById('sub-state').value;
-  var lat  = document.getElementById('sub-lat').value;
-  var ok = name && city && state && subType && lat;
-  document.getElementById('sub-submit-btn').disabled = !ok;
-}
-
-// Wire up live validation on text inputs
-document.addEventListener('DOMContentLoaded', function(){
-  ['sub-name','sub-city','sub-state'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.addEventListener('input', checkSubReady);
-  });
-});
-
-async function submitPark(){
-  var btn = document.getElementById('sub-submit-btn');
-  var msg = document.getElementById('sub-msg');
-  btn.disabled = true; btn.textContent = 'Submitting...';
-  try{
-    var payload = {
-      park_name: document.getElementById('sub-name').value.trim(),
-      city: document.getElementById('sub-city').value.trim(),
-      state: document.getElementById('sub-state').value,
-      type: subType,
-      lat: parseFloat(document.getElementById('sub-lat').value),
-      lon: parseFloat(document.getElementById('sub-lon').value),
-      surface_type: document.getElementById('sub-surface').value || null,
-      notes: document.getElementById('sub-notes').value.trim() || null
-    };
-    var res = await supaFetch('pending_parks', {
-      method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('Submit failed');
-    msg.style.color='#00a846';
-    msg.innerHTML='✓ Ballpark submitted — thank you! It will appear in the app after review.';
-    msg.style.display='block';
-    // Reset form
-    document.getElementById('sub-name').value='';
-    document.getElementById('sub-city').value='';
-    document.getElementById('sub-state').value='';
-    document.getElementById('sub-surface').value='';
-    document.getElementById('sub-notes').value='';
-    document.getElementById('map-search-input').value='';
-    document.getElementById('sub-coords-display').style.display='none';
-    if(subMarker){ subMap.removeLayer(subMarker); subMarker=null; }
-    subType=null;
-    document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
-    btn.textContent='Submit Ballpark';
-  }catch(e){
-    msg.style.color='#dc2626';
-    msg.textContent='⚠ Submission failed. Please try again.';
-    msg.style.display='block';
-    btn.disabled=false; btn.textContent='Submit Ballpark';
-  }
-}
-
-
 
 </script>
 </body>
