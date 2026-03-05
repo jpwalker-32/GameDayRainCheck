@@ -138,6 +138,7 @@
   #verdict-wrap{display:flex;flex-direction:column;gap:4px;}
   #verdict-label{font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
   #verdict-sub{font-size:12px;color:var(--text-3);}
+  #fun-msg{font-size:12px;font-weight:600;line-height:1.4;}
   /* Stat pills: 2x2 grid */
   #stat-pills{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 16px 14px;}
   .stat-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:#f8fafc;border:1px solid var(--border);}
@@ -282,6 +283,7 @@
       <div id="verdict-wrap">
         <div id="verdict-label"></div>
         <div id="verdict-sub"></div>
+        <div id="fun-msg" style="display:none;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;line-height:1.4;"></div>
       </div>
     </div>
     <!-- Stat pills: 2-column grid -->
@@ -662,6 +664,63 @@ async function doCheck(){
   finally{btn.disabled=false;btn.innerHTML='CHECK PLAY PROBABILITY';}
 }
 
+
+// ══════════════════════════════════════════
+//  FUN MESSAGES
+// ══════════════════════════════════════════
+function getFunMessage(wx, prob, surface) {
+  // Priority order — most dramatic condition wins
+  if (wx.isThunderstorm) {
+    return { msg: '⚡ Lightning in the area. No question — game's done. Get inside!', bg: '#fef9c3', color: '#854d0e' };
+  }
+  if (wx.lightningPotential > 100) {
+    return { msg: '⚡ Significant lightning potential. Don't be the tallest thing on a baseball field.', bg: '#fef9c3', color: '#854d0e' };
+  }
+  if (wx.windChillF < 32) {
+    return { msg: '🥶 Feels like the freezer section. Great day for a Weather POD — and hot cocoa.', bg: '#eff6ff', color: '#1d4ed8' };
+  }
+  if (wx.windChillF < 45) {
+    return { msg: '🧥 Great day for a Weather POD! Bundle up, coaches.', bg: '#eff6ff', color: '#1d4ed8' };
+  }
+  if (wx.windChillF > 100) {
+    return { msg: '🥵 Heat advisory territory. Keep those water jugs full and watch for heat exhaustion.', bg: '#fff7ed', color: '#c2410c' };
+  }
+  if (wx.windChillF > 90) {
+    return { msg: '☀️ Hot one today. Remind the kids to hydrate early and often.', bg: '#fff7ed', color: '#c2410c' };
+  }
+  if (wx.windKph > 48) {
+    return { msg: '💨 Breezy doesn't cover it — that's a full-on blow. Pop flies are anyone's guess today.', bg: '#f8fafc', color: '#475569' };
+  }
+  if (wx.windKph > 32) {
+    return { msg: '💨 Winds are up. Outfielders better have their legs under them.', bg: '#f8fafc', color: '#475569' };
+  }
+  if (wx.preGameMm > 10) {
+    return { msg: '🌊 Heavy rain before game time. Fields may be unplayable even if skies clear — check with your director.', bg: '#fff0f3', color: '#be123c' };
+  }
+  if (wx.preGameMm > 4) {
+    return { msg: '🌧 Significant pre-game rain. Infield conditions will be a factor regardless of the forecast.', bg: '#fff0f3', color: '#be123c' };
+  }
+  if (surface === 'allDirt' && wx.rainPct > 40) {
+    return { msg: '🟤 All-dirt infields don't drain well. Even moderate rain can make this one a mud bowl.', bg: '#fef9c3', color: '#854d0e' };
+  }
+  if (surface === 'fullTurf' && wx.rainPct > 70) {
+    return { msg: '🟦 Turf drains fast — this one could still go. Final call is the director's.', bg: '#eff6ff', color: '#1d4ed8' };
+  }
+  if (prob >= 90) {
+    return { msg: '✅ Absolutely beautiful. Play ball — no excuses for a bad at-bat today.', bg: '#f0fdf4', color: '#166534' };
+  }
+  if (prob >= 75) {
+    return { msg: '⚾ Conditions look solid. Get those lineups in.', bg: '#f0fdf4', color: '#166534' };
+  }
+  if (prob >= 45) {
+    return { msg: '👀 Keep an eye on it. Could go either way — have a plan B ready.', bg: '#fefce8', color: '#854d0e' };
+  }
+  if (prob >= 20) {
+    return { msg: '🌧 Looking rough. Start making calls and set expectations with parents early.', bg: '#fff0f3', color: '#be123c' };
+  }
+  return { msg: '⛔ High likelihood of cancellation. Don't wait — make the call and get the word out.', bg: '#fff0f3', color: '#be123c' };
+}
+
 function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   var key=prob>=75?'on':prob>=45?'questionable':'cancelled';
   var st=STATUSES[key],sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard;
@@ -697,6 +756,14 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   if(wx.isThunderstorm){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent='WARNING';}
   else if(wx.lightningPotential>10){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent=wx.lightningPotential>100?'HIGH':'POSSIBLE';}
   else{ltngPill.style.display='none';ltngPill.classList.remove('lightning');}
+  // Fun message
+  var fm = getFunMessage(wx, prob, surface);
+  var funEl = document.getElementById('fun-msg');
+  funEl.textContent = fm.msg;
+  funEl.style.background = fm.bg;
+  funEl.style.color = fm.color;
+  funEl.style.display = 'block';
+
   document.getElementById('btn-radar').onclick=function(){openProfile(field,'radar');};
   document.getElementById('btn-rate').onclick=function(){openProfile(field,'rate');};
   card.style.display='block';card.className='';void card.getBoundingClientRect();card.className='result-enter';
