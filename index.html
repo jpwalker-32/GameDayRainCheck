@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Will Easton Play?</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b1929" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Easton Play?" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <meta name="description" content="Real-time rain probability for youth baseball games across Oklahoma and the region." />
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-46C23W9PFV"></script>
   <script>
@@ -53,6 +60,31 @@
   @keyframes popIn   { 0%{transform:scale(0.6);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
   @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
   .result-enter { animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+  /* ── PWA notification banner ── */
+  #notif-banner {
+    display:none; position:fixed; bottom:0; left:0; right:0; z-index:9000;
+    background:#0b1929; border-top:1px solid #1e3a5f;
+    padding:14px 20px; padding-bottom:calc(14px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; gap:12px;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.3);
+    transform:translateY(100%); transition:transform .3s cubic-bezier(0.22,1,0.36,1);
+  }
+  #notif-banner.show { transform:translateY(0); }
+  .notif-icon { font-size:28px; flex-shrink:0; }
+  .notif-text { flex:1; }
+  .notif-title { font-weight:800; font-size:13px; color:#fff; margin-bottom:2px; }
+  .notif-sub { font-size:11px; color:#6b8daa; line-height:1.4; }
+  .notif-yes {
+    padding:9px 16px; border-radius:8px; border:none; background:#00c853;
+    color:#002010; font-family:'Outfit',sans-serif; font-size:13px; font-weight:800;
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+  }
+  .notif-no {
+    padding:9px; border-radius:8px; border:1px solid #1e3a5f; background:transparent;
+    color:#6b8daa; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600;
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+  }
 
   /* ── Nav ── */
   #nav {
@@ -334,6 +366,52 @@
   .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
   #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
 
+  /* ── Submit panel ── */
+  #submit-wrap { max-width:680px; margin:0 auto; padding:24px 16px 72px; }
+  .sub-field { margin-bottom:16px; }
+  .sub-input {
+    width:100%; padding:11px 14px; background:#f8fafc; border:1px solid #cbd5e1;
+    border-radius:8px; color:#0b1929; font-size:14px; font-family:'Outfit',sans-serif;
+    font-weight:500; transition:border-color .15s; box-sizing:border-box;
+  }
+  .sub-input:focus { outline:none; border-color:#00c853; }
+  .sub-type-btn {
+    padding:8px 16px; border-radius:20px; border:1px solid #e2e8f0; background:#fff;
+    color:#475569; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .sub-type-btn:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .sub-type-btn.active { background:rgba(0,200,83,0.1); border-color:#00c853; color:#00a846; }
+  #sub-submit-btn:disabled { background:#e2e8f0; color:#94a3b8; cursor:not-allowed; }
+
+  /* ── Admin panel ── */
+  #admin-wrap { min-height:300px; }
+  .pending-card {
+    background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+    padding:16px; margin-bottom:12px;
+  }
+  .pending-card.approved { border-color:#bbf7d0; background:#f0fdf4; }
+  .pending-card.rejected { border-color:#fecaca; background:#fef2f2; opacity:0.6; }
+  .pending-name { font-family:'Outfit',sans-serif; font-weight:800; font-size:15px; color:#0b1929; }
+  .pending-meta { font-size:12px; color:#64748b; margin-top:3px; margin-bottom:10px; }
+  .pending-detail { font-size:12px; color:#475569; margin-bottom:10px; line-height:1.6; }
+  .pending-actions { display:flex; gap:8px; }
+  .btn-approve {
+    flex:1; padding:9px; border-radius:8px; border:none;
+    background:#00c853; color:#002010; font-family:'Outfit',sans-serif;
+    font-size:13px; font-weight:800; cursor:pointer; transition:all .15s;
+  }
+  .btn-approve:hover { background:#00a846; }
+  .btn-reject {
+    flex:1; padding:9px; border-radius:8px; border:1px solid #fecaca;
+    background:#fff; color:#dc2626; font-family:'Outfit',sans-serif;
+    font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .btn-reject:hover { background:#fef2f2; }
+  .pending-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+  .pending-status.approved { background:#bbf7d0; color:#166534; }
+  .pending-status.rejected { background:#fecaca; color:#991b1b; }
+
   @media(max-width:520px){
     .dt-row { flex-direction:column; }
     #field-grid { grid-template-columns:1fr; }
@@ -347,6 +425,17 @@
   <span class="logo-a">Will Easton <span>Play?</span></span>
   <span class="nav-sub">Oklahoma &amp; Region</span>
   <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
+</div>
+
+<!-- PWA notification opt-in banner -->
+<div id="notif-banner" role="banner" aria-label="Enable notifications">
+  <div class="notif-icon">🔔</div>
+  <div class="notif-text">
+    <div class="notif-title">Get game day alerts</div>
+    <div class="notif-sub">We'll notify you when rain threatens your game.</div>
+  </div>
+  <button type="button" class="notif-yes" onclick="requestNotifPermission()">Enable</button>
+  <button type="button" class="notif-no" onclick="dismissNotifBanner()">Not now</button>
 </div>
 <div id="tab-bar">
   <button type="button" class="tab-btn active" onclick="switchTab('forecast')">&#9918; Game Forecast</button>
@@ -426,6 +515,10 @@
     </div>
     <div id="result-footer">
     <p id="result-coords"></p>
+    <button type="button" id="share-btn" onclick="shareforecast()" style="display:none;margin-top:12px;width:100%;padding:11px;border-radius:8px;border:none;background:#00c853;color:#002010;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.02em;">
+      &#128279; Share This Forecast
+    </button>
+    <div id="share-copied" style="display:none;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:#00a846;">✓ Link copied to clipboard!</div>
   </div>
 </div>
 
@@ -645,101 +738,149 @@
 
 <script>
 "use strict";
+// ── Supabase config ──
+var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
+
+// ── PWA: VAPID public key ──
+var VAPID_PUBLIC_KEY = 'z4b5o7Lo313TQSjdj67SOjJp8jtda26YsqJrfSjj7ZfkH1hGPlE7GPLJEEv-Q48kqHQVe4m52KK3dc92OXXz7g';
+
+// ── PWA: Service worker registration ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').then(function(reg){
+      console.log('SW registered:', reg.scope);
+      // Show notification banner after 8 seconds if not already decided
+      setTimeout(maybeShowNotifBanner, 8000);
+    }).catch(function(err){
+      console.warn('SW registration failed:', err);
+    });
+  });
+}
+
+function urlBase64ToUint8Array(base64String){
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+  for(var i = 0; i < rawData.length; ++i){ outputArray[i] = rawData.charCodeAt(i); }
+  return outputArray;
+}
+
+// ── Notification banner ──
+function maybeShowNotifBanner(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission !== 'default') return;       // already decided
+  if(localStorage.getItem('notif-dismissed')) return;     // user dismissed
+  var banner = document.getElementById('notif-banner');
+  if(banner){ banner.style.display='flex'; setTimeout(function(){ banner.classList.add('show'); }, 50); }
+}
+
+function dismissNotifBanner(){
+  localStorage.setItem('notif-dismissed', '1');
+  hideBanner();
+}
+
+function hideBanner(){
+  var banner = document.getElementById('notif-banner');
+  if(banner){ banner.classList.remove('show'); setTimeout(function(){ banner.style.display='none'; }, 350); }
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){ hideBanner(); return; }
+  var permission = await Notification.requestPermission();
+  if(permission === 'granted'){
+    hideBanner();
+    await subscribeToPush();
+  } else {
+    hideBanner();
+    localStorage.setItem('notif-dismissed', '1');
+  }
+}
+
+async function subscribeToPush(){
+  try{
+    var reg = await navigator.serviceWorker.ready;
+    var existing = await reg.pushManager.getSubscription();
+    if(existing){ await saveSubscription(existing); return; }
+    var sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    await saveSubscription(sub);
+    console.log('Push subscription saved');
+  }catch(e){
+    console.warn('Push subscription failed:', e);
+  }
+}
+
+async function saveSubscription(sub){
+  var json = sub.toJSON();
+  await supaFetch('push_subscriptions', {
+    method: 'POST',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({
+      endpoint: json.endpoint,
+      p256dh:   json.keys ? json.keys.p256dh   : null,
+      auth:     json.keys ? json.keys.auth      : null,
+      user_agent: navigator.userAgent.substring(0, 200)
+    })
+  });
+}
+
+
+
+async function supaFetch(path, opts){
+  var res = await fetch(SUPA_URL+'/rest/v1/'+path, Object.assign({
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
+  }, opts||{}));
+  return res;
+}
+
+
+
 var REGIONS={OK:[{id:"all",label:"All Regions"},{id:"ne-ok",label:"Northeastern OK"},{id:"c-ok",label:"Central OK"},{id:"se-ok",label:"Southeastern OK"},{id:"w-ok",label:"Western OK"}],AR:[{id:"all",label:"All Regions"},{id:"nw-ar",label:"NW Arkansas"},{id:"fs-ar",label:"Fort Smith"},{id:"c-ar",label:"Central AR"}],TX:[{id:"all",label:"All Regions"},{id:"dfw-tx",label:"DFW"}],KS:[{id:"all",label:"All Regions"},{id:"s-ks",label:"South KS"}],MO:[{id:"all",label:"All Regions"},{id:"sw-mo",label:"SW Missouri"}]};
 var TYPES=[{id:"all",label:"All Types",cls:""},{id:"hs",label:"High School",cls:"type-hs"},{id:"col",label:"College / Univ.",cls:"type-col"},{id:"yr",label:"Youth / Recreation",cls:"type-yr"}];
 var TYPE_LABELS={hs:"High School",col:"College",yr:"Youth / Rec"};
 var TYPE_CLS={hs:"ft-hs",col:"ft-col",yr:"ft-yr"};
 
 var FIELDS=[];
-var SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vRZxDFJM55pQ6yC2dp1qyhv9Vtn4ds53hU_SrsgA9IisqVurStvlA3OhxuNn9wFDw/pub?gid=915517523&single=true&output=csv';
-
-function parseCSV(text){
-  var lines=text.trim().split('\n');
-  var result=[];
-  var typeMap={'youth':'yr','youth / recreation':'yr','youth / rec':'yr',
-               'high school':'hs','hs':'hs','col':'col','college':'col',
-               'college / univ.':'col','university':'col','yr':'yr'};
-  for(var i=1;i<lines.length;i++){
-    var cols=splitCSVLine(lines[i]);
-    if(cols.length<8)continue;
-    var active=cols.length>=11?(cols[10]||'Y').trim().toUpperCase():'Y';
-    if(active==='N')continue;
-    var id=parseInt(cols[0],10);
-    var lat=parseFloat(cols[6]);
-    var lon=parseFloat(cols[7]);
-    if(!id||isNaN(lat)||isNaN(lon))continue;
-    var rawType=(cols[3]||'').trim().toLowerCase();
-    var ftype=typeMap[rawType]||rawType;
-    result.push({
-      id:id, state:(cols[1]||'').trim(), region:(cols[2]||'').trim(),
-      type:ftype, name:(cols[4]||'').trim(), city:(cols[5]||'').trim(),
-      lat:lat, lon:lon,
-      surface:cols.length>=9?(cols[8]||'').trim():'',
-      notes:cols.length>=10?(cols[9]||'').trim():'',
-    });
-  }
-  return result;
-}
-
-function splitCSVLine(line){
-  var cols=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var c=line[i];
-    if(c==='"'){inQ=!inQ;}
-    else if(c===','&&!inQ){cols.push(cur);cur='';}
-    else{cur+=c;}
-  }
-  cols.push(cur);
-  return cols;
-}
 
 async function loadParks(){
   var grid=document.getElementById('field-grid');
-  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#3a5268;">&#8635; Loading ballparks...</div>';
-
-  var baseURL = SHEET_CSV_URL;
-  var proxies = [
-    baseURL,
-    'https://corsproxy.io/?' + encodeURIComponent(baseURL),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseURL),
-    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(baseURL),
-  ];
-
-  var text = null;
-  var lastErr = null;
-  for(var p=0; p<proxies.length; p++){
-    try{
-      var res = await fetch(proxies[p], {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      text = await res.text();
-      if(text && text.length > 10) break;
-    }catch(e){
-      lastErr = e;
-      console.warn('Fetch attempt '+(p+1)+' failed:', e.message);
-    }
-  }
-
-  if(!text){
-    console.error('All fetch attempts failed:', lastErr);
+  grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-size:13px;color:#64748b;">&#8635; Loading ballparks...</div>';
+  try{
+    var res = await supaFetch('parks?select=id,state,region,type,name,city,lat,lon,surface_type,notes&order=name.asc&limit=1000');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var rows = await res.json();
+    if(!rows.length) throw new Error('No parks returned from database.');
+    FIELDS = rows.map(function(r, i){
+      return {
+        _idx: i,
+        id: r.id,
+        state: (r.state||'').trim(),
+        region: (r.region||'').trim(),
+        type: (r.type||'').trim(),
+        name: (r.name||'').trim(),
+        city: (r.city||'').trim(),
+        lat: parseFloat(r.lat),
+        lon: parseFloat(r.lon),
+        surface: (r.surface_type||'').trim(),
+        notes: (r.notes||'').trim()
+      };
+    });
+    renderGrids();
+  }catch(e){
+    console.error('Park load error:', e);
     grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;font-family:\'Outfit\',sans-serif;">'
       +'<div style="font-size:22px;margin-bottom:8px;">⚠️</div>'
       +'<div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div>'
-      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">This is a CORS restriction when opening the file directly from your desktop.<br>Push to GitHub Pages and it will work automatically.</div>'
+      +'<div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div>'
       +'<button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#0b1929;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button>'
       +'</div>';
-    return;
-  }
-
-  try{
-    var parsed = parseCSV(text);
-    if(parsed.length === 0) throw new Error('Spreadsheet returned 0 parks — check Active column and CSV publish settings.');
-    FIELDS = parsed.map(function(f,i){f._idx=i;return f;});
-    renderGrids();
-  }catch(e){
-    console.error('Park parse error:', e);
-    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:#f87171;">&#9888; ' + e.message + '</div>';
   }
 }
+
 
 var STATUSES={on:{label:"&#9918; Play Ball",sub:"Conditions look favorable",color:"#00c853",glow:"rgba(0,200,83,0.12)"},questionable:{label:"&#9888; Questionable",sub:"Monitor conditions closely",color:"#ffd600",glow:"rgba(255,214,0,0.12)"},cancelled:{label:"&#127783; Likely Cancelled",sub:"High chance of rain or delay",color:"#ff3d57",glow:"rgba(255,61,87,0.12)"}};
 var SURFACE_CFG={standard:{duringMult:1.00,preMult:1.00,windMult:1.00},allDirt:{duringMult:1.20,preMult:1.45,windMult:0.85},infieldTurf:{duringMult:0.72,preMult:0.45,windMult:1.00},fullTurf:{duringMult:0.38,preMult:0.10,windMult:1.00}};
@@ -836,7 +977,7 @@ function checkReady(){var ok=document.getElementById("date-input").value&&select
     activeState=this.value;activeRegion="all";activeType="all";
     buildRegionChips();buildTypeChips();renderGrids();
   });
-  buildRegionChips();buildTypeChips();loadParks();
+  buildRegionChips();buildTypeChips();loadParks().then(loadFromUrlParams);
   document.getElementById("submit-btn").addEventListener("click",doCheck);
   // Modal backdrop click
   document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
@@ -895,6 +1036,14 @@ async function doCheck(){
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
     var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
+    // Update URL with shareable params
+    var shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set('park', field.id);
+    shareUrl.searchParams.set('date', dateVal);
+    shareUrl.searchParams.set('time', document.getElementById('time-sel').value);
+    window.history.replaceState({}, '', shareUrl.toString());
+    document.getElementById('share-btn').style.display = 'block';
+    document.getElementById('share-copied').style.display = 'none';
   }catch(e){errBox.textContent="\u26A0 "+e.message;errBox.style.display="block";}
   finally{btn.disabled=false;btn.innerHTML="CHECK PLAY PROBABILITY";}
 }
@@ -950,16 +1099,461 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
 
   card.style.display="block";card.className="";void card.getBoundingClientRect();card.className="result-enter";
   card.scrollIntoView({behavior:"smooth",block:"nearest"});
-}// ── Supabase config ──
-var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
-
-async function supaFetch(path, opts){
-  var res = await fetch(SUPA_URL+'/rest/v1/'+path, Object.assign({
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
-  }, opts||{}));
-  return res;
 }
+// ── Rating state ──
+var currentProfileField = null;
+var catStars = {surface:0, tournament:0, league:0};
+
+function selectCatStar(cat, n){
+  catStars[cat] = n;
+  document.querySelectorAll('.star-sel-btn[data-cat="'+cat+'"]').forEach(function(b){
+    b.classList.toggle('active', Number(b.dataset.val) <= n);
+  });
+  checkRatingReady();
+}
+
+function checkRatingReady(){
+  // At least one category must be rated
+  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
+  document.getElementById('submit-rating-btn').disabled = !hasAny;
+}
+
+async function loadRatings(parkId, parkName){
+  var summary = document.getElementById('pm-rating-summary');
+  var starsDisplay = document.getElementById('pm-stars-display');
+  var breakdown = document.getElementById('pm-rating-breakdown');
+  summary.textContent = 'Loading...';
+  starsDisplay.innerHTML = '';
+  breakdown.textContent = '';
+  try{
+    var res = await supaFetch('ratings?park_id=eq.'+encodeURIComponent(parkId)+'&select=surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
+    if(!res.ok) throw new Error('fetch failed');
+    var rows = await res.json();
+    if(!rows.length){
+      summary.textContent = 'No ratings yet — be the first!';
+      starsDisplay.innerHTML = '<span style="opacity:0.2">⚾⚾⚾⚾⚾</span>';
+      breakdown.textContent = '';
+      return;
+    }
+
+    function catAvg(key){
+      var vals = rows.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
+      if(!vals.length) return null;
+      return vals.reduce(function(s,v){return s+v;},0)/vals.length;
+    }
+
+    function renderStars(avg){
+      if(avg===null) return '<span style="color:#94a3b8;font-size:12px;">No ratings</span>';
+      var rounded = Math.round(avg);
+      return [1,2,3,4,5].map(function(i){
+        return '<span style="opacity:'+(i<=rounded?'1':'0.2')+'">⚾</span>';
+      }).join('')+' <span style="font-size:12px;color:#64748b;font-weight:600;">'+avg.toFixed(1)+'</span>';
+    }
+
+    var surfAvg = catAvg('surface_stars');
+    var tourAvg = catAvg('tournament_stars');
+    var leagAvg = catAvg('league_stars');
+
+    summary.textContent = rows.length+' rating'+(rows.length!==1?'s':'');
+    var bathAvg = catAvg('bathroom_stars');
+    var concAvg = catAvg('concession_stars');
+    starsDisplay.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏟 Playing Surface</span>'+renderStars(surfAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">📋 Tournament Dir.</span>'+renderStars(tourAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🏆 League Director</span>'+renderStars(leagAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🚻 Bathrooms</span>'+renderStars(bathAvg)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;min-width:130px;">🌭 Concessions</span>'+renderStars(concAvg)+'</div>'
+      +'</div>';
+  }catch(e){
+    summary.textContent = 'Could not load ratings.';
+  }
+}
+
+async function submitRating(){
+  var hasAny = catStars.surface>0||catStars.tournament>0||catStars.league>0||catStars.bathrooms>0||catStars.concessions>0;
+  if(!hasAny||!currentProfileField) return;
+  var btn = document.getElementById('submit-rating-btn');
+  var msg = document.getElementById('rating-msg');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try{
+    var payload = {
+      park_id: currentProfileField.id,
+      park_name: currentProfileField.name,
+      surface_stars: catStars.surface||null,
+      tournament_stars: catStars.tournament||null,
+      league_stars: catStars.league||null,
+      bathroom_stars: catStars.bathrooms||null,
+      concession_stars: catStars.concessions||null
+    };
+    var res = await supaFetch('ratings', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('Submit failed');
+    msg.style.color='#00a846'; msg.textContent='✓ Rating submitted — thanks!'; msg.style.display='block';
+    catStars={surface:0,tournament:0,league:0};
+    document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
+    await loadRatings(currentProfileField.id, currentProfileField.name);
+    btn.textContent='Submit Rating';
+  }catch(e){
+    msg.style.color='#dc2626'; msg.textContent='⚠ Could not submit. Please try again.'; msg.style.display='block';
+    btn.disabled=false; btn.textContent='Submit Rating';
+  }
+}
+
+function openProfile(field, mode){
+  currentProfileField = field;
+  catStars={surface:0,tournament:0,league:0,bathrooms:0,concessions:0};
+  document.querySelectorAll('.star-sel-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('submit-rating-btn').disabled=true;
+  document.getElementById('rating-msg').style.display='none';
+  document.getElementById('submit-rating-btn').textContent='Submit Rating';
+
+  document.getElementById('pm-name').textContent = field.name;
+  document.getElementById('pm-city').textContent = field.city + (field.state ? ', '+field.state : '');
+
+  var radarUrl = 'https://www.rainviewer.com/map.html?loc='+field.lat+','+field.lon+',10&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&rmt=4&c=3&o=83&lm=1&th=0&sm=1&sn=1';
+  document.getElementById('radar-iframe').src = radarUrl;
+
+  loadRatings(field.id, field.name);
+  document.getElementById('profile-modal').style.display='block';
+  document.body.style.overflow='hidden';
+
+  setTimeout(function(){
+    if(mode==='rate'){
+      var rateEl=document.getElementById('pm-rate-section');
+      if(rateEl) rateEl.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }, 120);
+}
+function closeProfile(){
+  document.getElementById('profile-modal').style.display='none';
+  document.body.style.overflow='';
+  document.getElementById('radar-iframe').src='';
+}
+
+  // Modal backdrop click
+  document.getElementById("profile-modal").addEventListener("click",function(e){ if(e.target===this) closeProfile(); });
+
+
+// ── Add a Ballpark ──
+var subMap = null, subMarker = null, subType = null;
+var subMapInitialized = false;
+
+function initSubMap(){
+  if(subMapInitialized) return;
+  subMapInitialized = true;
+  subMap = L.map('sub-map').setView([35.5, -97.5], 7); // Center on Oklahoma
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap contributors', maxZoom:19
+  }).addTo(subMap);
+  subMap.on('click', function(e){ placeSubPin(e.latlng.lat, e.latlng.lng); });
+  // Fix Leaflet tile sizing after tab show
+  setTimeout(function(){ subMap.invalidateSize(); }, 50);
+}
+
+function placeSubPin(lat, lng){
+  if(subMarker) subMap.removeLayer(subMarker);
+  subMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className:'',
+      html:'<div style="width:28px;height:28px;background:#00c853;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+      iconSize:[28,28], iconAnchor:[14,14]
+    })
+  }).addTo(subMap);
+  document.getElementById('sub-lat').value = lat.toFixed(6);
+  document.getElementById('sub-lon').value = lng.toFixed(6);
+  document.getElementById('sub-lat-display').textContent = lat.toFixed(6)+'°N';
+  document.getElementById('sub-lon-display').textContent = Math.abs(lng).toFixed(6)+'°W';
+  document.getElementById('sub-coords-display').style.display = 'block';
+  checkSubReady();
+}
+
+async function searchMapLocation(){
+  var q = document.getElementById('map-search-input').value.trim();
+  if(!q) return;
+  var btn = document.querySelector('#sub-map').previousElementSibling.querySelector('button');
+  btn.textContent = '⏳ Searching...'; btn.disabled = true;
+  try{
+    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q), {
+      headers:{'Accept-Language':'en-US'}
+    });
+    var results = await res.json();
+    if(!results.length){ alert('Location not found. Try a more specific search.'); return; }
+    var r = results[0];
+    subMap.setView([r.lat, r.lon], 15);
+    placeSubPin(parseFloat(r.lat), parseFloat(r.lon));
+  }catch(e){
+    alert('Search failed. Please try again.');
+  }finally{
+    btn.textContent = '🔍 Search'; btn.disabled = false;
+  }
+}
+
+function selectSubType(el){
+  subType = el.dataset.type;
+  document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  checkSubReady();
+}
+
+function checkSubReady(){
+  var name = document.getElementById('sub-name').value.trim();
+  var city = document.getElementById('sub-city').value.trim();
+  var state = document.getElementById('sub-state').value;
+  var lat  = document.getElementById('sub-lat').value;
+  var ok = name && city && state && subType && lat;
+  document.getElementById('sub-submit-btn').disabled = !ok;
+}
+
+// Wire up live validation on text inputs
+document.addEventListener('DOMContentLoaded', function(){
+  ['sub-name','sub-city','sub-state'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', checkSubReady);
+  });
+});
+
+async function submitPark(){
+  var btn = document.getElementById('sub-submit-btn');
+  var msg = document.getElementById('sub-msg');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try{
+    var payload = {
+      park_name: document.getElementById('sub-name').value.trim(),
+      city: document.getElementById('sub-city').value.trim(),
+      state: document.getElementById('sub-state').value,
+      type: subType,
+      lat: parseFloat(document.getElementById('sub-lat').value),
+      lon: parseFloat(document.getElementById('sub-lon').value),
+      surface_type: document.getElementById('sub-surface').value || null,
+      notes: document.getElementById('sub-notes').value.trim() || null
+    };
+    var res = await supaFetch('pending_parks', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('Submit failed');
+    msg.style.color='#00a846';
+    msg.innerHTML='✓ Ballpark submitted — thank you! It will appear in the app after review.';
+    msg.style.display='block';
+    // Reset form
+    document.getElementById('sub-name').value='';
+    document.getElementById('sub-city').value='';
+    document.getElementById('sub-state').value='';
+    document.getElementById('sub-surface').value='';
+    document.getElementById('sub-notes').value='';
+    document.getElementById('map-search-input').value='';
+    document.getElementById('sub-coords-display').style.display='none';
+    if(subMarker){ subMap.removeLayer(subMarker); subMarker=null; }
+    subType=null;
+    document.querySelectorAll('.sub-type-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.textContent='Submit Ballpark';
+  }catch(e){
+    msg.style.color='#dc2626';
+    msg.textContent='⚠ Submission failed. Please try again.';
+    msg.style.display='block';
+    btn.disabled=false; btn.textContent='Submit Ballpark';
+  }
+}
+
+// ── Shareable forecast link ──
+function shareforecast(){
+  var url = window.location.href;
+  var copied = document.getElementById('share-copied');
+  var btn = document.getElementById('share-btn');
+
+  // Native share sheet on mobile
+  if(navigator.share){
+    var field = FIELDS.find(function(f){ return String(f.id)===String(selectedFieldId); });
+    navigator.share({
+      title: 'Will Easton Play?',
+      text: field ? 'Check the rain forecast for '+field.name : 'Check the rain forecast',
+      url: url
+    }).catch(function(){});
+    return;
+  }
+  // Clipboard fallback
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){
+      copied.style.display='block';
+      btn.innerHTML='&#10003; Copied!';
+      setTimeout(function(){
+        copied.style.display='none';
+        btn.innerHTML='&#128279; Share This Forecast';
+      }, 3000);
+    });
+  } else {
+    window.prompt('Copy this link:', url);
+  }
+}
+
+// ── Deep link: auto-load from URL params ──
+function loadFromUrlParams(){
+  var params = new URLSearchParams(window.location.search);
+  var parkId  = params.get('park');
+  var date    = params.get('date');
+  var timeIdx = params.get('time');
+  if(!parkId) return;
+
+  if(date){ var di=document.getElementById('date-input'); if(di) di.value=date; }
+  if(timeIdx!==null){ var ts=document.getElementById('time-sel'); if(ts) ts.value=timeIdx; }
+
+  function trySelect(){
+    var field = FIELDS.find(function(f){ return String(f.id)===String(parkId); });
+    if(!field){
+      if(trySelect._n < 30){ trySelect._n++; setTimeout(trySelect, 200); }
+      return;
+    }
+    selectedFieldId = field.id;
+    syncSelected();
+    checkReady();
+    // Scroll field card into view
+    var card = document.querySelector('.field-btn[data-id="'+field.id+'"]');
+    if(card) card.scrollIntoView({behavior:'smooth', block:'nearest'});
+    setTimeout(function(){ document.getElementById('submit-btn').click(); }, 300);
+  }
+  trySelect._n = 0;
+  trySelect();
+}
+
+var rankingsLoaded = false;
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1) b.classList.add('active');
+  });
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='rankings' && !rankingsLoaded){ loadRankings(); rankingsLoaded=true; }
+  if(tab==='submit'){ setTimeout(initSubMap, 50); }
+}
+
+// ── Rankings ──
+var activeRankCat = 'overall';
+
+function switchRankCat(cat){
+  activeRankCat = cat;
+  document.querySelectorAll('.rank-tab').forEach(function(b){
+    b.classList.remove('active');
+    if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1) b.classList.add('active');
+  });
+  renderRankings(window._rankData || []);
+}
+
+async function loadRankings(){
+  document.getElementById('rankings-loading').style.display='block';
+  document.getElementById('rankings-empty').style.display='none';
+  document.getElementById('rankings-error').style.display='none';
+  document.getElementById('rankings-list').innerHTML='';
+  try{
+    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
+    if(!res.ok) throw new Error('fetch failed');
+    var rows = await res.json();
+    window._rankData = rows;
+    document.getElementById('rankings-loading').style.display='none';
+    renderRankings(rows);
+  }catch(e){
+    document.getElementById('rankings-loading').style.display='none';
+    document.getElementById('rankings-error').style.display='block';
+    console.error('Rankings load error:', e);
+  }
+}
+
+function renderRankings(rows){
+  var list = document.getElementById('rankings-list');
+  var empty = document.getElementById('rankings-empty');
+  list.innerHTML = '';
+
+  // Group by park_id
+  var parks = {};
+  rows.forEach(function(r){
+    if(!parks[r.park_id]) parks[r.park_id] = {name:r.park_name, ratings:[]};
+    parks[r.park_id].ratings.push(r);
+  });
+
+  var MIN_RATINGS = 3;
+
+  function avg(arr, key){
+    var vals = arr.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
+    if(vals.length < 1) return null;
+    return vals.reduce(function(s,v){return s+v;},0)/vals.length;
+  }
+
+  // Build scored list
+  var scored = Object.keys(parks).map(function(pid){
+    var p = parks[pid];
+    var surfAvg  = avg(p.ratings, 'surface_stars');
+    var tourAvg  = avg(p.ratings, 'tournament_stars');
+    var leagAvg  = avg(p.ratings, 'league_stars');
+    // Overall = average of available category averages
+    var bathAvg  = avg(p.ratings, 'bathroom_stars');
+    var concAvg  = avg(p.ratings, 'concession_stars');
+    var cats = [surfAvg, tourAvg, leagAvg, bathAvg, concAvg].filter(function(v){return v!==null;});
+    var overall = cats.length ? cats.reduce(function(s,v){return s+v;},0)/cats.length : null;
+    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg, bathrooms:bathAvg, concessions:concAvg};
+  });
+
+  // Filter by active category having enough ratings
+  var catKeyMap = {surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
+  var catKey = activeRankCat==='overall' ? null : catKeyMap[activeRankCat];
+  var filtered = scored.filter(function(p){
+    if(activeRankCat==='overall') return p.count >= MIN_RATINGS && p.overall !== null;
+    var vals = rows.filter(function(r){return String(r.park_id)===String(p.pid) && r[catKey]!==null;});
+    return vals.length >= MIN_RATINGS;
+  });
+
+  // Sort
+  filtered.sort(function(a,b){
+    var av = activeRankCat==='overall' ? a.overall : a[activeRankCat];
+    var bv = activeRankCat==='overall' ? b.overall : b[activeRankCat];
+    return (bv||0)-(av||0);
+  });
+
+  if(!filtered.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+
+  function starsHtml(val){
+    if(val===null) return '<span style="color:#e2e8f0;font-size:11px;">—</span>';
+    var r = Math.round(val);
+    return [1,2,3,4,5].map(function(i){return '<span style="opacity:'+(i<=r?'1':'0.15')+';font-size:13px;">⚾</span>';}).join('');
+  }
+
+  filtered.forEach(function(p, idx){
+    var rank = idx+1;
+    var score = activeRankCat==='overall' ? p.overall : p[activeRankCat];
+    var card = document.createElement('div');
+    card.className = 'rank-card';
+    // Find the field in FIELDS for city info
+    var field = FIELDS.find(function(f){return String(f.id)===String(p.pid);});
+    var cityStr = field ? field.city+(field.state?', '+field.state:'') : '';
+    card.innerHTML =
+      '<div class="rank-num'+(rank<=3?' top3':'')+'">'+rank+'</div>'
+      +'<div class="rank-info">'
+        +'<div class="rank-name">'+p.name+'</div>'
+        +(cityStr?'<div class="rank-city">'+cityStr+'</div>':'')
+        +'<div class="rank-cats">'
+          +'<span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span>'
+          +'<span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span>'
+          +'<span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span>'
+          +'<span class="rank-cat-pill">🚻 '+starsHtml(p.bathrooms)+'</span>'
+          +'<span class="rank-cat-pill">🌭 '+starsHtml(p.concessions)+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="rank-right">'
+        +'<div class="rank-score">'+(score!==null?score.toFixed(1):'—')+'</div>'
+        +'<div class="rank-count">'+p.count+' rating'+(p.count!==1?'s':'')+'</div>'
+      +'</div>';
+    list.appendChild(card);
+  });
+}
+
 
 // ── Rating state ──
 var currentProfileField = null;
@@ -1221,141 +1815,6 @@ async function submitPark(){
   }
 }
 
-
-var rankingsLoaded = false;
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  // Activate matching tab button
-  document.querySelectorAll('.tab-btn').forEach(function(b){
-    if(b.getAttribute('onclick').indexOf("'"+tab+"'")!==-1) b.classList.add('active');
-  });
-  document.getElementById('panel-'+tab).classList.add('active');
-  if(tab==='rankings' && !rankingsLoaded){ loadRankings(); rankingsLoaded=true; }
-  if(tab==='submit'){ setTimeout(initSubMap, 50); }
-}
-
-// ── Rankings ──
-var activeRankCat = 'overall';
-
-function switchRankCat(cat){
-  activeRankCat = cat;
-  document.querySelectorAll('.rank-tab').forEach(function(b){
-    b.classList.remove('active');
-    if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1) b.classList.add('active');
-  });
-  renderRankings(window._rankData || []);
-}
-
-async function loadRankings(){
-  document.getElementById('rankings-loading').style.display='block';
-  document.getElementById('rankings-empty').style.display='none';
-  document.getElementById('rankings-error').style.display='none';
-  document.getElementById('rankings-list').innerHTML='';
-  try{
-    var res = await supaFetch('ratings?select=park_id,park_name,surface_stars,tournament_stars,league_stars,bathroom_stars,concession_stars');
-    if(!res.ok) throw new Error('fetch failed');
-    var rows = await res.json();
-    window._rankData = rows;
-    document.getElementById('rankings-loading').style.display='none';
-    renderRankings(rows);
-  }catch(e){
-    document.getElementById('rankings-loading').style.display='none';
-    document.getElementById('rankings-error').style.display='block';
-    console.error('Rankings load error:', e);
-  }
-}
-
-function renderRankings(rows){
-  var list = document.getElementById('rankings-list');
-  var empty = document.getElementById('rankings-empty');
-  list.innerHTML = '';
-
-  // Group by park_id
-  var parks = {};
-  rows.forEach(function(r){
-    if(!parks[r.park_id]) parks[r.park_id] = {name:r.park_name, ratings:[]};
-    parks[r.park_id].ratings.push(r);
-  });
-
-  var MIN_RATINGS = 3;
-
-  function avg(arr, key){
-    var vals = arr.map(function(r){return r[key];}).filter(function(v){return v!==null&&v!==undefined;});
-    if(vals.length < 1) return null;
-    return vals.reduce(function(s,v){return s+v;},0)/vals.length;
-  }
-
-  // Build scored list
-  var scored = Object.keys(parks).map(function(pid){
-    var p = parks[pid];
-    var surfAvg  = avg(p.ratings, 'surface_stars');
-    var tourAvg  = avg(p.ratings, 'tournament_stars');
-    var leagAvg  = avg(p.ratings, 'league_stars');
-    // Overall = average of available category averages
-    var bathAvg  = avg(p.ratings, 'bathroom_stars');
-    var concAvg  = avg(p.ratings, 'concession_stars');
-    var cats = [surfAvg, tourAvg, leagAvg, bathAvg, concAvg].filter(function(v){return v!==null;});
-    var overall = cats.length ? cats.reduce(function(s,v){return s+v;},0)/cats.length : null;
-    return {pid:pid, name:p.name, count:p.ratings.length, overall:overall, surface:surfAvg, tournament:tourAvg, league:leagAvg, bathrooms:bathAvg, concessions:concAvg};
-  });
-
-  // Filter by active category having enough ratings
-  var catKeyMap = {surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
-  var catKey = activeRankCat==='overall' ? null : catKeyMap[activeRankCat];
-  var filtered = scored.filter(function(p){
-    if(activeRankCat==='overall') return p.count >= MIN_RATINGS && p.overall !== null;
-    var vals = rows.filter(function(r){return String(r.park_id)===String(p.pid) && r[catKey]!==null;});
-    return vals.length >= MIN_RATINGS;
-  });
-
-  // Sort
-  filtered.sort(function(a,b){
-    var av = activeRankCat==='overall' ? a.overall : a[activeRankCat];
-    var bv = activeRankCat==='overall' ? b.overall : b[activeRankCat];
-    return (bv||0)-(av||0);
-  });
-
-  if(!filtered.length){
-    empty.style.display='block';
-    return;
-  }
-  empty.style.display='none';
-
-  function starsHtml(val){
-    if(val===null) return '<span style="color:#e2e8f0;font-size:11px;">—</span>';
-    var r = Math.round(val);
-    return [1,2,3,4,5].map(function(i){return '<span style="opacity:'+(i<=r?'1':'0.15')+';font-size:13px;">⚾</span>';}).join('');
-  }
-
-  filtered.forEach(function(p, idx){
-    var rank = idx+1;
-    var score = activeRankCat==='overall' ? p.overall : p[activeRankCat];
-    var card = document.createElement('div');
-    card.className = 'rank-card';
-    // Find the field in FIELDS for city info
-    var field = FIELDS.find(function(f){return String(f.id)===String(p.pid);});
-    var cityStr = field ? field.city+(field.state?', '+field.state:'') : '';
-    card.innerHTML =
-      '<div class="rank-num'+(rank<=3?' top3':'')+'">'+rank+'</div>'
-      +'<div class="rank-info">'
-        +'<div class="rank-name">'+p.name+'</div>'
-        +(cityStr?'<div class="rank-city">'+cityStr+'</div>':'')
-        +'<div class="rank-cats">'
-          +'<span class="rank-cat-pill">🏟 '+starsHtml(p.surface)+'</span>'
-          +'<span class="rank-cat-pill">📋 '+starsHtml(p.tournament)+'</span>'
-          +'<span class="rank-cat-pill">🏆 '+starsHtml(p.league)+'</span>'
-          +'<span class="rank-cat-pill">🚻 '+starsHtml(p.bathrooms)+'</span>'
-          +'<span class="rank-cat-pill">🌭 '+starsHtml(p.concessions)+'</span>'
-        +'</div>'
-      +'</div>'
-      +'<div class="rank-right">'
-        +'<div class="rank-score">'+(score!==null?score.toFixed(1):'—')+'</div>'
-        +'<div class="rank-count">'+p.count+' rating'+(p.count!==1?'s':'')+'</div>'
-      +'</div>';
-    list.appendChild(card);
-  });
-}
 
 
 </script>
