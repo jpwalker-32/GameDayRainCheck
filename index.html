@@ -235,19 +235,16 @@
       <div class="ib-sub">Add Will Easton Play? to your home screen for quick access.</div>
     </div>
   </div>
-  <div class="ib-steps" id="ib-steps-ios" style="display:none;">
-    <div class="ib-step"><div class="ib-step-num">1</div><div>Tap the <span class="ib-badge">&#x23F1; Share</span> button at the bottom of your browser</div></div>
-    <div class="ib-step"><div class="ib-step-num">2</div><div>Scroll down and tap <span class="ib-badge">&#xFF0B; Add to Home Screen</span></div></div>
-    <div class="ib-step"><div class="ib-step-num">3</div><div>Tap <span class="ib-badge">Add</span> — the app icon will appear on your home screen</div></div>
+  <!-- Android: one-tap install button -->
+  <div id="ib-android" style="display:none;">
+    <button id="ib-install-btn" onclick="triggerInstall()" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--green);color:#002010;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:10px;">&#xFF0B; Add to Home Screen</button>
   </div>
-  <div class="ib-steps" id="ib-steps-android" style="display:none;">
-    <div class="ib-step"><div class="ib-step-num">1</div><div>Tap the <span class="ib-badge">&#8942; Menu</span> button in the top right of Chrome</div></div>
-    <div class="ib-step"><div class="ib-step-num">2</div><div>Tap <span class="ib-badge">&#xFF0B; Add to Home screen</span></div></div>
-    <div class="ib-step"><div class="ib-step-num">3</div><div>Tap <span class="ib-badge">Add</span> to confirm</div></div>
-  </div>
-  <div class="ib-steps" id="ib-steps-generic" style="display:none;">
-    <div class="ib-step"><div class="ib-step-num">1</div><div>Open this page in your mobile browser (Safari on iPhone, Chrome on Android)</div></div>
-    <div class="ib-step"><div class="ib-step-num">2</div><div>Use your browser's <span class="ib-badge">Add to Home Screen</span> option in the share or menu</div></div>
+  <!-- iOS: two simple steps -->
+  <div id="ib-ios" style="display:none;">
+    <div class="ib-steps">
+      <div class="ib-step"><div class="ib-step-num">1</div><div>Tap the <span class="ib-badge">&#x2B06; Share</span> button at the bottom of Safari</div></div>
+      <div class="ib-step"><div class="ib-step-num">2</div><div>Tap <span class="ib-badge">&#xFF0B; Add to Home Screen</span> then <span class="ib-badge">Add</span></div></div>
+    </div>
   </div>
   <button class="ib-dismiss" onclick="dismissInstallBanner()">Got it — don't show again</button>
 </div>
@@ -504,21 +501,46 @@
 // ══════════════════════════════════════════
 //  INSTALL BANNER
 // ══════════════════════════════════════════
+var _installPrompt = null;
+
+// Android: capture the native install prompt
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _installPrompt = e;
+  if(!window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+    document.getElementById('ib-android').style.display = 'block';
+    document.getElementById('ib-ios').style.display = 'none';
+    document.getElementById('install-banner').style.display = 'block';
+  }
+});
+
+// Hide banner once installed
+window.addEventListener('appinstalled', function() {
+  document.getElementById('install-banner').style.display = 'none';
+});
+
 (function showInstallBanner(){
-  // Don't show if already dismissed or if running as installed PWA
-  
-  if(window.navigator.standalone) return; // iOS installed
-  if(window.matchMedia('(display-mode: standalone)').matches) return; // Android installed
-  // Only show on mobile
-  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if(!isMobile) return;
+  if(window.navigator.standalone) return; // iOS already installed
+  if(window.matchMedia('(display-mode: standalone)').matches) return; // Android already installed
   var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  var isAndroid = /Android/i.test(navigator.userAgent);
-  document.getElementById('ib-steps-ios').style.display = isIOS ? 'block' : 'none';
-  document.getElementById('ib-steps-android').style.display = isAndroid ? 'block' : 'none';
-  document.getElementById('ib-steps-generic').style.display = (!isIOS && !isAndroid) ? 'block' : 'none';
-  document.getElementById('install-banner').style.display = 'block';
+  if(isIOS) {
+    document.getElementById('ib-ios').style.display = 'block';
+    document.getElementById('ib-android').style.display = 'none';
+    document.getElementById('install-banner').style.display = 'block';
+  }
+  // Android shows via beforeinstallprompt above
 })();
+
+function triggerInstall() {
+  if(!_installPrompt) return;
+  _installPrompt.prompt();
+  _installPrompt.userChoice.then(function(result) {
+    if(result.outcome === 'accepted') {
+      document.getElementById('install-banner').style.display = 'none';
+    }
+    _installPrompt = null;
+  });
+}
 
 function dismissInstallBanner(){
   document.getElementById('install-banner').style.display = 'none';
