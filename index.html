@@ -1013,8 +1013,25 @@ async function approvepark(id,name,city,state,type,lat,lon,surface,notes){
   var approveBtn=document.getElementById('approve-'+id);
   var rejectBtn=document.getElementById('reject-'+id);
   var msg=document.getElementById('admin-msg-'+id);
+  // Prevent double-submit
+  var cardEl2=document.getElementById('pending-'+id);
+  if(cardEl2&&cardEl2.dataset.approved==='1'){return;}
   approveBtn.disabled=true;rejectBtn.disabled=true;approveBtn.textContent='Approving...';
   try{
+    // Check for nearby duplicate (within ~0.005 degrees ≈ 500m)
+    var latTol=0.005,lonTol=0.005;
+    var nearbyRes=await supaFetch('parks?lat=gte.'+(lat-latTol)+'&lat=lte.'+(lat+latTol)+'&lon=gte.'+(lon-lonTol)+'&lon=lte.'+(lon+lonTol)+'&select=id,name,city&limit=5');
+    if(nearbyRes.ok){
+      var nearby=await nearbyRes.json();
+      if(nearby.length){
+        var names=nearby.map(function(p){return '"'+p.name+' ('+p.city+')"';}).join(', ');
+        var proceed=confirm('⚠ Possible duplicate detected!\n\nNearby park(s) already in database:\n'+names+'\n\nApprove anyway?');
+        if(!proceed){
+          approveBtn.disabled=false;rejectBtn.disabled=false;approveBtn.textContent='✓ Approve';
+          return;
+        }
+      }
+    }
     // Insert into parks table
     var parkPayload={name:name,city:city,state:state,type:type,lat:lat,lon:lon,surface_type:surface||null,notes:notes||null,active:'Y',region:regionForState(state)};
     var r1=await supaFetch('parks',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(parkPayload)});
@@ -1022,8 +1039,14 @@ async function approvepark(id,name,city,state,type,lat,lon,surface,notes){
     // Delete from pending
     var r2=await supaFetch('pending_parks?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}});
     if(!r2.ok)throw new Error('Park added but could not remove from pending (HTTP '+r2.status+')');
+    // Hide the card so it can't be approved again
+    var cardEl=document.getElementById('pending-'+id);
+    if(cardEl) setTimeout(function(){cardEl.style.opacity='0';cardEl.style.transition='opacity .3s';setTimeout(function(){cardEl.remove();},300);},800);
     msg.style.color='#00a846';msg.textContent='✓ Approved and added to parks database!';msg.style.display='block';
     approveBtn.style.display='none';rejectBtn.style.display='none';
+    // Mark card as done so page refresh can't re-approve
+    var cardEl=document.getElementById('pending-'+id);
+    if(cardEl){cardEl.dataset.approved='1';cardEl.style.opacity='0.5';}
     // Refresh parks in background
     loadParks();
   }catch(e){
