@@ -6,6 +6,7 @@
   <title>Will Easton Play?</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b1929" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Easton Play?" />
@@ -671,10 +672,10 @@ async function doCheck(){
 function getFunMessage(wx, prob, surface) {
   // Priority order — most dramatic condition wins
   if (wx.isThunderstorm) {
-    return { msg: '⚡ Lightning in the area. No question — game's done. Get inside!', bg: '#fef9c3', color: '#854d0e' };
+    return { msg: '⚡ Lightning in the area. No question — game\'s done. Get inside!', bg: '#fef9c3', color: '#854d0e' };
   }
   if (wx.lightningPotential > 100) {
-    return { msg: '⚡ Significant lightning potential. Don't be the tallest thing on a baseball field.', bg: '#fef9c3', color: '#854d0e' };
+    return { msg: '⚡ Significant lightning potential. Don\'t be the tallest thing on a baseball field.', bg: '#fef9c3', color: '#854d0e' };
   }
   if (wx.windChillF < 32) {
     return { msg: '🥶 Feels like the freezer section. Great day for a Weather POD — and hot cocoa.', bg: '#eff6ff', color: '#1d4ed8' };
