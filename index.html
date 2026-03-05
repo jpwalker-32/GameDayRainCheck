@@ -1368,10 +1368,10 @@ function shareforecast(){
 
   // Native share sheet on mobile
   if(navigator.share){
-    var field = FIELDS.find(function(f){ return String(f.id)===String(selectedFieldId); });
+    var field = FIELDS[selectedFieldId];
     navigator.share({
       title: 'Will Easton Play?',
-      text: field ? 'Check the rain forecast for '+field.name : 'Check the rain forecast',
+      text: field ? 'Check out the game forecast for ' + field.name : 'Check out your game forecast',
       url: url
     }).catch(function(){});
     return;
