@@ -481,35 +481,104 @@ async function loadParks() {
 }
 loadParks();
 
-// ── STEP 1: Director Info ──
+// ── STEP 1: Email Check ──
 function checkStep1() {
-  var name = document.getElementById('dir-name').value.trim();
   var email = document.getElementById('dir-email').value.trim();
-  var valid = name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  document.getElementById('btn-step1').disabled = !valid;
+  document.getElementById('btn-step1').disabled = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 async function submitStep1() {
   var btn = document.getElementById('btn-step1');
-  var msg = document.getElementById('msg-step1');
+  var email = document.getElementById('dir-email').value.trim();
+  dirInfo.email = email;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Checking...';
+  showMsg('msg-step1', '', '');
+  try {
+    // Check if email is in approved directors table
+    var res = await supaFetch('directors?email=eq.' + encodeURIComponent(email) + '&select=id,name,org,approved');
+    if (!res.ok) throw new Error('Could not check approval status.');
+    var rows = await res.json();
+    btn.innerHTML = 'Continue';
+
+    if (!rows.length || !rows[0].approved) {
+      // Not approved — show request form
+      showMsg('msg-step1', rows.length ? '⏳ Your request is pending approval.' : '✉ No account found. Request access below.', 'info');
+      document.getElementById('card-request').classList.remove('locked');
+      document.getElementById('card-request').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      btn.disabled = false;
+      return;
+    }
+
+    // Approved — show name confirmation step
+    document.getElementById('num-1').classList.remove('active');
+    document.getElementById('num-1').classList.add('done');
+    document.getElementById('num-1').textContent = '✓';
+    document.getElementById('card-name').classList.remove('locked');
+    document.getElementById('num-name').classList.add('active');
+    // Pre-fill name from DB
+    document.getElementById('dir-name').value = rows[0].name || '';
+    document.getElementById('dir-org').value = rows[0].org || '';
+    document.getElementById('btn-name').disabled = !rows[0].name;
+    document.getElementById('card-name').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    showMsg('msg-step1', '⚠ ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = 'Continue';
+  }
+}
+
+// ── REQUEST ACCESS ──
+function checkRequest() {
+  document.getElementById('btn-request').disabled = !document.getElementById('req-name').value.trim();
+}
+
+async function submitRequest() {
+  var btn = document.getElementById('btn-request');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Submitting...';
+  showMsg('msg-request', '', '');
+  try {
+    var r = await supaFetch('directors', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        email: dirInfo.email,
+        name: document.getElementById('req-name').value.trim(),
+        org: document.getElementById('req-org').value.trim() || null,
+        notes: document.getElementById('req-notes').value.trim() || null,
+        approved: false
+      })
+    });
+    if (!r.ok) {
+      // Might be duplicate — already requested
+      showMsg('msg-request', "⏳ Request already submitted. We'll email you when approved.", 'info');
+    } else {
+      showMsg('msg-request', "✓ Request submitted! You'll receive an email when your access is approved.", 'success');
+    }
+    btn.style.display = 'none';
+  } catch(e) {
+    showMsg('msg-request', '⚠ ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Access Request';
+  }
+}
+
+// ── NAME CONFIRMATION ──
+function checkName() {
+  document.getElementById('btn-name').disabled = !document.getElementById('dir-name').value.trim();
+}
+
+function submitName() {
   dirInfo.name = document.getElementById('dir-name').value.trim();
   dirInfo.org = document.getElementById('dir-org').value.trim();
-  dirInfo.email = document.getElementById('dir-email').value.trim();
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Saving...';
-  showMsg('msg-step1', '', '');
-  await new Promise(r => setTimeout(r, 300));
-  btn.innerHTML = 'Continue';
-  // Mark step 1 done, unlock step 2
-  document.getElementById('num-1').classList.remove('active');
-  document.getElementById('num-1').classList.add('done');
-  document.getElementById('num-1').textContent = '✓';
+  document.getElementById('num-name').classList.remove('active');
+  document.getElementById('num-name').classList.add('done');
+  document.getElementById('num-name').textContent = '✓';
   document.getElementById('num-2').classList.add('active');
   document.getElementById('card-park').classList.remove('locked');
-  // Set min date to today
   var today = new Date().toISOString().split('T')[0];
   document.getElementById('event-date').min = today;
-  // Scroll to step 2
   document.getElementById('card-park').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
