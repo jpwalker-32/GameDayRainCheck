@@ -47,7 +47,6 @@
   .result-enter{animation:slideUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards;}
   /* NAV */
   #nav{background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
-  .logo-icon{font-size:22px;}
   .logo-a{font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:-.02em;}
   .logo-a span{color:var(--green);}
   .nav-sub{font-size:11px;color:#4a7090;font-weight:500;margin-left:2px;}
@@ -82,7 +81,7 @@
   .tab-btn.active{color:var(--navy);border-bottom-color:var(--green);font-weight:800;}
   .tab-panel{display:none;}.tab-panel.active{display:block;}
   /* MAIN / CARDS */
-  #main{max-width:640px;margin:0 auto;padding:16px 16px 40px;}
+  #main{max-width:640px;margin:0 auto;padding:16px 16px 100px;}
   .gc-card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,0.07);border:1px solid var(--border);}
   #hero{padding:24px 0 16px;text-align:center;}
   #hero h1{font-size:28px;font-weight:800;color:var(--navy);letter-spacing:-.03em;line-height:1.15;}
@@ -134,6 +133,22 @@
   .field-btn.favorited .star-btn,.star-btn:hover{opacity:1;}
   #no-results{display:none;padding:20px;text-align:center;font-size:13px;color:var(--text-3);grid-column:1/-1;}
   #park-count{font-size:11px;color:var(--text-4);font-weight:500;}
+  /* SEARCH BAR */
+  #park-search-wrap{position:relative;margin-bottom:12px;}
+  #park-search{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:14px;background:#fff;color:var(--text-1);}
+  #park-search:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow);}
+  #park-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;}
+  #park-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;font-size:16px;cursor:pointer;padding:2px;display:none;}
+  /* EMPTY STATE */
+  #park-empty-state{display:none;padding:28px 16px;text-align:center;}
+  #park-empty-state .pes-icon{font-size:36px;margin-bottom:10px;}
+  #park-empty-state .pes-title{font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:4px;}
+  #park-empty-state .pes-sub{font-size:13px;color:var(--text-3);}
+  /* STICKY CHECK BUTTON */
+  #sticky-check-wrap{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(240,244,248,0.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);display:none;}
+  #sticky-check-btn{width:100%;max-width:640px;margin:0 auto;display:block;padding:15px;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  #sticky-check-btn:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed;}
+  #sticky-check-btn:not(:disabled){background:var(--green);color:#002010;box-shadow:0 4px 20px rgba(0,200,83,0.3);}
   /* SUBMIT BTN */
   #submit-btn{margin-top:20px;width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
   #submit-btn:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed;}
@@ -174,6 +189,39 @@
   .action-label{font-size:12px;font-weight:700;color:var(--text-2);}
   #result-footer{padding:12px 16px;border-top:1px solid #f1f5f9;}
   #result-coords{font-size:11px;color:var(--text-4);line-height:1.5;white-space:pre-line;}
+  /* DIRECTOR STATUS */
+  #director-status{display:none;margin:0 18px 14px;border-radius:10px;overflow:hidden;border:1px solid transparent;}
+  #director-status.ds-on{background:#f0fdf4;border-color:#86efac;}
+  #director-status.ds-delayed{background:#eff6ff;border-color:#93c5fd;}
+  #director-status.ds-partial{background:#fff7ed;border-color:#fdba74;}
+  #director-status.ds-watch{background:#fefce8;border-color:#fde047;}
+  #director-status.ds-cancelled{background:#fff0f3;border-color:#fecdd3;}
+  .ds-header{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+  .ds-icon{font-size:22px;flex-shrink:0;}
+  .ds-label{font-family:'Outfit',sans-serif;font-weight:800;font-size:15px;}
+  .ds-on .ds-label{color:#166534;}
+  .ds-delayed .ds-label{color:#1d4ed8;}
+  .ds-partial .ds-label{color:#c2410c;}
+  .ds-watch .ds-label{color:#854d0e;}
+  .ds-cancelled .ds-label{color:#be123c;}
+  .ds-sub{font-size:12px;font-weight:500;margin-top:1px;}
+  .ds-on .ds-sub{color:#15803d;}
+  .ds-delayed .ds-sub{color:#1d4ed8;}
+  .ds-partial .ds-sub{color:#c2410c;}
+  .ds-watch .ds-sub{color:#854d0e;}
+  .ds-cancelled .ds-sub{color:#be123c;}
+  .ds-note{padding:10px 14px;border-top:1px solid rgba(0,0,0,0.06);font-size:13px;line-height:1.5;}
+  .ds-on .ds-note{color:#166534;background:rgba(0,0,0,0.02);}
+  .ds-delayed .ds-note{color:#1e40af;background:rgba(0,0,0,0.02);}
+  .ds-partial .ds-note{color:#9a3412;background:rgba(0,0,0,0.02);}
+  .ds-watch .ds-note{color:#713f12;background:rgba(0,0,0,0.02);}
+  .ds-cancelled .ds-note{color:#9f1239;background:rgba(0,0,0,0.02);}
+  .ds-footer{padding:6px 14px 10px;font-size:11px;opacity:0.6;}
+  .ds-on .ds-footer{color:#166534;}
+  .ds-delayed .ds-footer{color:#1d4ed8;}
+  .ds-partial .ds-footer{color:#c2410c;}
+  .ds-watch .ds-footer{color:#854d0e;}
+  .ds-cancelled .ds-footer{color:#be123c;}
   /* RANKINGS */
   #rankings-wrap,#submit-wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px;}
   .rank-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
@@ -219,7 +267,7 @@
 <body>
 
 <div id="nav">
-  <span class="logo-icon">⚾</span>
+  <img src="/icons/icon-192.png" alt="Easton" style="width:32px;height:32px;border-radius:8px;flex-shrink:0;" />
   <span class="logo-a">Will Easton <span>Play?</span></span>
   <span class="nav-sub">Oklahoma &amp; Region</span>
   <button type="button" id="feedback-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSf58wKI76auLRGWvcSnaoYEcl-9pkTh1N-l4-M8MMHMFBiAyQ/viewform?usp=publish-editor','_blank')">&#128172; Feedback</button>
@@ -295,15 +343,25 @@
       <div class="filter-row"><label class="sec-label">Region</label><div class="chip-row" id="region-chips"></div></div>
       <div class="filter-row"><label class="sec-label">Facility Type</label><div class="chip-row" id="type-chips"></div></div>
     </div>
+    <div id="park-search-wrap">
+      <span id="park-search-icon">🔍</span>
+      <input type="text" id="park-search" placeholder="Search ballparks..." autocomplete="off" oninput="onParkSearch()" />
+      <button id="park-search-clear" onclick="clearParkSearch()">&#x2715;</button>
+    </div>
     <div class="grid-hdr">
       <div style="display:flex;align-items:center;gap:8px;"><span class="sec-label" style="margin-bottom:0">Select Ballpark</span><span id="park-count"></span></div>
       <span class="hint-text">&#9734; to pin favorites</span>
+    </div>
+    <div id="park-empty-state">
+      <div class="pes-icon">🗺️</div>
+      <div class="pes-title">Select a region to see ballparks</div>
+      <div class="pes-sub">Choose a state and region above to browse parks near you.</div>
     </div>
     <div id="fav-section" class="hidden"><div style="margin-bottom:8px"><span class="chip fav">&#9733; Favorites</span></div><div id="fav-grid"></div><div style="height:10px"></div></div>
     <div style="margin-bottom:8px"><span class="chip all">All Parks</span></div>
     <div id="field-grid"></div>
     <div id="no-results">No parks match the current filters.</div>
-    <button type="button" id="submit-btn" disabled>Check Play Probability</button>
+    <button type="button" id="submit-btn" disabled style="display:none;">Check Play Probability</button>
   </div>
   </div>
   <div id="error-box"></div>
@@ -340,6 +398,18 @@
     <div id="action-btns">
       <button type="button" class="action-btn" id="btn-radar"><span class="action-icon">📡</span><span class="action-label">Live Radar</span></button>
       <button type="button" class="action-btn" id="btn-rate"><span class="action-icon">⚾</span><span class="action-label">Rate Park</span></button>
+    </div>
+    <!-- Director Official Status -->
+    <div id="director-status">
+      <div class="ds-header">
+        <span class="ds-icon" id="ds-icon"></span>
+        <div>
+          <div class="ds-label" id="ds-label"></div>
+          <div class="ds-sub" id="ds-sub"></div>
+        </div>
+      </div>
+      <div class="ds-note" id="ds-note" style="display:none;"></div>
+      <div class="ds-footer" id="ds-footer"></div>
     </div>
     <div id="result-footer">
       <p id="result-coords"></p>
@@ -515,9 +585,10 @@ window.addEventListener('beforeinstallprompt', function(e) {
   }
 });
 
-// Hide banner once installed
+// Hide banner once installed + track in GA
 window.addEventListener('appinstalled', function() {
   document.getElementById('install-banner').style.display = 'none';
+  gtag('event', 'pwa_install', { event_category: 'PWA', event_label: 'App Installed' });
 });
 
 (function showInstallBanner(){
@@ -585,6 +656,20 @@ var FIELDS=[];
 var selectedFieldId=null,activeState='OK',activeRegion='all',activeType='all',selectedSurface='standard';
 
 // ══════════════════════════════════════════
+//  PARK SEARCH
+// ══════════════════════════════════════════
+function onParkSearch(){
+  var q=document.getElementById('park-search').value.trim();
+  document.getElementById('park-search-clear').style.display=q?'block':'none';
+  renderGrids();
+}
+function clearParkSearch(){
+  document.getElementById('park-search').value='';
+  document.getElementById('park-search-clear').style.display='none';
+  renderGrids();
+}
+
+// ══════════════════════════════════════════
 //  LOAD PARKS FROM SUPABASE
 // ══════════════════════════════════════════
 async function loadParks(){
@@ -642,15 +727,28 @@ function makeBtn(f){
 function renderGrids(){
   var favGrid=document.getElementById('fav-grid'),allGrid=document.getElementById('field-grid');
   var favSect=document.getElementById('fav-section'),noRes=document.getElementById('no-results');
+  var emptyState=document.getElementById('park-empty-state');
   var counter=document.getElementById('park-count');
+  // Show empty state until a region is chosen
+  if(activeRegion==='all' && !document.getElementById('park-search').value.trim()){
+    favGrid.innerHTML='';allGrid.innerHTML='';
+    favSect.classList.add('hidden');
+    noRes.style.display='none';
+    emptyState.style.display='block';
+    counter.textContent='';
+    return;
+  }
+  emptyState.style.display='none';
   favGrid.innerHTML='';allGrid.innerHTML='';
   var favFields=FIELDS.filter(function(f){return favorites.has(f.id);});
   if(favFields.length>0){favSect.classList.remove('hidden');favFields.forEach(function(f){favGrid.appendChild(makeBtn(f));});}
   else{favSect.classList.add('hidden');}
+  var searchQ=(document.getElementById('park-search').value||'').trim().toLowerCase();
   var filtered=FIELDS.filter(function(f){
     if(f.state!==activeState)return false;
     if(activeRegion!=='all'&&f.region!==activeRegion)return false;
     if(activeType!=='all'&&f.type!==activeType)return false;
+    if(searchQ&&!(f.name.toLowerCase().includes(searchQ)||f.city.toLowerCase().includes(searchQ)))return false;
     return true;
   }).sort(function(a,b){return a.city.localeCompare(b.city)||a.name.localeCompare(b.name);});
   counter.textContent=filtered.length+' parks';
@@ -661,7 +759,12 @@ function renderGrids(){
 function syncSelected(){document.querySelectorAll('.field-btn').forEach(function(b){b.classList.toggle('selected',Number(b.dataset.id)===selectedFieldId);});}
 function toggleFav(id){if(favorites.has(id)){favorites.delete(id);}else{favorites.add(id);}saveFavs(favorites);renderGrids();}
 function selectField(idx){selectedFieldId=idx;syncSelected();checkReady();}
-function checkReady(){var ok=document.getElementById('date-input').value&&selectedFieldId!==null;document.getElementById('submit-btn').disabled=!ok;}
+function checkReady(){
+  var ok=document.getElementById('date-input').value&&selectedFieldId!==null;
+  document.getElementById('submit-btn').disabled=!ok;
+  document.getElementById('sticky-check-btn').disabled=!ok;
+  document.getElementById('sticky-check-wrap').style.display='block';
+}
 
 // ══════════════════════════════════════════
 //  INIT
@@ -677,6 +780,7 @@ function checkReady(){var ok=document.getElementById('date-input').value&&select
   });
   document.getElementById('state-sel').addEventListener('change',function(){activeState=this.value;activeRegion='all';activeType='all';buildRegionChips();buildTypeChips();renderGrids();});
   buildRegionChips();buildTypeChips();
+  document.getElementById('sticky-check-wrap').style.display='block';
   loadParks().then(loadFromUrlParams);
   document.getElementById('submit-btn').addEventListener('click',doCheck);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfile();});
@@ -737,12 +841,15 @@ async function doCheck(){
   var btn=document.getElementById('submit-btn'),errBox=document.getElementById('error-box'),resCard=document.getElementById('result-card');
   errBox.style.display='none';resCard.style.display='none';btn.disabled=true;
   btn.innerHTML='<div class="spinner"></div> FETCHING WEATHER...';
+  var sBtn=document.getElementById('sticky-check-btn');
+  sBtn.disabled=true;sBtn.innerHTML='<div class="spinner"></div> FETCHING WEATHER...';
   var dateVal=document.getElementById('date-input').value,timeIdx=Number(document.getElementById('time-sel').value),timeOpt=TIME_OPTIONS[timeIdx];
   var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
     var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
+    loadDirectorStatus(field.id, dateVal);
     // Update URL for sharing
     var shareUrl=new URL(window.location.href);
     shareUrl.searchParams.set('park',field.id);
@@ -752,7 +859,12 @@ async function doCheck(){
     document.getElementById('share-btn').style.display='block';
     document.getElementById('share-copied').style.display='none';
   }catch(e){errBox.textContent='\u26A0 '+e.message;errBox.style.display='block';}
-  finally{btn.disabled=false;btn.innerHTML='CHECK PLAY PROBABILITY';}
+  finally{
+    btn.disabled=false;btn.innerHTML='CHECK PLAY PROBABILITY';
+    var sBtn=document.getElementById('sticky-check-btn');
+    sBtn.innerHTML='CHECK PLAY PROBABILITY';
+    checkReady();
+  }
 }
 
 
@@ -859,6 +971,59 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   document.getElementById('btn-rate').onclick=function(){openProfile(field,'rate');};
   card.style.display='block';card.className='';void card.getBoundingClientRect();card.className='result-enter';
   card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ══════════════════════════════════════════
+//  DIRECTOR STATUS
+// ══════════════════════════════════════════
+var DIRECTOR_STATUSES = {
+  on:        { icon: '✅', label: 'Game On',              sub: 'Conditions look good — play ball',                    cls: 'ds-on' },
+  delayed:   { icon: '⏳', label: 'Delayed',              sub: 'Games delayed — see director notes for details',      cls: 'ds-delayed' },
+  partial:   { icon: '🟠', label: 'Partial Cancellation', sub: 'Not all fields are affected — see director notes',    cls: 'ds-partial' },
+  watch:     { icon: '⚠️', label: 'Watch',                sub: 'Monitor conditions closely',                          cls: 'ds-watch' },
+  cancelled: { icon: '❌', label: 'Cancelled',            sub: 'Event cancelled — check back for updates',            cls: 'ds-cancelled' }
+};
+
+async function loadDirectorStatus(parkId, dateVal) {
+  var el = document.getElementById('director-status');
+  el.style.display = 'none';
+  el.className = '';
+  try {
+    var res = await supaFetch(
+      'director_sessions?park_id=eq.' + encodeURIComponent(parkId) +
+      '&event_date=eq.' + dateVal +
+      '&verified=eq.true' +
+      '&select=game_status,note,name,org,updated_at' +
+      '&order=updated_at.desc&limit=1'
+    );
+    if (!res.ok) return;
+    var rows = await res.json();
+    if (!rows.length) return;
+    var session = rows[0];
+    var st = DIRECTOR_STATUSES[session.game_status];
+    if (!st) return;
+
+    el.className = st.cls;
+    document.getElementById('ds-icon').textContent = st.icon;
+    document.getElementById('ds-label').textContent = st.label;
+    document.getElementById('ds-sub').textContent = st.sub;
+
+    var noteEl = document.getElementById('ds-note');
+    if (session.note && session.note.trim()) {
+      noteEl.textContent = '📋 ' + session.note.trim();
+      noteEl.style.display = 'block';
+    } else {
+      noteEl.style.display = 'none';
+    }
+
+    var by = session.org ? session.name + ' · ' + session.org : session.name;
+    var updated = session.updated_at ? new Date(session.updated_at).toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'}) : '';
+    document.getElementById('ds-footer').textContent = 'Official update from ' + by + (updated ? ' · ' + updated : '');
+
+    el.style.display = 'block';
+  } catch(e) {
+    // Silently fail — director status is optional
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1277,5 +1442,11 @@ async function saveSubscription(sub){
 }
 
 </script>
+
+<!-- Sticky Check Button -->
+<div id="sticky-check-wrap">
+  <button type="button" id="sticky-check-btn" disabled onclick="doCheck()">Check Play Probability</button>
+</div>
+
 </body>
 </html>
