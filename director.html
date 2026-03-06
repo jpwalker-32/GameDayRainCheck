@@ -438,7 +438,17 @@
 // ── CONFIG ──
 var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
-var RESEND_KEY = 're_CTebNeUu_2BUtWdqThpipoqDK51QfRrhv';
+
+async function sendEmail(to, subject, html) {
+  return fetch(SUPA_URL + '/functions/v1/send-email', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + SUPA_KEY
+    },
+    body: JSON.stringify({ to: [to], subject, html })
+  });
+}
 
 function supaFetch(path, opts) {
   return fetch(SUPA_URL + '/rest/v1/' + path, Object.assign({
@@ -588,16 +598,7 @@ async function submitStep2() {
     currentSessionId = sessions[0].id;
 
     // Send OTP email via Resend
-    var emailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'Will Easton Play? <onboarding@resend.dev>',
-        to: [dirInfo.email],
-        subject: 'Your Director Verification Code',
-        html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, eventDate)
-      })
-    });
+    var emailRes = await sendEmail(dirInfo.email, 'Your Director Verification Code', buildOtpEmail(dirInfo.name, otp, selectedPark.name, eventDate));
     if (!emailRes.ok) throw new Error('Could not send verification email. Check your email address.');
 
     // Update UI
@@ -715,16 +716,7 @@ async function resendOtp() {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify({ otp: otp, otp_expires_at: expires })
     });
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'Will Easton Play? <onboarding@resend.dev>',
-        to: [dirInfo.email],
-        subject: 'Your Director Verification Code (Resent)',
-        html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, document.getElementById('event-date').value)
-      })
-    });
+    await sendEmail(dirInfo.email, 'Your Director Verification Code (Resent)', buildOtpEmail(dirInfo.name, otp, selectedPark.name, document.getElementById('event-date').value));
     showMsg('msg-verify', 'New code sent to ' + dirInfo.email, 'info');
     document.querySelectorAll('.otp-digit').forEach(function(d) { d.value = ''; });
     document.querySelectorAll('.otp-digit')[0].focus();
@@ -808,21 +800,13 @@ async function sendBlast() {
     var notifBody = note || ('Official update from ' + dirInfo.name + (dirInfo.org ? ' · ' + dirInfo.org : ''));
     // Send email blast via Resend (placeholder — real push needs server-side VAPID signing)
     // For now send an email summary to the director
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'Will Easton Play? <onboarding@resend.dev>',
-        to: [dirInfo.email],
-        subject: 'Status Posted: ' + notifTitle,
-        html: '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">'
-          + '<h2 style="color:#0b1929;">Status Update Posted ✓</h2>'
-          + '<p style="color:#475569;">Your status <strong>' + notifTitle + '</strong> has been posted and is visible on parent forecasts for <strong>' + escHtml(parkName) + '</strong>.</p>'
-          + (note ? '<p style="color:#475569;"><strong>Note:</strong> ' + escHtml(note) + '</p>' : '')
-          + '<p style="color:#94a3b8;font-size:12px;">Push notifications to followers require server-side setup — coming soon.</p>'
-          + '</div>'
-      })
-    });
+    await sendEmail(dirInfo.email, 'Status Posted: ' + notifTitle,
+      '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">'
+      + '<h2 style="color:#0b1929;">Status Update Posted ✓</h2>'
+      + '<p style="color:#475569;">Your status <strong>' + notifTitle + '</strong> has been posted and is visible on parent forecasts for <strong>' + escHtml(parkName) + '</strong>.</p>'
+      + (note ? '<p style="color:#475569;"><strong>Note:</strong> ' + escHtml(note) + '</p>' : '')
+      + '<p style="color:#94a3b8;font-size:12px;">Push notifications to followers require server-side setup — coming soon.</p>'
+      + '</div>');
     showMsg('msg-status', '✓ Status posted! Push notification blast to followers coming in the next update.', 'success');
   } catch(e) {
     showMsg('msg-status', '⚠ ' + e.message, 'error');
