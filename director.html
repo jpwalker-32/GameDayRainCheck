@@ -287,6 +287,59 @@
     </div>
   </div>
 
+  <!-- ══ REQUEST ACCESS (shown if not approved) ══ -->
+  <div class="step-card locked" id="card-request">
+    <div class="step-header">
+      <div class="step-num" id="num-request" style="background:#f59e0b;color:#fff;">✦</div>
+      <div>
+        <div class="step-title">Request Access</div>
+        <div class="step-sub">Tell us about yourself — we'll review and approve</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="row-2">
+        <div class="field-group">
+          <label for="req-name">Your Name <span style="color:#dc2626">*</span></label>
+          <input type="text" id="req-name" placeholder="e.g. John Smith" maxlength="80" oninput="checkRequest()"/>
+        </div>
+        <div class="field-group">
+          <label for="req-org">Organization <span style="font-weight:400;color:var(--text-4)">(optional)</span></label>
+          <input type="text" id="req-org" placeholder="e.g. Tulsa Baseball" maxlength="80"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="req-notes">Why do you need access?</label>
+        <textarea id="req-notes" rows="2" placeholder="e.g. League director for Pearland Baseball — need to post game status updates for our complex." maxlength="300"></textarea>
+      </div>
+      <button class="btn-primary" id="btn-request" onclick="submitRequest()" disabled>Submit Access Request</button>
+      <div class="msg" id="msg-request"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1b: Approved — confirm name ══ -->
+  <div class="step-card locked" id="card-name">
+    <div class="step-header">
+      <div class="step-num" id="num-name">2</div>
+      <div>
+        <div class="step-title">Confirm Your Name</div>
+        <div class="step-sub">For attribution on your status updates</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="row-2">
+        <div class="field-group">
+          <label for="dir-name">Your Name <span style="color:#dc2626">*</span></label>
+          <input type="text" id="dir-name" placeholder="e.g. John Smith" maxlength="80" oninput="checkName()"/>
+        </div>
+        <div class="field-group">
+          <label for="dir-org">Organization <span style="font-weight:400;color:var(--text-4)">(optional)</span></label>
+          <input type="text" id="dir-org" placeholder="e.g. Tulsa Baseball" maxlength="80"/>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-name" onclick="submitName()" disabled>Continue</button>
+    </div>
+  </div>
+
   <!-- ══ STEP 2: Select Park + Date ══ -->
   <div class="step-card locked" id="card-park">
     <div class="step-header">
