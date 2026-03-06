@@ -1,4 +1,4 @@
-const CACHE = 'wep-v1';
+const CACHE = 'wep-v2';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -24,9 +24,13 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // Only handle GET requests with http/https scheme
   if (e.request.method !== 'GET') return;
   var url = new URL(e.request.url);
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+  // Let Supabase and weather API calls go straight to network
   if (url.hostname.includes('supabase.co') || url.hostname.includes('open-meteo.com')) return;
+
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       var networkFetch = fetch(e.request).then(function(res) {
@@ -35,7 +39,7 @@ self.addEventListener('fetch', function(e) {
           caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
         }
         return res;
-      });
+      }).catch(function() { return cached; });
       return cached || networkFetch;
     })
   );
