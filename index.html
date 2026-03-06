@@ -339,7 +339,7 @@
       </div>
     </div>
     <div id="filter-wrap">
-      <div class="filter-row"><label class="sec-label">State</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas (DFW)</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
+      <div class="filter-row"><label class="sec-label">State</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas (DFW)</option><option value="TX-H">Texas (Houston)</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
       <div class="filter-row"><label class="sec-label">Region</label><div class="chip-row" id="region-chips"></div></div>
       <div class="filter-row"><label class="sec-label">Facility Type</label><div class="chip-row" id="type-chips"></div></div>
     </div>
@@ -639,7 +639,7 @@ function supaFetch(path, opts){
 // ══════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════
-var REGIONS={OK:[{id:'all',label:'All Regions'},{id:'ne-ok',label:'Northeastern OK'},{id:'c-ok',label:'Central OK'},{id:'se-ok',label:'Southeastern OK'},{id:'w-ok',label:'Western OK'}],AR:[{id:'all',label:'All Regions'},{id:'nw-ar',label:'NW Arkansas'},{id:'fs-ar',label:'Fort Smith'},{id:'c-ar',label:'Central AR'}],TX:[{id:'all',label:'All Regions'},{id:'dfw-tx',label:'DFW'}],KS:[{id:'all',label:'All Regions'},{id:'s-ks',label:'South KS'}],MO:[{id:'all',label:'All Regions'},{id:'sw-mo',label:'SW Missouri'}]};
+var REGIONS={"TX-H":[{id:'all',label:'All Regions'},{id:'hou-c',label:'Central Houston'},{id:'hou-w',label:'West Houston / Katy / Cypress'},{id:'hou-n',label:'North Houston / The Woodlands'},{id:'hou-s',label:'South Houston / Pearland / Sugar Land'},{id:'hou-e',label:'East Houston / Pasadena / Baytown'}],OK:[{id:'all',label:'All Regions'},{id:'ne-ok',label:'Northeastern OK'},{id:'c-ok',label:'Central OK'},{id:'se-ok',label:'Southeastern OK'},{id:'w-ok',label:'Western OK'}],AR:[{id:'all',label:'All Regions'},{id:'nw-ar',label:'NW Arkansas'},{id:'fs-ar',label:'Fort Smith'},{id:'c-ar',label:'Central AR'}],TX:[{id:'all',label:'All Regions'},{id:'dfw-tx',label:'DFW'}],KS:[{id:'all',label:'All Regions'},{id:'s-ks',label:'South KS'}],MO:[{id:'all',label:'All Regions'},{id:'sw-mo',label:'SW Missouri'}]};
 var TYPES=[{id:'all',label:'All Types',cls:''},{id:'hs',label:'High School',cls:'type-hs'},{id:'col',label:'College / Univ.',cls:'type-col'},{id:'yr',label:'Youth / Recreation',cls:'type-yr'}];
 var TYPE_LABELS={hs:'High School',col:'College',yr:'Youth / Rec'};
 var TYPE_CLS={hs:'ft-hs',col:'ft-col',yr:'ft-yr'};
@@ -750,7 +750,8 @@ function renderGrids(){
   else{favSect.classList.add('hidden');}
   var searchQ=(document.getElementById('park-search').value||'').trim().toLowerCase();
   var filtered=FIELDS.filter(function(f){
-    if(f.state!==activeState)return false;
+    var stateMatch = activeState==='TX-H' ? f.state==='TX' && ['hou-c','hou-w','hou-n','hou-s','hou-e'].indexOf(f.region)!==-1 : f.state===activeState;
+    if(!stateMatch)return false;
     if(activeRegion!=='all'&&f.region!==activeRegion)return false;
     if(activeType!=='all'&&f.type!==activeType)return false;
     if(searchQ&&!(f.name.toLowerCase().includes(searchQ)||f.city.toLowerCase().includes(searchQ)))return false;
