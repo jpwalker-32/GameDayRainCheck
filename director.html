@@ -592,7 +592,7 @@ async function submitStep2() {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        from: 'Will Easton Play? <onboarding@resend.dev>',
         to: [dirInfo.email],
         subject: 'Your Director Verification Code',
         html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, eventDate)
@@ -719,7 +719,7 @@ async function resendOtp() {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        from: 'Will Easton Play? <onboarding@resend.dev>',
         to: [dirInfo.email],
         subject: 'Your Director Verification Code (Resent)',
         html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, document.getElementById('event-date').value)
@@ -812,7 +812,7 @@ async function sendBlast() {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        from: 'Will Easton Play? <onboarding@resend.dev>',
         to: [dirInfo.email],
         subject: 'Status Posted: ' + notifTitle,
         html: '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">'
