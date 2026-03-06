@@ -514,9 +514,22 @@
     </div>
     <!-- Dashboard (hidden until logged in) -->
     <div id="admin-dashboard" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <!-- Director Requests Section -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div>
-          <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;">Pending Submissions</div>
+          <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:#0b1929;">Director Requests</div>
+          <div id="dir-req-count" style="font-size:13px;color:#64748b;margin-top:2px;"></div>
+        </div>
+        <button type="button" onclick="loadDirectorRequests()" style="padding:8px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Refresh</button>
+      </div>
+      <div id="dir-req-loading" style="padding:16px;text-align:center;font-size:13px;color:#64748b;display:none;">Loading requests...</div>
+      <div id="dir-req-empty" style="padding:16px;text-align:center;font-size:13px;color:#64748b;display:none;">No pending director requests. ✓</div>
+      <div id="dir-req-list"></div>
+      <div style="height:1px;background:#e2e8f0;margin:20px 0;"></div>
+      <!-- Park Submissions Section -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:#0b1929;">Pending Park Submissions</div>
           <div id="admin-count" style="font-size:13px;color:#64748b;margin-top:2px;"></div>
         </div>
         <button type="button" onclick="loadPending()" style="padding:8px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Refresh</button>
@@ -675,6 +688,95 @@ function clearParkSearch(){
 }
 
 // ══════════════════════════════════════════
+//  DIRECTOR REQUESTS
+// ══════════════════════════════════════════
+async function loadDirectorRequests(){
+  if(!adminAuthed)return;
+  var loading=document.getElementById('dir-req-loading');
+  var empty=document.getElementById('dir-req-empty');
+  var list=document.getElementById('dir-req-list');
+  var count=document.getElementById('dir-req-count');
+  loading.style.display='block';empty.style.display='none';list.innerHTML='';
+  try{
+    var res=await supaFetch('directors?approved=eq.false&order=created_at.asc&select=*');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var rows=await res.json();
+    loading.style.display='none';
+    count.textContent=rows.length+' request'+(rows.length!==1?'s':'')+' pending approval';
+    if(!rows.length){empty.style.display='block';return;}
+    rows.forEach(function(r){list.appendChild(makeDirectorRequestCard(r));});
+  }catch(e){
+    loading.style.display='none';
+    list.innerHTML='<div style="padding:20px;text-align:center;color:#dc2626;font-size:13px;">⚠ Could not load requests: '+e.message+'</div>';
+  }
+}
+
+function makeDirectorRequestCard(r){
+  var card=document.createElement('div');
+  card.className='admin-card';
+  card.id='dir-req-'+r.id;
+  var createdAt=r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'Unknown';
+  card.innerHTML=
+    '<div class="admin-card-header">'
+      +'<div style="font-family:Outfit,sans-serif;font-weight:800;font-size:15px;color:#0b1929;">'+escHtml(r.name)+'</div>'
+      +'<div style="font-size:11px;color:#94a3b8;">'+createdAt+'</div>'
+    +'</div>'
+    +'<div class="admin-card-body">'
+      +'<div class="admin-field"><strong>Email:</strong> '+escHtml(r.email)+'</div>'
+      +(r.org?'<div class="admin-field"><strong>Organization:</strong> '+escHtml(r.org)+'</div>':'')
+      +(r.notes?'<div class="admin-field"><strong>Reason:</strong> '+escHtml(r.notes)+'</div>':'')
+      +'<div class="admin-actions">'
+        +'<button type="button" class="btn-approve" id="dir-approve-'+r.id+'" onclick="approveDirector(\'' +r.id+ '\',\'' +escAttr(r.email)+ '\',\'' +escAttr(r.name)+ '\')">✓ Approve</button>'
+        +'<button type="button" class="btn-reject" id="dir-reject-'+r.id+'" onclick="rejectDirector(\'' +r.id+ '\')">✕ Reject</button>'
+      +'</div>'
+      +'<div id="dir-msg-'+r.id+'" style="font-size:12px;font-weight:600;margin-top:8px;display:none;"></div>'
+    +'</div>';
+  return card;
+}
+
+async function approveDirector(id, email, name){
+  var approveBtn=document.getElementById('dir-approve-'+id);
+  var rejectBtn=document.getElementById('dir-reject-'+id);
+  var msg=document.getElementById('dir-msg-'+id);
+  approveBtn.disabled=true;rejectBtn.disabled=true;approveBtn.textContent='Approving...';
+  try{
+    var r=await supaFetch('directors?id=eq.'+id,{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({approved:true,approved_at:new Date().toISOString()})
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    msg.style.color='#00a846';msg.textContent='✓ Approved! '+name+' can now access the director portal.';msg.style.display='block';
+    approveBtn.style.display='none';rejectBtn.style.display='none';
+    var cardEl=document.getElementById('dir-req-'+id);
+    if(cardEl)setTimeout(function(){cardEl.style.opacity='0';cardEl.style.transition='opacity .3s';setTimeout(function(){cardEl.remove();},300);},1500);
+  }catch(e){
+    msg.style.color='#dc2626';msg.textContent='⚠ '+e.message;msg.style.display='block';
+    approveBtn.disabled=false;rejectBtn.disabled=false;approveBtn.textContent='✓ Approve';
+  }
+}
+
+async function rejectDirector(id){
+  var approveBtn=document.getElementById('dir-approve-'+id);
+  var rejectBtn=document.getElementById('dir-reject-'+id);
+  var msg=document.getElementById('dir-msg-'+id);
+  if(!confirm('Reject this director request?'))return;
+  approveBtn.disabled=true;rejectBtn.disabled=true;rejectBtn.textContent='Rejecting...';
+  try{
+    var r=await supaFetch('directors?id=eq.'+id,{
+      method:'DELETE',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var cardEl=document.getElementById('dir-req-'+id);
+    if(cardEl)setTimeout(function(){cardEl.style.opacity='0';cardEl.style.transition='opacity .3s';setTimeout(function(){cardEl.remove();},300);},300);
+  }catch(e){
+    msg.style.color='#dc2626';msg.textContent='⚠ '+e.message;msg.style.display='block';
+    approveBtn.disabled=false;rejectBtn.disabled=false;rejectBtn.textContent='✕ Reject';
+  }
+}
+
+// ══════════════════════════════════════════
 //  LOAD PARKS FROM SUPABASE
 // ══════════════════════════════════════════
 async function loadParks(){
@@ -690,7 +792,7 @@ async function loadParks(){
     });
     renderGrids();
   }catch(e){
-    grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;"><div style="font-size:22px;margin-bottom:8px;">⚠️</div><div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div><div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div><button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:\'Outfit\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button></div>';
+    grid.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;"><div style="font-size:22px;margin-bottom:8px;">⚠️</div><div style="font-size:14px;font-weight:700;color:#0b1929;margin-bottom:6px;">Ballparks could not load</div><div style="font-size:12px;color:#64748b;margin-bottom:14px;">'+e.message+'</div><button type="button" onclick="loadParks()" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;font-family:Outfit,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">↺ Retry</button></div>';
   }
 }
 
@@ -1247,7 +1349,7 @@ function makePendingCard(r){
   var mapsUrl='https://www.google.com/maps?q='+r.lat+','+r.lon;
   card.innerHTML=
     '<div class="admin-card-header">'
-      +'<div style="font-family:\'Outfit\',sans-serif;font-weight:800;font-size:15px;color:#0b1929;">'+escHtml(r.park_name)+'</div>'
+      +'<div style="font-family:Outfit,sans-serif;font-weight:800;font-size:15px;color:#0b1929;">'+escHtml(r.park_name)+'</div>'
       +'<div style="font-size:11px;color:#94a3b8;">'+submittedAt+'</div>'
     +'</div>'
     +'<div class="admin-card-body">'
@@ -1413,7 +1515,9 @@ function switchTab(tab){
   document.getElementById('panel-'+tab).classList.add('active');
   if(tab==='rankings'&&!rankingsLoaded){loadRankings();rankingsLoaded=true;}
   if(tab==='submit'){setTimeout(initSubMap,50);}
-  if(tab==='admin'&&adminAuthed){loadPending();}
+  if(tab==='admin'&&adminAuthed){loadPending();loadDirectorRequests();}
+  // Hide sticky button on non-forecast tabs
+  document.getElementById('sticky-check-wrap').style.display = (tab==='forecast') ? 'block' : 'none';
 }
 
 // ══════════════════════════════════════════
