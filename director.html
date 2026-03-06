@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Director Portal — Will Easton Play?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --navy:    #0b1929;
+      --navy-2:  #122035;
+      --navy-3:  #1a2d47;
+      --navy-4:  #263f63;
+      --green:   #00c853;
+      --green-d: #00a846;
+      --yellow:  #ffd600;
+      --orange:  #ff8c00;
+      --blue:    #2196f3;
+      --red:     #ff3d57;
+      --border:  #e2e8f0;
+      --text-1:  #0b1929;
+      --text-2:  #1e3a5f;
+      --text-3:  #475569;
+      --text-4:  #94a3b8;
+      --radius:  12px;
+      --radius-sm: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body { font-family: 'Outfit', sans-serif; background: #f0f4f8; color: var(--navy); }
+
+    /* ── NAV ── */
+    #nav {
+      background: var(--navy);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+    }
+    #nav img { width: 34px; height: 34px; border-radius: 8px; }
+    .nav-title { font-weight: 800; font-size: 17px; color: #fff; letter-spacing: -.02em; }
+    .nav-title span { color: var(--green); }
+    .nav-badge { margin-left: 8px; padding: 3px 10px; border-radius: 20px; background: rgba(0,200,83,0.15); border: 1px solid rgba(0,200,83,0.3); font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: .04em; }
+    .nav-back { margin-left: auto; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-decoration: none; transition: color .15s; }
+    .nav-back:hover { color: #fff; }
+
+    /* ── LAYOUT ── */
+    #wrap { max-width: 620px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ── STEP CARDS ── */
+    .step-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .step-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-num.done { background: var(--green); color: #002010; }
+    .step-num.active { background: var(--green); color: #002010; box-shadow: 0 0 0 4px rgba(0,200,83,0.2); }
+    .step-title { font-weight: 800; font-size: 15px; color: var(--text-1); }
+    .step-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+    .step-body { padding: 20px; }
+    .step-card.locked { opacity: 0.45; pointer-events: none; }
+
+    /* ── FORM ELEMENTS ── */
+    .field-group { margin-bottom: 16px; }
+    .field-group:last-child { margin-bottom: 0; }
+    label { display: block; font-size: 11px; font-weight: 700; color: var(--text-3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+    input[type=text], input[type=email], input[type=date], input[type=time], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-1);
+      background: #fff;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0,200,83,0.15);
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hint { font-size: 11px; color: var(--text-4); margin-top: 5px; }
+
+    /* ── PARK SEARCH ── */
+    #park-search-wrap { position: relative; }
+    #park-search-input { padding-left: 36px; }
+    #park-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; }
+    #park-results { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 50; max-height: 220px; overflow-y: auto; }
+    .park-result-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+    .park-result-item:last-child { border-bottom: none; }
+    .park-result-item:hover { background: #f8fafc; }
+    .pri-name { font-size: 13px; font-weight: 700; color: var(--text-1); }
+    .pri-city { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+    #park-selected { display: none; padding: 10px 14px; background: rgba(0,200,83,0.06); border: 1px solid rgba(0,200,83,0.3); border-radius: var(--radius-sm); margin-top: 8px; display: none; align-items: center; justify-content: space-between; }
+    #park-selected-name { font-size: 13px; font-weight: 700; color: var(--text-1); }
+    #park-selected-city { font-size: 11px; color: var(--text-3); }
+    #park-change-btn { font-size: 11px; font-weight: 700; color: var(--text-3); background: none; border: none; cursor: pointer; text-decoration: underline; }
+
+    /* ── OTP INPUT ── */
+    #otp-inputs { display: flex; gap: 8px; justify-content: center; margin: 16px 0; }
+    .otp-digit {
+      width: 48px; height: 56px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Outfit', sans-serif;
+      color: var(--navy);
+      transition: border-color .15s;
+      -webkit-appearance: none;
+    }
+    .otp-digit:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,83,0.15); }
+
+    /* ── STATUS BUTTONS ── */
+    #status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .status-btn {
+      padding: 12px 10px;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      text-align: left;
+      transition: all .15s;
+      background: #f8fafc;
+      border-color: var(--border);
+    }
+    .status-btn:hover { border-color: #94a3b8; }
+    .status-btn.active { border-width: 2px; }
+    .status-btn.active.s-on       { background: #f0fdf4; border-color: #22c55e; }
+    .status-btn.active.s-delayed  { background: #eff6ff; border-color: #3b82f6; }
+    .status-btn.active.s-partial  { background: #fff7ed; border-color: #f97316; }
+    .status-btn.active.s-watch    { background: #fefce8; border-color: #eab308; }
+    .status-btn.active.s-cancelled{ background: #fff0f3; border-color: #f43f5e; }
+    .sb-icon { font-size: 20px; margin-bottom: 4px; }
+    .sb-label { font-size: 12px; font-weight: 800; color: var(--text-1); line-height: 1.2; }
+    .sb-sub { font-size: 10px; color: var(--text-3); margin-top: 2px; line-height: 1.3; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      width: 100%; padding: 13px;
+      border: none; border-radius: var(--radius-sm);
+      background: var(--green); color: #002010;
+      font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800;
+      letter-spacing: .03em; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--green-d); box-shadow: 0 4px 20px rgba(0,200,83,0.3); }
+    .btn-primary:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .btn-secondary {
+      width: 100%; padding: 11px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: #f8fafc; color: var(--text-2);
+      font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .15s; margin-top: 8px;
+    }
+    .btn-secondary:hover { background: #f1f5f9; }
+
+    /* ── SPINNER ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #002010; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+
+    /* ── MSG BOXES ── */
+    .msg { display: none; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-top: 12px; }
+    .msg.success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    .msg.error { background: #fff0f3; color: #be123c; border: 1px solid #fecdd3; }
+    .msg.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+    /* ── ACTIVE SESSION CARD ── */
+    #session-card { display: none; }
+    .session-status-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 20px;
+      font-size: 14px; font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .ss-on       { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    .ss-delayed  { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .ss-partial  { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
+    .ss-watch    { background: #fefce8; color: #854d0e; border: 1px solid #fde047; }
+    .ss-cancelled{ background: #fff0f3; color: #be123c; border: 1px solid #fecdd3; }
+
+    /* ── BLAST SECTION ── */
+    #blast-section { display: none; }
+    .blast-preview {
+      background: var(--navy-2);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .blast-preview-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .blast-preview-body { font-size: 12px; color: #6b8daa; line-height: 1.5; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── HERO ── */
+    #hero {
+      text-align: center;
+      padding: 28px 0 20px;
+    }
+    #hero h1 { font-size: 26px; font-weight: 900; color: var(--navy); letter-spacing: -.03em; line-height: 1.2; }
+    #hero h1 span { color: var(--green); }
+    #hero p { font-size: 14px; color: var(--text-3); margin-top: 8px; line-height: 1.5; }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .step-card { animation: slideUp .3s ease both; }
+    .step-card:nth-child(2) { animation-delay: .05s; }
+    .step-card:nth-child(3) { animation-delay: .1s; }
+    .step-card:nth-child(4) { animation-delay: .15s; }
+  </style>
+</head>
+<body>
+
+<div id="nav">
+  <img src="/icons/icon-192.png" alt="Easton"/>
+  <div>
+    <div class="nav-title">Will Easton <span>Play?</span></div>
+  </div>
+  <span class="nav-badge">Director Portal</span>
+  <a href="https://willeastonplay.com" class="nav-back">← Back to App</a>
+</div>
+
+<div id="wrap">
+  <div id="hero">
+    <h1>Director <span>Portal</span></h1>
+    <p>Post official game status updates for your event.<br/>Parents see your update directly on their forecast.</p>
+  </div>
+
+  <!-- ══ STEP 1: Your Info ══ -->
+  <div class="step-card" id="card-info">
+    <div class="step-header">
+      <div class="step-num active" id="num-1">1</div>
+      <div>
+        <div class="step-title">Your Information</div>
+        <div class="step-sub">Name, organization and email for verification</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="row-2">
+        <div class="field-group">
+          <label for="dir-name">Your Name <span style="color:#dc2626">*</span></label>
+          <input type="text" id="dir-name" placeholder="e.g. John Smith" maxlength="80" oninput="checkStep1()"/>
+        </div>
+        <div class="field-group">
+          <label for="dir-org">Organization <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+          <input type="text" id="dir-org" placeholder="e.g. Tulsa Baseball" maxlength="80"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="dir-email">Email Address <span style="color:#dc2626">*</span></label>
+        <input type="email" id="dir-email" placeholder="you@example.com" oninput="checkStep1()"/>
+        <div class="hint">We'll send a verification code — no account needed.</div>
+      </div>
+      <button class="btn-primary" id="btn-step1" onclick="submitStep1()" disabled>Continue</button>
+      <div class="msg" id="msg-step1"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: Select Park + Date ══ -->
+  <div class="step-card locked" id="card-park">
+    <div class="step-header">
+      <div class="step-num" id="num-2">2</div>
+      <div>
+        <div class="step-title">Park &amp; Event Date</div>
+        <div class="step-sub">Which complex and when</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="field-group">
+        <label>Ballpark / Complex <span style="color:#dc2626">*</span></label>
+        <div id="park-search-wrap">
+          <span id="park-search-icon">🔍</span>
+          <input type="text" id="park-search-input" placeholder="Search by park or city name..." autocomplete="off" oninput="onParkSearch()" onfocus="onParkSearchFocus()"/>
+          <div id="park-results"></div>
+        </div>
+        <div id="park-selected">
+          <div>
+            <div id="park-selected-name"></div>
+            <div id="park-selected-city"></div>
+          </div>
+          <button id="park-change-btn" onclick="changePark()">Change</button>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label for="event-date">Event Date <span style="color:#dc2626">*</span></label>
+          <input type="date" id="event-date" oninput="checkStep2()"/>
+        </div>
+        <div class="field-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label for="event-start">Start</label>
+            <input type="time" id="event-start"/>
+          </div>
+          <div>
+            <label for="event-end">End</label>
+            <input type="time" id="event-end"/>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-step2" onclick="submitStep2()" disabled>Send Verification Code</button>
+      <div class="msg" id="msg-step2"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: Verify Email ══ -->
+  <div class="step-card locked" id="card-verify">
+    <div class="step-header">
+      <div class="step-num" id="num-3">3</div>
+      <div>
+        <div class="step-title">Verify Your Email</div>
+        <div class="step-sub" id="verify-sub">Enter the 6-digit code we sent you</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div id="otp-inputs">
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      </div>
+      <button class="btn-primary" id="btn-verify" onclick="submitOtp()" disabled>Verify &amp; Continue</button>
+      <button class="btn-secondary" onclick="resendOtp()">Resend Code</button>
+      <div class="msg" id="msg-verify"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: Post Status ══ -->
+  <div class="step-card locked" id="card-status">
+    <div class="step-header">
+      <div class="step-num" id="num-4">4</div>
+      <div>
+        <div class="step-title">Post Game Status</div>
+        <div class="step-sub">This appears instantly on parent forecasts</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <!-- Active session display -->
+      <div id="session-card">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">Current Status</div>
+        <div id="session-status-badge" class="session-status-badge ss-watch">⚠️ Watch</div>
+        <div id="session-note-display" style="display:none;font-size:13px;color:var(--text-3);margin-bottom:12px;padding:10px 12px;background:#f8fafc;border-radius:8px;border:1px solid var(--border);"></div>
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">Update Status</div>
+      </div>
+
+      <div id="status-grid">
+        <button class="status-btn s-on" data-status="on" onclick="selectStatus(this)">
+          <div class="sb-icon">✅</div>
+          <div class="sb-label">Game On</div>
+          <div class="sb-sub">Conditions look good</div>
+        </button>
+        <button class="status-btn s-delayed" data-status="delayed" onclick="selectStatus(this)">
+          <div class="sb-icon">⏳</div>
+          <div class="sb-label">Delayed</div>
+          <div class="sb-sub">Check notes for details</div>
+        </button>
+        <button class="status-btn s-partial" data-status="partial" onclick="selectStatus(this)">
+          <div class="sb-icon">🟠</div>
+          <div class="sb-label">Partial Cancellation</div>
+          <div class="sb-sub">Not all fields affected</div>
+        </button>
+        <button class="status-btn s-watch" data-status="watch" onclick="selectStatus(this)">
+          <div class="sb-icon">⚠️</div>
+          <div class="sb-label">Watch</div>
+          <div class="sb-sub">Monitor conditions</div>
+        </button>
+        <button class="status-btn s-cancelled" data-status="cancelled" onclick="selectStatus(this)" style="grid-column:1/-1;">
+          <div class="sb-icon">❌</div>
+          <div class="sb-label">Cancelled</div>
+          <div class="sb-sub">Event cancelled</div>
+        </button>
+      </div>
+
+      <div class="field-group">
+        <label for="dir-note">Director Note <span style="font-weight:400;color:var(--text-4)">(optional but recommended)</span></label>
+        <textarea id="dir-note" rows="3" placeholder="e.g. Fields 1–3 open, Field 4 closed due to standing water. Games begin at 10am." maxlength="300" oninput="updateBlastPreview()"></textarea>
+        <div class="hint" style="text-align:right;" id="note-count">0 / 300</div>
+      </div>
+
+      <button class="btn-primary" id="btn-post" onclick="postStatus()" disabled>Post Status Update</button>
+
+      <!-- Communication blast -->
+      <div id="blast-section">
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">📣 Notify Followers</div>
+        <div class="blast-preview">
+          <div class="blast-preview-title" id="blast-preview-title">⚠️ Watch — Pending Update</div>
+          <div class="blast-preview-body" id="blast-preview-body">No note added yet.</div>
+        </div>
+        <button class="btn-primary" id="btn-blast" onclick="sendBlast()" style="background:var(--navy);color:#fff;">
+          📣 Send Push Notification to Followers
+        </button>
+        <div class="hint" style="margin-top:6px;text-align:center;">Sends to everyone who has favorited this park and enabled notifications.</div>
+      </div>
+
+      <div class="msg" id="msg-status"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+
+// ── CONFIG ──
+var SUPA_URL = 'https://nyxlraivhxelkvkyqfxa.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55eGxyYWl2aHhlbGt2a3lxZnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NDQ4MTIsImV4cCI6MjA4ODIyMDgxMn0.1f0BXRn_xriUVEecqLe_H5P4cl_5jRXkeTm2I_Izm2E';
+var RESEND_KEY = 're_CTebNeUu_2BUtWdqThpipoqDK51QfRrhv';
+
+function supaFetch(path, opts) {
+  return fetch(SUPA_URL + '/rest/v1/' + path, Object.assign({
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' }
+  }, opts || {}));
+}
+
+// ── STATE ──
+var FIELDS = [];
+var selectedPark = null;
+var selectedStatus = null;
+var currentSessionId = null;
+var dirInfo = {};
+
+var STATUS_META = {
+  on:        { icon: '✅', label: 'Game On',              cls: 'ss-on' },
+  delayed:   { icon: '⏳', label: 'Delayed',              cls: 'ss-delayed' },
+  partial:   { icon: '🟠', label: 'Partial Cancellation', cls: 'ss-partial' },
+  watch:     { icon: '⚠️', label: 'Watch',                cls: 'ss-watch' },
+  cancelled: { icon: '❌', label: 'Cancelled',            cls: 'ss-cancelled' }
+};
+
+// ── LOAD PARKS ──
+async function loadParks() {
+  try {
+    var res = await supaFetch('parks?select=id,name,city,state&order=name.asc&limit=1000');
+    if (!res.ok) throw new Error();
+    FIELDS = await res.json();
+  } catch(e) { console.error('Could not load parks', e); }
+}
+loadParks();
+
+// ── STEP 1: Director Info ──
+function checkStep1() {
+  var name = document.getElementById('dir-name').value.trim();
+  var email = document.getElementById('dir-email').value.trim();
+  var valid = name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  document.getElementById('btn-step1').disabled = !valid;
+}
+
+async function submitStep1() {
+  var btn = document.getElementById('btn-step1');
+  var msg = document.getElementById('msg-step1');
+  dirInfo.name = document.getElementById('dir-name').value.trim();
+  dirInfo.org = document.getElementById('dir-org').value.trim();
+  dirInfo.email = document.getElementById('dir-email').value.trim();
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Saving...';
+  showMsg('msg-step1', '', '');
+  await new Promise(r => setTimeout(r, 300));
+  btn.innerHTML = 'Continue';
+  // Mark step 1 done, unlock step 2
+  document.getElementById('num-1').classList.remove('active');
+  document.getElementById('num-1').classList.add('done');
+  document.getElementById('num-1').textContent = '✓';
+  document.getElementById('num-2').classList.add('active');
+  document.getElementById('card-park').classList.remove('locked');
+  // Set min date to today
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('event-date').min = today;
+  // Scroll to step 2
+  document.getElementById('card-park').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── STEP 2: Park + Date ──
+function onParkSearch() {
+  var q = document.getElementById('park-search-input').value.trim().toLowerCase();
+  var results = document.getElementById('park-results');
+  if (q.length < 2) { results.style.display = 'none'; return; }
+  var matches = FIELDS.filter(function(f) {
+    return f.name.toLowerCase().includes(q) || f.city.toLowerCase().includes(q);
+  }).slice(0, 8);
+  if (!matches.length) { results.style.display = 'none'; return; }
+  results.innerHTML = matches.map(function(f) {
+    return '<div class="park-result-item" onclick="selectPark(\'' + f.id + '\',\'' + escAttr(f.name) + '\',\'' + escAttr(f.city) + '\',\'' + escAttr(f.state) + '\')">'
+      + '<div class="pri-name">' + escHtml(f.name) + '</div>'
+      + '<div class="pri-city">' + escHtml(f.city) + ', ' + escHtml(f.state) + '</div>'
+      + '</div>';
+  }).join('');
+  results.style.display = 'block';
+}
+
+function onParkSearchFocus() {
+  if (document.getElementById('park-search-input').value.trim().length >= 2) {
+    document.getElementById('park-results').style.display = 'block';
+  }
+}
+
+function selectPark(id, name, city, state) {
+  selectedPark = { id: id, name: name, city: city, state: state };
+  document.getElementById('park-results').style.display = 'none';
+  document.getElementById('park-search-input').style.display = 'none';
+  var sel = document.getElementById('park-selected');
+  document.getElementById('park-selected-name').textContent = name;
+  document.getElementById('park-selected-city').textContent = city + ', ' + state;
+  sel.style.display = 'flex';
+  checkStep2();
+}
+
+function changePark() {
+  selectedPark = null;
+  document.getElementById('park-search-input').value = '';
+  document.getElementById('park-search-input').style.display = '';
+  document.getElementById('park-selected').style.display = 'none';
+  checkStep2();
+}
+
+function checkStep2() {
+  var haspark = selectedPark !== null;
+  var hasdate = document.getElementById('event-date').value !== '';
+  document.getElementById('btn-step2').disabled = !(haspark && hasdate);
+}
+
+// Close park dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('park-search-wrap').contains(e.target)) {
+    document.getElementById('park-results').style.display = 'none';
+  }
+});
+
+async function submitStep2() {
+  var btn = document.getElementById('btn-step2');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sending code...';
+  showMsg('msg-step2', '', '');
+  try {
+    // Generate 6-digit OTP
+    var otp = String(Math.floor(100000 + Math.random() * 900000));
+    var expires = new Date(Date.now() + 15 * 60000).toISOString();
+    var eventDate = document.getElementById('event-date').value;
+    var eventStart = document.getElementById('event-start').value || null;
+    var eventEnd = document.getElementById('event-end').value || null;
+
+    // Create session in Supabase (unverified)
+    var r1 = await supaFetch('director_sessions', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        email: dirInfo.email, name: dirInfo.name, org: dirInfo.org || null,
+        park_id: selectedPark.id, park_name: selectedPark.name,
+        event_date: eventDate, event_start: eventStart, event_end: eventEnd,
+        otp: otp, otp_expires_at: expires, verified: false, game_status: 'watch'
+      })
+    });
+    if (!r1.ok) throw new Error('Could not create session (HTTP ' + r1.status + ')');
+    var sessions = await r1.json();
+    currentSessionId = sessions[0].id;
+
+    // Send OTP email via Resend
+    var emailRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        to: [dirInfo.email],
+        subject: 'Your Director Verification Code',
+        html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, eventDate)
+      })
+    });
+    if (!emailRes.ok) throw new Error('Could not send verification email. Check your email address.');
+
+    // Update UI
+    document.getElementById('verify-sub').textContent = 'Code sent to ' + dirInfo.email;
+    document.getElementById('num-2').classList.remove('active');
+    document.getElementById('num-2').classList.add('done');
+    document.getElementById('num-2').textContent = '✓';
+    document.getElementById('num-3').classList.add('active');
+    document.getElementById('card-verify').classList.remove('locked');
+    document.getElementById('card-verify').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Focus first OTP digit
+    setTimeout(function() { document.querySelectorAll('.otp-digit')[0].focus(); }, 400);
+  } catch(e) {
+    showMsg('msg-step2', e.message, 'error');
+    btn.disabled = false;
+  }
+  btn.innerHTML = 'Send Verification Code';
+}
+
+function buildOtpEmail(name, otp, parkName, date) {
+  var dateStr = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return '<div style="font-family:\'Outfit\',sans-serif;max-width:480px;margin:0 auto;background:#f0f4f8;padding:32px 16px;">'
+    + '<div style="background:#0b1929;border-radius:12px;padding:28px;margin-bottom:16px;text-align:center;">'
+    + '<div style="font-size:32px;margin-bottom:8px;">⚾</div>'
+    + '<div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em;">Will Easton Play?</div>'
+    + '<div style="font-size:12px;color:#4a7090;margin-top:4px;">Director Portal</div>'
+    + '</div>'
+    + '<div style="background:#fff;border-radius:12px;padding:24px;">'
+    + '<div style="font-size:16px;font-weight:700;color:#0b1929;margin-bottom:8px;">Hi ' + escHtml(name) + ',</div>'
+    + '<div style="font-size:14px;color:#475569;margin-bottom:20px;line-height:1.5;">Here is your verification code for posting a status update for <strong>' + escHtml(parkName) + '</strong> on <strong>' + dateStr + '</strong>.</div>'
+    + '<div style="background:#f0f4f8;border-radius:10px;padding:20px;text-align:center;margin-bottom:20px;">'
+    + '<div style="font-size:36px;font-weight:900;color:#0b1929;letter-spacing:8px;">' + otp + '</div>'
+    + '<div style="font-size:11px;color:#94a3b8;margin-top:8px;">Expires in 15 minutes</div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:#94a3b8;text-align:center;">If you did not request this code, you can safely ignore this email.</div>'
+    + '</div></div>';
+}
+
+// ── OTP INPUT WIRING ──
+document.addEventListener('DOMContentLoaded', function() {
+  var digits = document.querySelectorAll('.otp-digit');
+  digits.forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      if (inp.value.length === 1 && i < digits.length - 1) digits[i + 1].focus();
+      checkOtp();
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !inp.value && i > 0) digits[i - 1].focus();
+    });
+    inp.addEventListener('paste', function(e) {
+      var paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+      if (paste.length === 6) {
+        digits.forEach(function(d, j) { d.value = paste[j] || ''; });
+        digits[5].focus();
+        checkOtp();
+        e.preventDefault();
+      }
+    });
+  });
+});
+
+function getOtpValue() {
+  return Array.from(document.querySelectorAll('.otp-digit')).map(function(d) { return d.value; }).join('');
+}
+
+function checkOtp() {
+  document.getElementById('btn-verify').disabled = getOtpValue().length !== 6;
+}
+
+async function submitOtp() {
+  var btn = document.getElementById('btn-verify');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Verifying...';
+  showMsg('msg-verify', '', '');
+  try {
+    var entered = getOtpValue();
+    // Fetch session and check OTP
+    var res = await supaFetch('director_sessions?id=eq.' + currentSessionId + '&select=otp,otp_expires_at');
+    if (!res.ok) throw new Error('Could not verify. Please try again.');
+    var rows = await res.json();
+    if (!rows.length) throw new Error('Session not found. Please start over.');
+    var session = rows[0];
+    if (entered !== session.otp) throw new Error('Incorrect code. Please try again.');
+    if (new Date() > new Date(session.otp_expires_at)) throw new Error('Code has expired. Please request a new one.');
+    // Mark verified
+    var r2 = await supaFetch('director_sessions?id=eq.' + currentSessionId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ verified: true, status: 'active' })
+    });
+    if (!r2.ok) throw new Error('Verification failed. Please try again.');
+    // Advance to step 4
+    document.getElementById('num-3').classList.remove('active');
+    document.getElementById('num-3').classList.add('done');
+    document.getElementById('num-3').textContent = '✓';
+    document.getElementById('num-4').classList.add('active');
+    document.getElementById('card-status').classList.remove('locked');
+    document.getElementById('session-card').style.display = 'block';
+    document.getElementById('blast-section').style.display = 'block';
+    document.getElementById('card-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    showMsg('msg-verify', e.message, 'error');
+    btn.disabled = false;
+  }
+  btn.innerHTML = 'Verify &amp; Continue';
+}
+
+async function resendOtp() {
+  showMsg('msg-verify', 'Resending...', 'info');
+  var otp = String(Math.floor(100000 + Math.random() * 900000));
+  var expires = new Date(Date.now() + 15 * 60000).toISOString();
+  try {
+    await supaFetch('director_sessions?id=eq.' + currentSessionId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ otp: otp, otp_expires_at: expires })
+    });
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        to: [dirInfo.email],
+        subject: 'Your Director Verification Code (Resent)',
+        html: buildOtpEmail(dirInfo.name, otp, selectedPark.name, document.getElementById('event-date').value)
+      })
+    });
+    showMsg('msg-verify', 'New code sent to ' + dirInfo.email, 'info');
+    document.querySelectorAll('.otp-digit').forEach(function(d) { d.value = ''; });
+    document.querySelectorAll('.otp-digit')[0].focus();
+  } catch(e) {
+    showMsg('msg-verify', 'Could not resend. Please try again.', 'error');
+  }
+}
+
+// ── STEP 4: Post Status ──
+function selectStatus(btn) {
+  document.querySelectorAll('.status-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  selectedStatus = btn.dataset.status;
+  document.getElementById('btn-post').disabled = false;
+  updateBlastPreview();
+}
+
+document.getElementById('dir-note').addEventListener('input', function() {
+  document.getElementById('note-count').textContent = this.value.length + ' / 300';
+});
+
+function updateBlastPreview() {
+  if (!selectedStatus) return;
+  var st = STATUS_META[selectedStatus];
+  var note = document.getElementById('dir-note').value.trim();
+  var park = selectedPark ? selectedPark.name : 'the park';
+  document.getElementById('blast-preview-title').textContent = st.icon + ' ' + st.label + ' — ' + park;
+  document.getElementById('blast-preview-body').textContent = note || st.label + ' status posted by ' + dirInfo.name + '.';
+}
+
+async function postStatus() {
+  if (!selectedStatus || !currentSessionId) return;
+  var btn = document.getElementById('btn-post');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Posting...';
+  showMsg('msg-status', '', '');
+  try {
+    var note = document.getElementById('dir-note').value.trim() || null;
+    var r = await supaFetch('director_sessions?id=eq.' + currentSessionId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ game_status: selectedStatus, note: note, updated_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error('Could not post status (HTTP ' + r.status + ')');
+    // Update session badge
+    var st = STATUS_META[selectedStatus];
+    var badge = document.getElementById('session-status-badge');
+    badge.className = 'session-status-badge ' + st.cls;
+    badge.textContent = st.icon + ' ' + st.label;
+    var noteDisplay = document.getElementById('session-note-display');
+    if (note) { noteDisplay.textContent = note; noteDisplay.style.display = 'block'; }
+    else { noteDisplay.style.display = 'none'; }
+    showMsg('msg-status', '✓ Status posted! Parents will see this on their forecast.', 'success');
+  } catch(e) {
+    showMsg('msg-status', '⚠ ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Post Status Update';
+}
+
+async function sendBlast() {
+  if (!selectedStatus || !currentSessionId) return;
+  var btn = document.getElementById('btn-blast');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sending...';
+  try {
+    // Get all push subscriptions
+    var res = await supaFetch('push_subscriptions?select=endpoint,p256dh,auth&limit=1000');
+    if (!res.ok) throw new Error('Could not fetch subscribers.');
+    var subs = await res.json();
+    if (!subs.length) {
+      showMsg('msg-status', 'No subscribers yet — status is still posted on the forecast.', 'info');
+      btn.disabled = false;
+      btn.innerHTML = '📣 Send Push Notification to Followers';
+      return;
+    }
+    var st = STATUS_META[selectedStatus];
+    var note = document.getElementById('dir-note').value.trim();
+    var parkName = selectedPark ? selectedPark.name : 'your park';
+    var notifTitle = st.icon + ' ' + st.label + ' — ' + parkName;
+    var notifBody = note || ('Official update from ' + dirInfo.name + (dirInfo.org ? ' · ' + dirInfo.org : ''));
+    // Send email blast via Resend (placeholder — real push needs server-side VAPID signing)
+    // For now send an email summary to the director
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Will Easton Play? <noreply@willeastonplay.com>',
+        to: [dirInfo.email],
+        subject: 'Status Posted: ' + notifTitle,
+        html: '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">'
+          + '<h2 style="color:#0b1929;">Status Update Posted ✓</h2>'
+          + '<p style="color:#475569;">Your status <strong>' + notifTitle + '</strong> has been posted and is visible on parent forecasts for <strong>' + escHtml(parkName) + '</strong>.</p>'
+          + (note ? '<p style="color:#475569;"><strong>Note:</strong> ' + escHtml(note) + '</p>' : '')
+          + '<p style="color:#94a3b8;font-size:12px;">Push notifications to followers require server-side setup — coming soon.</p>'
+          + '</div>'
+      })
+    });
+    showMsg('msg-status', '✓ Status posted! Push notification blast to followers coming in the next update.', 'success');
+  } catch(e) {
+    showMsg('msg-status', '⚠ ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '📣 Send Push Notification to Followers';
+}
+
+// ── UTILS ──
+function showMsg(id, text, type) {
+  var el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg' + (type ? ' ' + type : '');
+  el.style.display = text ? 'block' : 'none';
+}
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return String(s||'').replace(/'/g,"\\'"); }
+</script>
+</body>
+</html>
