@@ -392,6 +392,7 @@
       <div class="stat-pill" id="pill-rain"><span class="sp-icon">🌧</span><div class="sp-text"><span class="sp-value" id="pv-rain">—</span><span class="sp-label">RAIN CHANCE</span></div></div>
       <div class="stat-pill" id="pill-precip"><span class="sp-icon">💧</span><div class="sp-text"><span class="sp-value" id="pv-precip">—</span><span class="sp-label">GAME PRECIP</span></div></div>
       <div class="stat-pill" id="pill-wind"><span class="sp-icon">💨</span><div class="sp-text"><span class="sp-value" id="pv-wind">—</span><span class="sp-label">WIND</span></div></div>
+      <div class="stat-pill" id="pill-prior24" style="display:none;grid-column:1/-1;"><span class="sp-icon">🌊</span><div class="sp-text"><span class="sp-value" id="pv-prior24">—</span><span class="sp-label">PRIOR 24H RAINFALL</span></div></div>
       <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><div class="sp-text"><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div></div>
     </div>
     <!-- Action buttons -->
@@ -647,6 +648,14 @@ function supaFetch(path, opts){
   var url = SUPA_URL+'/rest/v1/'+path;
   var headers = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
   return fetch(url, Object.assign({headers:headers}, opts||{}));
+}
+
+function sendAdminEmail(subject, html){
+  return fetch(SUPA_URL+'/functions/v1/send-email',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
+    body:JSON.stringify({to:['Johnpwalker1985@gmail.com'],subject:subject,html:html})
+  }).catch(function(){/* non-blocking */});
 }
 
 // ══════════════════════════════════════════
@@ -987,7 +996,7 @@ function checkReady(){
 async function fetchWeather(lat,lon,date,hour){
   var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
     +'&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature,lightning_potential'
-    +'&timezone=auto&forecast_days=7';
+    +'&timezone=auto&forecast_days=7&past_days=2';
   var res=await fetch(url);if(!res.ok)throw new Error('Weather service unavailable. Please try again.');
   var data=await res.json();
   var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,
@@ -998,20 +1007,42 @@ async function fetchWeather(lat,lon,date,hour){
   var winIdxs=[-1,0,1,2].map(function(o){return Math.max(0,Math.min(idx+o,hours.length-1));});
   var avg=function(arr){return Math.round(winIdxs.reduce(function(s,i){return s+(arr[i]||0);},0)/winIdxs.length);};
   var maxArr=function(arr){return Math.max.apply(null,winIdxs.map(function(i){return arr[i]||0;}));};
-  var preTotal=0;for(var p=Math.max(0,idx-6);p<idx;p++){preTotal+=precip[p];}
+  // Pre-game 6h: rain still on the field
+  var pre6h=0;for(var p=Math.max(0,idx-6);p<idx;p++){pre6h+=precip[p]||0;}
+  // Antecedent 7-48h: saturation from prior rain (excludes the 6h window)
+  var pre7to48h=0;for(var p=Math.max(0,idx-48);p<Math.max(0,idx-6);p++){pre7to48h+=precip[p]||0;}
   var stormCodes=[95,96,99];
   var isThunderstorm=winIdxs.some(function(i){return stormCodes.indexOf(codes[i])!==-1;});
   var lightningPotential=maxArr(ltng);
-  return{rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),weatherCode:codes[idx],preGameMm:parseFloat(preTotal.toFixed(2)),windChillF:Math.round(avg(appTemp)*9/5+32),isThunderstorm:isThunderstorm,lightningPotential:lightningPotential};
+  return{
+    rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),
+    weatherCode:codes[idx],windChillF:Math.round(avg(appTemp)*9/5+32),
+    isThunderstorm:isThunderstorm,lightningPotential:lightningPotential,
+    preGameMm:parseFloat(pre6h.toFixed(2)),
+    pre7to48h:parseFloat(pre7to48h.toFixed(2))
+  };
 }
 
-function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential){
+function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential,pre7to48h){
   var cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard,s=100;
+  // During-game rain
   s-=rainPct*0.72*cfg.duringMult;
   s-=Math.min(precipMm*16,26)*cfg.duringMult;
-  s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,32)*cfg.preMult;
+  // Immediate pre-game (0-6h): rain still sitting on the field
+  s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,34)*cfg.preMult;
+  // Antecedent saturation (7-48h prior): field moisture from recent rain
+  // Tiered: <6mm negligible, 1" moderate, 2" severe
+  var sat=pre7to48h||0;
+  var satPenalty=0;
+  if(sat>=6  && sat<13) satPenalty=sat*1.2;                          // ~7-15pt
+  if(sat>=13 && sat<25) satPenalty=15+(sat-13)*1.8;                  // 15-37pt
+  if(sat>=25 && sat<51) satPenalty=37+(sat-25)*1.1;                  // 37-65pt
+  if(sat>=51)           satPenalty=Math.min(65+(sat-51)*0.4, 82);    // 65-82pt cap
+  s-=satPenalty*cfg.preMult;
+  // Wind chill
   s-=Math.max(0,(windKph-32)*0.5)*cfg.windMult;
   if(windChillF<40){s-=Math.min((40-windChillF)*2.5,40);}
+  // Lightning / storms always override
   if(isThunderstorm){s=Math.min(s,5);}
   else if(lightningPotential>100){s-=40;}
   else if(lightningPotential>10){s-=Math.min(lightningPotential*0.3,25);}
@@ -1030,7 +1061,7 @@ async function doCheck(){
   var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
-    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential);
+    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential,wx.pre7to48h);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
     loadDirectorStatus(field.id, dateVal);
     // Update URL for sharing
@@ -1078,6 +1109,16 @@ function getFunMessage(wx, prob, surface) {
   }
   if (wx.windKph > 32) {
     return { msg: "💨 Winds are up. Outfielders better have their legs under them.", bg: '#f8fafc', color: '#475569' };
+  }
+  // Antecedent saturation messages — checked before short-range pre-game
+  if ((wx.pre7to48h || 0) >= 51) {
+    return { msg: "🌊 2+ inches in the last 48 hours. Fields are likely saturated — expect delays or cancellations even if skies clear.", bg: '#fff0f3', color: '#be123c' };
+  }
+  if ((wx.pre7to48h || 0) >= 25) {
+    return { msg: "🌧 Heavy rain in the last day or two means soggy infields. Good chance of a delay even with a clear forecast.", bg: '#fff0f3', color: '#be123c' };
+  }
+  if ((wx.pre7to48h || 0) >= 13) {
+    return { msg: "💦 Field conditions may be soft from recent rain. Confirm with your director before heading out.", bg: '#fefce8', color: '#854d0e' };
   }
   if (wx.preGameMm > 10) {
     return { msg: "🌊 Heavy rain before game time. Fields may be unplayable even if skies clear — check with your director.", bg: '#fff0f3', color: '#be123c' };
@@ -1137,6 +1178,15 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   setPill('pill-rain','pv-rain',wx.rainPct+'%',wx.rainPct>60);
   setPill('pill-precip','pv-precip',mmToIn(wx.precipMm),wx.precipMm>2);
   setPill('pill-wind','pv-wind',kphToMph(wx.windKph)+' mph',wx.windKph>40);
+  var prior24=parseFloat(((wx.pre7to48h||0)+(wx.preGameMm||0)).toFixed(1));
+  var prior24pill=document.getElementById('pill-prior24');
+  if(prior24>=6){
+    prior24pill.style.display='';
+    prior24pill.classList.toggle('warn',prior24>=25);
+    document.getElementById('pv-prior24').textContent=mmToIn(prior24)+' ('+prior24+'mm)';
+  } else {
+    prior24pill.style.display='none';
+  }
   document.getElementById('result-coords').textContent='Surface: '+sl.name+' ('+sl.desc+')\nWeather: Open-Meteo \xb7 '+field.lat.toFixed(4)+', '+field.lon.toFixed(4)+' \xb7 Always confirm with your league director.';
   var ltngPill=document.getElementById('pill-lightning');
   if(wx.isThunderstorm){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent='WARNING';}
@@ -1371,6 +1421,24 @@ async function submitPark(){
     var res=await supaFetch('pending_parks',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({park_name:document.getElementById('sub-name').value.trim(),city:document.getElementById('sub-city').value.trim(),state:document.getElementById('sub-state').value,type:subType,lat:parseFloat(document.getElementById('sub-lat').value),lon:parseFloat(document.getElementById('sub-lon').value),surface_type:document.getElementById('sub-surface').value||null,notes:document.getElementById('sub-notes').value.trim()||null})});
     if(!res.ok)throw new Error();
     msg.style.color='#00a846';msg.innerHTML='✓ Ballpark submitted — thank you! It will appear after review.';msg.style.display='block';
+    // Notify admin
+    var _pn=document.getElementById('sub-name').value.trim();
+    var _pc=document.getElementById('sub-city').value.trim();
+    var _ps=document.getElementById('sub-state').value;
+    var _plat=document.getElementById('sub-lat').value;
+    var _plon=document.getElementById('sub-lon').value;
+    var _pnotes=document.getElementById('sub-notes').value.trim();
+    sendAdminEmail('🆕 New Ballpark Submission: '+_pn,
+      '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#f0f4f8;">'
+      +'<div style="background:#0b1929;border-radius:10px;padding:20px;color:#fff;font-size:16px;font-weight:800;margin-bottom:16px;">Will Easton Play? — New Ballpark</div>'
+      +'<div style="background:#fff;border-radius:10px;padding:20px;">'
+      +'<p><strong>Name:</strong> '+_pn+'</p>'
+      +'<p><strong>City / State:</strong> '+_pc+', '+_ps+'</p>'
+      +'<p><strong>Coordinates:</strong> '+_plat+', '+_plon+'</p>'
+      +(_pnotes?'<p><strong>Notes:</strong> '+_pnotes+'</p>':'')
+      +'<p style="margin-top:16px;"><a href="https://willeastonplay.com/#admin" style="background:#00c853;color:#002010;padding:10px 18px;border-radius:8px;font-weight:800;text-decoration:none;">Review in Admin Panel ↗</a></p>'
+      +'</div></div>'
+    );
     document.getElementById('sub-name').value='';document.getElementById('sub-city').value='';document.getElementById('sub-state').value='';document.getElementById('sub-surface').value='';document.getElementById('sub-notes').value='';document.getElementById('map-search-input').value='';document.getElementById('sub-coords-display').style.display='none';
     if(subMarker){subMap.removeLayer(subMarker);subMarker=null;}
     subType=null;document.querySelectorAll('.sub-type-btn').forEach(function(b){b.classList.remove('active');});
