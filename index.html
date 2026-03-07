@@ -421,10 +421,11 @@
       <div class="stat-pill" id="pill-rain"><span class="sp-icon">🌧</span><div class="sp-text"><span class="sp-value" id="pv-rain">—</span><span class="sp-label">RAIN CHANCE</span></div></div>
       <div class="stat-pill" id="pill-precip"><span class="sp-icon">💧</span><div class="sp-text"><span class="sp-value" id="pv-precip">—</span><span class="sp-label">GAME PRECIP</span></div></div>
       <div class="stat-pill" id="pill-wind"><span class="sp-icon">💨</span><div class="sp-text"><span class="sp-value" id="pv-wind">—</span><span class="sp-label">WIND</span></div></div>
-      <div class="stat-pill" id="pill-prior24" style="display:none;grid-column:1/-1;"><span class="sp-icon">🌊</span><div class="sp-text"><span class="sp-value" id="pv-prior24">—</span><span class="sp-label">PRIOR 24H RAINFALL</span></div></div>
+      <div class="stat-pill" id="pill-prior24" style="display:none;grid-column:1/-1;"><span class="sp-icon">🌊</span><div class="sp-text"><span class="sp-value" id="pv-prior24">—</span><span class="sp-label">PRIOR 24H RAINFALL <button type="button" id="prior24-info-btn" onclick="togglePrior24Info()" style="background:none;border:1px solid #cbd5e1;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:800;cursor:pointer;color:#64748b;padding:0;line-height:14px;vertical-align:middle;margin-left:3px;">i</button></span></div></div>
       <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><div class="sp-text"><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div></div>
     </div>
     <!-- How calculated -->
+    <div id="prior24-info-box" style="display:none;margin-top:-6px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.5;font-weight:500;">📡 Rainfall totals are estimates from weather model data, which can undercount localized storms — especially fast-moving Oklahoma thunderstorms. If you know fields took significant rain, use the <strong>Field Conditions</strong> toggle above to override.</div>
     <button type="button" id="how-btn" onclick="toggleHow()">🧮 How was this calculated?</button>
     <div id="how-panel"></div>
     <!-- Action buttons -->
@@ -1072,7 +1073,7 @@ function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunder
   s-=Math.min(preGameMm*10+Math.sqrt(preGameMm)*4,34)*cfg.preMult;
   // Antecedent saturation (7-48h prior): field moisture from recent rain
   // Tiered: <6mm negligible, 1" moderate, 2" severe
-  var sat=pre7to48h||0;
+  var sat=(pre7to48h||0)*2; // model data underreports localized storms ~2x
   var satPenalty=0;
   if(sat>=6  && sat<13) satPenalty=sat*1.2;                          // ~7-15pt
   if(sat>=13 && sat<25) satPenalty=15+(sat-13)*1.8;                  // 15-37pt
@@ -1131,6 +1132,11 @@ async function doCheck(){
 // ══════════════════════════════════════════
 //  FUN MESSAGES
 // ══════════════════════════════════════════
+function togglePrior24Info(){
+  var box=document.getElementById('prior24-info-box');
+  if(box)box.style.display=box.style.display==='block'?'none':'block';
+}
+
 function toggleHow(){
   var panel=document.getElementById('how-panel');
   var btn=document.getElementById('how-btn');
@@ -1174,7 +1180,7 @@ function buildHowPanel(wx, prob, surface, fieldCond){
   }
 
   // Antecedent saturation
-  var sat=wx.pre7to48h||0;
+  var sat=(wx.pre7to48h||0)*2; // matches 2x scaling in getProb
   var satPenalty=0;
   if(sat>=6  && sat<13) satPenalty=sat*1.2;
   if(sat>=13 && sat<25) satPenalty=15+(sat-13)*1.8;
@@ -1352,7 +1358,7 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   if(prior24>=6){
     prior24pill.style.display='';
     prior24pill.classList.toggle('warn',prior24>=25);
-    document.getElementById('pv-prior24').textContent=mmToIn(prior24)+' ('+prior24+'mm)';
+    document.getElementById('pv-prior24').textContent='~'+mmToIn(prior24*2)+' est.';
   } else {
     prior24pill.style.display='none';
   }
@@ -1364,6 +1370,7 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   else{ltngPill.style.display='none';ltngPill.classList.remove('lightning');}
   // Build how-panel and show button
   buildHowPanel(wx, prob, surface, selectedCondition);
+  var p24box=document.getElementById('prior24-info-box');if(p24box)p24box.style.display='none';
   var howBtn=document.getElementById('how-btn');
   if(howBtn){howBtn.style.display='block';}
   var howPanel=document.getElementById('how-panel');
