@@ -185,6 +185,19 @@
   .stat-pill.warn{background:#fff7ed;border-color:#fed7aa;}
   .stat-pill.cold{background:#eff6ff;border-color:#bfdbfe;}
   .stat-pill.lightning{background:#fef9c3;border-color:#fde047;grid-column:1/-1;}
+  #how-btn{display:none;width:100%;margin-top:10px;padding:9px;border:1px solid var(--border);border-radius:var(--radius-sm);background:none;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;text-align:center;transition:all .15s;}
+  #how-btn:hover{background:#f8fafc;color:#0b1929;}
+  #how-panel{display:none;margin-top:0;border-radius:var(--radius-sm);overflow:hidden;}
+  .how-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:12px;line-height:1.5;}
+  .how-row:last-child{border-bottom:none;}
+  .how-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+  .how-label{font-weight:700;color:#0b1929;}
+  .how-val{color:#475569;margin-top:1px;}
+  .how-impact{font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:10px;display:inline-block;margin-top:3px;}
+  .hi-good{background:#f0fdf4;color:#166534;}
+  .hi-warn{background:#fefce8;color:#854d0e;}
+  .hi-bad{background:#fff0f3;color:#be123c;}
+  .hi-none{background:#f8fafc;color:#64748b;}
   .sp-icon{font-size:20px;flex-shrink:0;}
   .sp-text{display:flex;flex-direction:column;}
   .sp-value{font-size:15px;font-weight:800;color:var(--text-1);line-height:1.2;}
@@ -411,6 +424,9 @@
       <div class="stat-pill" id="pill-prior24" style="display:none;grid-column:1/-1;"><span class="sp-icon">🌊</span><div class="sp-text"><span class="sp-value" id="pv-prior24">—</span><span class="sp-label">PRIOR 24H RAINFALL</span></div></div>
       <div class="stat-pill" id="pill-lightning" style="display:none"><span class="sp-icon">⚡</span><div class="sp-text"><span class="sp-value" id="pv-lightning">—</span><span class="sp-label">LIGHTNING</span></div></div>
     </div>
+    <!-- How calculated -->
+    <button type="button" id="how-btn" onclick="toggleHow()">🧮 How was this calculated?</button>
+    <div id="how-panel"></div>
     <!-- Action buttons -->
     <div id="action-btns">
       <button type="button" class="action-btn" id="btn-radar"><span class="action-icon">📡</span><span class="action-label">Live Radar</span></button>
@@ -1018,12 +1034,12 @@ function checkReady(){
 // ══════════════════════════════════════════
 async function fetchWeather(lat,lon,date,hour){
   var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
-    +'&hourly=precipitation_probability,precipitation,windspeed_10m,weathercode,apparent_temperature,lightning_potential'
+    +'&hourly=precipitation_probability,precipitation,windspeed_10m,winddirection_10m,weathercode,apparent_temperature,lightning_potential'
     +'&timezone=auto&forecast_days=7&past_days=2';
   var res=await fetch(url);if(!res.ok)throw new Error('Weather service unavailable. Please try again.');
   var data=await res.json();
   var hours=data.hourly.time,rPct=data.hourly.precipitation_probability,precip=data.hourly.precipitation,
-      wind=data.hourly.windspeed_10m,codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature,
+      wind=data.hourly.windspeed_10m,wdir=data.hourly.winddirection_10m||[],codes=data.hourly.weathercode,appTemp=data.hourly.apparent_temperature,
       ltng=data.hourly.lightning_potential||[];
   var target=date+'T'+String(hour).padStart(2,'0')+':00';
   var idx=hours.indexOf(target);if(idx===-1)throw new Error('Date is outside the 7-day forecast window.');
@@ -1037,8 +1053,9 @@ async function fetchWeather(lat,lon,date,hour){
   var stormCodes=[95,96,99];
   var isThunderstorm=winIdxs.some(function(i){return stormCodes.indexOf(codes[i])!==-1;});
   var lightningPotential=maxArr(ltng);
+  var windDirDeg=Math.round(winIdxs.reduce(function(s,i){return s+(wdir[i]||0);},0)/winIdxs.length);
   return{
-    rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),
+    rainPct:avg(rPct),precipMm:parseFloat(maxArr(precip).toFixed(2)),windKph:avg(wind),windDirDeg:windDirDeg,
     weatherCode:codes[idx],windChillF:Math.round(avg(appTemp)*9/5+32),
     isThunderstorm:isThunderstorm,lightningPotential:lightningPotential,
     preGameMm:parseFloat(pre6h.toFixed(2)),
@@ -1114,6 +1131,125 @@ async function doCheck(){
 // ══════════════════════════════════════════
 //  FUN MESSAGES
 // ══════════════════════════════════════════
+function toggleHow(){
+  var panel=document.getElementById('how-panel');
+  var btn=document.getElementById('how-btn');
+  var open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  btn.textContent=open?'🧮 How was this calculated?':'🧮 Hide breakdown';
+}
+
+function buildHowPanel(wx, prob, surface, fieldCond){
+  var cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard;
+  var sl=SURFACE_LABELS[surface]||SURFACE_LABELS.standard;
+  function mmToIn(mm){return(mm*0.0393701).toFixed(2)+'"';}
+  function kphToMph(k){return Math.round(k*0.621371);}
+  function impact(pts,flip){
+    if(pts===0)return '<span class="how-impact hi-none">No impact</span>';
+    var cls=flip?(pts>0?'hi-bad':'hi-good'):(pts>0?'hi-good':'hi-bad');
+    var sign=pts>0?'+':'';
+    return '<span class="how-impact '+cls+'">'+sign+Math.round(pts)+' pts</span>';
+  }
+
+  var rows=[];
+
+  // Rain chance
+  var rainHit=-(wx.rainPct*0.72*cfg.duringMult);
+  rows.push({icon:'🌧',label:'Rain Chance',
+    val:wx.rainPct+'% chance of rain during your game window',
+    pts:rainHit});
+
+  // Game precip
+  var precipHit=-(Math.min(wx.precipMm*16,26)*cfg.duringMult);
+  rows.push({icon:'💧',label:'Expected Precipitation',
+    val:mmToIn(wx.precipMm)+' expected during game',
+    pts:precipHit});
+
+  // Pre-game 6h
+  var pre6Hit=-(Math.min(wx.preGameMm*10+Math.sqrt(wx.preGameMm)*4,34)*cfg.preMult);
+  if(wx.preGameMm>0.5){
+    rows.push({icon:'🌦',label:'Pre-Game Rain (last 6 hrs)',
+      val:mmToIn(wx.preGameMm)+' fell before game time — field may still be wet',
+      pts:pre6Hit});
+  }
+
+  // Antecedent saturation
+  var sat=wx.pre7to48h||0;
+  var satPenalty=0;
+  if(sat>=6  && sat<13) satPenalty=sat*1.2;
+  if(sat>=13 && sat<25) satPenalty=15+(sat-13)*1.8;
+  if(sat>=25 && sat<51) satPenalty=37+(sat-25)*1.1;
+  if(sat>=51)           satPenalty=Math.min(65+(sat-51)*0.4,82);
+  var satHit=-(satPenalty*cfg.preMult);
+  if(sat>=6){
+    rows.push({icon:'🌊',label:'Prior Rainfall (7–48 hrs)',
+      val:mmToIn(sat)+' in the day or two before — affects ground saturation',
+      pts:satHit});
+  }
+
+  // Manual field condition
+  var condPenalty=0;
+  if(fieldCond==='damp')condPenalty=20;
+  else if(fieldCond==='saturated')condPenalty=45;
+  if(condPenalty>0){
+    rows.push({icon:'🏟',label:'Field Conditions Override',
+      val:'Manually set to "'+(fieldCond==='damp'?'Damp':'Saturated')+'" — adds extra penalty regardless of forecast',
+      pts:-(condPenalty*cfg.preMult)});
+  }
+
+  // Wind
+  var windHit=-(Math.max(0,(wx.windKph-32)*0.5)*cfg.windMult);
+  if(wx.windKph>32){
+    rows.push({icon:'💨',label:'Wind',
+      val:kphToMph(wx.windKph)+' mph — strong enough to affect play',
+      pts:windHit});
+  }
+
+  // Cold
+  var coldHit=wx.windChillF<40?-(Math.min((40-wx.windChillF)*2.5,40)):0;
+  if(coldHit<0){
+    rows.push({icon:'🥶',label:'Cold',
+      val:'Feels like '+wx.windChillF+'°F — cold weather impacts play',
+      pts:coldHit});
+  }
+
+  // Lightning / storm
+  if(wx.isThunderstorm){
+    rows.push({icon:'⚡',label:'Thunderstorm',val:'Active storm detected — score capped at 5%',pts:-999,override:true});
+  } else if(wx.lightningPotential>100){
+    rows.push({icon:'⚡',label:'Lightning Potential',val:'High lightning potential in the area',pts:-40});
+  } else if(wx.lightningPotential>10){
+    rows.push({icon:'⚡',label:'Lightning Potential',val:'Some lightning potential nearby',pts:-(Math.min(wx.lightningPotential*0.3,25))});
+  }
+
+  // Surface bonus line
+  rows.push({icon:sl.icon,label:'Surface Type',
+    val:sl.name+' — '+sl.desc+'. Affects how rain and wind impact play.',
+    pts:0,note:true});
+
+  var html='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:8px;">'
+    +'<div style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:11px;font-weight:700;color:#64748b;letter-spacing:.06em;text-transform:uppercase;">Score Breakdown — Starting at 100%</div>';
+  rows.forEach(function(r){
+    html+='<div class="how-row">'
+      +'<span class="how-icon">'+r.icon+'</span>'
+      +'<div style="flex:1;">'
+        +'<div class="how-label">'+r.label+'</div>'
+        +'<div class="how-val">'+r.val+'</div>'
+        +(r.override?'<span class="how-impact hi-bad">OVERRIDES ALL</span>'
+          :r.note?'<span class="how-impact hi-none">Multiplier applied</span>'
+          :impact(r.pts,true))
+      +'</div>'
+    +'</div>';
+  });
+  html+='<div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-top:2px solid #e2e8f0;background:#fff;">'
+    +'<span style="font-size:12px;font-weight:700;color:#64748b;">Final Score</span>'
+    +'<span style="font-size:20px;font-weight:900;color:'+(prob>=75?'#00c853':prob>=45?'#fbbf24':'#f43f5e')+';">'+prob+'%</span>'
+    +'</div>';
+  html+='<div style="padding:8px 14px;font-size:11px;color:#94a3b8;border-top:1px solid #f1f5f9;">Weather data from Open-Meteo. Always confirm with your league director — this is a guide, not a guarantee.</div>';
+  html+='</div>';
+  document.getElementById('how-panel').innerHTML=html;
+}
+
 function getFunMessage(wx, prob, surface) {
   if (wx.isThunderstorm) {
     return { msg: "⚡ Lightning in the area. No question — game's done. Get inside!", bg: '#fef9c3', color: '#854d0e' };
@@ -1208,7 +1344,9 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   document.getElementById('pv-temp').textContent=wx.windChillF+'\xb0F';
   setPill('pill-rain','pv-rain',wx.rainPct+'%',wx.rainPct>60);
   setPill('pill-precip','pv-precip',mmToIn(wx.precipMm),wx.precipMm>2);
-  setPill('pill-wind','pv-wind',kphToMph(wx.windKph)+' mph',wx.windKph>40);
+  var dirs=['N','NE','E','SE','S','SW','W','NW'];
+  var compassDir=dirs[Math.round((wx.windDirDeg||0)/45)%8]||'N';
+  setPill('pill-wind','pv-wind',kphToMph(wx.windKph)+' mph '+compassDir,wx.windKph>40);
   var prior24=parseFloat(((wx.pre7to48h||0)+(wx.preGameMm||0)).toFixed(1));
   var prior24pill=document.getElementById('pill-prior24');
   if(prior24>=6){
@@ -1224,7 +1362,12 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   if(wx.isThunderstorm){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent='WARNING';}
   else if(wx.lightningPotential>10){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent=wx.lightningPotential>100?'HIGH':'POSSIBLE';}
   else{ltngPill.style.display='none';ltngPill.classList.remove('lightning');}
-  // Fun message
+  // Build how-panel and show button
+  buildHowPanel(wx, prob, surface, selectedCondition);
+  var howBtn=document.getElementById('how-btn');
+  if(howBtn){howBtn.style.display='block';}
+  var howPanel=document.getElementById('how-panel');
+  if(howPanel){howPanel.style.display='none';}
   var fm = getFunMessage(wx, prob, surface);
   var funEl = document.getElementById('fun-msg');
   funEl.textContent = fm.msg;
