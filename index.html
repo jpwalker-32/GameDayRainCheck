@@ -249,6 +249,20 @@
   .rank-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#f8fafc;color:var(--text-2);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
   .rank-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
   #rankings-loading,#rankings-empty,#rankings-error{padding:24px;text-align:center;font-size:13px;color:var(--text-3);display:none;}
+  #rank-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .rank-filter-sel{padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;background:#fff;color:var(--text-2);cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+  #rank-rate-btn{padding:8px 14px;border-radius:var(--radius-sm);border:none;background:var(--navy);color:#fff;font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;transition:all .15s;margin-left:auto;}
+  #rank-rate-btn:hover{background:#1a2d47;}
+  #rank-rate-search-wrap{display:none;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+  #rank-rate-search-wrap .rrs-title{font-size:13px;font-weight:800;color:var(--text-1);margin-bottom:10px;}
+  #rank-park-search-wrap{position:relative;}
+  #rank-park-search{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:13px;}
+  #rank-park-results{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;max-height:200px;overflow-y:auto;}
+  .rpr-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-family:'Outfit',sans-serif;}
+  .rpr-item:last-child{border-bottom:none;}
+  .rpr-item:hover{background:#f8fafc;}
+  .rpr-name{font-size:13px;font-weight:700;color:var(--text-1);}
+  .rpr-city{font-size:11px;color:var(--text-3);margin-top:1px;}
   .rank-card{display:flex;align-items:flex-start;gap:14px;padding:14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
   .rank-num{width:32px;height:32px;border-radius:50%;background:#f1f5f9;color:var(--text-3);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .rank-num.top3{background:var(--navy);color:#fff;}
@@ -368,7 +382,7 @@
       </div>
     </div>
     <div id="filter-wrap">
-      <div class="filter-row"><label class="sec-label">State</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas</option><option value="KS">Kansas</option><option value="MO">Missouri</option></select></div>
+      <div class="filter-row"><label class="sec-label">State</label><select class="state-sel" id="state-sel"><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas</option><option value="KS">Kansas</option><option value="MO">Missouri</option><option value="TN">Tennessee</option></select></div>
       <div class="filter-row"><label class="sec-label">Region</label><div class="chip-row" id="region-chips"></div></div>
       <div class="filter-row"><label class="sec-label">Facility Type</label><div class="chip-row" id="type-chips"></div></div>
     </div>
@@ -459,11 +473,23 @@
 <!-- ══ RANKINGS PANEL ══ -->
 <div class="tab-panel" id="panel-rankings">
   <div id="rankings-wrap">
-    <div style="margin-bottom:6px;">
-      <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;letter-spacing:-.02em;">Park Rankings</div>
-      <div style="font-size:13px;color:#64748b;margin-top:4px;">Ranked by community ratings. Minimum 3 ratings required.</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;">
+      <div>
+        <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0b1929;letter-spacing:-.02em;">Park Rankings</div>
+        <div style="font-size:13px;color:#64748b;margin-top:4px;">Ranked by community ratings. Min. 3 ratings required.</div>
+      </div>
+      <button type="button" id="rank-rate-btn" onclick="toggleRankRateSearch()">⚾ Rate a Park</button>
     </div>
-    <div class="rank-filter-bar" style="margin-top:16px;">
+    <!-- Rate a park search panel -->
+    <div id="rank-rate-search-wrap">
+      <div class="rrs-title">Search for a park to rate:</div>
+      <div id="rank-park-search-wrap">
+        <input type="text" id="rank-park-search" placeholder="Search by park or city name..." autocomplete="off" oninput="onRankParkSearch()" onfocus="onRankParkSearch()"/>
+        <div id="rank-park-results"></div>
+      </div>
+    </div>
+    <!-- Category tabs -->
+    <div class="rank-filter-bar" style="margin-top:14px;">
       <button type="button" class="rank-tab active" onclick="switchRankCat('overall')">Overall</button>
       <button type="button" class="rank-tab" onclick="switchRankCat('surface')">🏟 Surface</button>
       <button type="button" class="rank-tab" onclick="switchRankCat('tournament')">📋 Tournament</button>
@@ -471,8 +497,26 @@
       <button type="button" class="rank-tab" onclick="switchRankCat('bathrooms')">🚻 Bathrooms</button>
       <button type="button" class="rank-tab" onclick="switchRankCat('concessions')">🌭 Concessions</button>
     </div>
+    <!-- State + Type filters -->
+    <div id="rank-filters">
+      <select class="rank-filter-sel" id="rank-state-filter" onchange="renderRankings(window._rankData||[])">
+        <option value="">All States</option>
+        <option value="OK">Oklahoma</option>
+        <option value="AR">Arkansas</option>
+        <option value="TX">Texas</option>
+        <option value="KS">Kansas</option>
+        <option value="MO">Missouri</option>
+        <option value="TN">Tennessee</option>
+      </select>
+      <select class="rank-filter-sel" id="rank-type-filter" onchange="renderRankings(window._rankData||[])">
+        <option value="">All Types</option>
+        <option value="yr">Youth / Rec</option>
+        <option value="hs">High School</option>
+        <option value="col">College</option>
+      </select>
+    </div>
     <div id="rankings-loading" style="display:none">↻ Loading rankings...</div>
-    <div id="rankings-empty" style="display:none">No parks have enough ratings yet.<br><span style="font-size:12px;">Rate a park to get things started!</span></div>
+    <div id="rankings-empty" style="display:none">No parks match your filters yet.<br><span style="font-size:12px;">Try a different filter or rate a park to get things started!</span></div>
     <div id="rankings-error" style="display:none">Could not load rankings. Please try again.</div>
     <div id="rankings-list"></div>
   </div>
@@ -494,7 +538,7 @@
         <div style="flex:2;"><label class="sec-label" for="sub-city">City <span style="color:#dc2626">*</span></label><input type="text" id="sub-city" class="sub-input" placeholder="e.g. Tulsa" maxlength="60" style="margin-bottom:0;"/></div>
         <div style="flex:1;"><label class="sec-label" for="sub-state">State <span style="color:#dc2626">*</span></label>
           <select id="sub-state" class="sub-input" style="margin-bottom:0;">
-            <option value="">Select</option><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas</option><option value="KS">Kansas</option><option value="MO">Missouri</option>
+            <option value="">Select</option><option value="OK">Oklahoma</option><option value="AR">Arkansas</option><option value="TX">Texas</option><option value="KS">Kansas</option><option value="MO">Missouri</option><option value="TN">Tennessee</option>
           </select>
         </div>
       </div>
@@ -694,7 +738,7 @@ function sendAdminEmail(subject, html){
 // ══════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════
-var REGIONS={OK:[{id:'all',label:'All Regions'},{id:'ne-ok',label:'Northeastern OK'},{id:'c-ok',label:'Central OK'},{id:'se-ok',label:'Southeastern OK'},{id:'w-ok',label:'Western OK'}],AR:[{id:'all',label:'All Regions'},{id:'nw-ar',label:'NW Arkansas'},{id:'fs-ar',label:'Fort Smith'},{id:'c-ar',label:'Central AR'}],TX:[{id:'all',label:'All Regions'},{id:'dfw-tx',label:'DFW'},{id:'hou-c',label:'Central Houston'},{id:'hou-w',label:'West Houston / Katy / Cypress'},{id:'hou-n',label:'North Houston / The Woodlands'},{id:'hou-s',label:'South Houston / Pearland / Sugar Land'},{id:'hou-e',label:'East Houston / Pasadena / Baytown'}],KS:[{id:'all',label:'All Regions'},{id:'s-ks',label:'South KS'}],MO:[{id:'all',label:'All Regions'},{id:'sw-mo',label:'SW Missouri'}]};
+var REGIONS={OK:[{id:'all',label:'All Regions'},{id:'ne-ok',label:'Northeastern OK'},{id:'c-ok',label:'Central OK'},{id:'se-ok',label:'Southeastern OK'},{id:'w-ok',label:'Western OK'}],AR:[{id:'all',label:'All Regions'},{id:'nw-ar',label:'NW Arkansas'},{id:'fs-ar',label:'Fort Smith'},{id:'c-ar',label:'Central AR'}],TX:[{id:'all',label:'All Regions'},{id:'dfw-tx',label:'DFW'},{id:'hou-c',label:'Central Houston'},{id:'hou-w',label:'West Houston / Katy / Cypress'},{id:'hou-n',label:'North Houston / The Woodlands'},{id:'hou-s',label:'South Houston / Pearland / Sugar Land'},{id:'hou-e',label:'East Houston / Pasadena / Baytown'}],KS:[{id:'all',label:'All Regions'},{id:'s-ks',label:'South KS'}],MO:[{id:'all',label:'All Regions'},{id:'kc-mo',label:'KC Metro'},{id:'stl-mo',label:'St. Louis'},{id:'sw-mo',label:'SW Missouri'},{id:'semo-mo',label:'SE Missouri'}],TN:[{id:'all',label:'All Regions'},{id:'mem-tn',label:'Memphis / Mid-South'},{id:'nash-tn',label:'Nashville / Middle TN'},{id:'knox-tn',label:'Knoxville / East TN'},{id:'chat-tn',label:'Chattanooga / SE TN'}]};
 var TYPES=[{id:'all',label:'All Types',cls:''},{id:'hs',label:'High School',cls:'type-hs'},{id:'col',label:'College / Univ.',cls:'type-col'},{id:'yr',label:'Youth / Recreation',cls:'type-yr'}];
 var TYPE_LABELS={hs:'High School',col:'College',yr:'Youth / Rec'};
 var TYPE_CLS={hs:'ft-hs',col:'ft-col',yr:'ft-yr'};
@@ -1777,6 +1821,54 @@ function regionForState(state){
 var rankingsLoaded=false;
 var activeRankCat='overall';
 
+function toggleRankRateSearch(){
+  var wrap=document.getElementById('rank-rate-search-wrap');
+  var btn=document.getElementById('rank-rate-btn');
+  var open=wrap.style.display==='block';
+  wrap.style.display=open?'none':'block';
+  btn.textContent=open?'⚾ Rate a Park':'✕ Close';
+  if(!open){setTimeout(function(){document.getElementById('rank-park-search').focus();},50);}
+}
+
+function onRankParkSearch(){
+  var q=document.getElementById('rank-park-search').value.trim().toLowerCase();
+  var results=document.getElementById('rank-park-results');
+  if(q.length<2){results.style.display='none';return;}
+  var matches=FIELDS.filter(function(f){
+    return f.name.toLowerCase().includes(q)||f.city.toLowerCase().includes(q);
+  }).slice(0,8);
+  if(!matches.length){results.style.display='none';return;}
+  results.innerHTML=matches.map(function(f){
+    return '<div class="rpr-item" data-idx="'+f._idx+'">'
+      +'<div class="rpr-name">'+escHtml(f.name)+'</div>'
+      +'<div class="rpr-city">'+escHtml(f.city)+', '+escHtml(f.state)+'</div>'
+      +'</div>';
+  }).join('');
+  results.querySelectorAll('.rpr-item').forEach(function(item){
+    item.addEventListener('mousedown',function(e){
+      e.preventDefault();
+      var idx=parseInt(item.dataset.idx);
+      var field=FIELDS[idx];
+      results.style.display='none';
+      document.getElementById('rank-park-search').value='';
+      // Close rate search panel
+      document.getElementById('rank-rate-search-wrap').style.display='none';
+      document.getElementById('rank-rate-btn').textContent='⚾ Rate a Park';
+      // Open rate modal
+      openProfile(field,'rate');
+    });
+  });
+  results.style.display='block';
+}
+
+// Close rank park results on outside click
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#rank-park-search-wrap')){
+    var r=document.getElementById('rank-park-results');
+    if(r)r.style.display='none';
+  }
+});
+
 function switchRankCat(cat){
   activeRankCat=cat;
   document.querySelectorAll('.rank-tab').forEach(function(b){b.classList.remove('active');if(b.getAttribute('onclick').indexOf("'"+cat+"'")!==-1)b.classList.add('active');});
@@ -1809,7 +1901,15 @@ function renderRankings(rows){
     return{pid:pid,name:p.name,count:p.ratings.length,overall:overall,surface:avg(p.ratings,'surface_stars'),tournament:avg(p.ratings,'tournament_stars'),league:avg(p.ratings,'league_stars'),bathrooms:avg(p.ratings,'bathroom_stars'),concessions:avg(p.ratings,'concession_stars')};
   });
   var catKeyMap={surface:'surface_stars',tournament:'tournament_stars',league:'league_stars',bathrooms:'bathroom_stars',concessions:'concession_stars'};
+  var rankStateFilter=document.getElementById('rank-state-filter')?document.getElementById('rank-state-filter').value:'';
+  var rankTypeFilter=document.getElementById('rank-type-filter')?document.getElementById('rank-type-filter').value:'';
   var filtered=scored.filter(function(p){
+    // State/type filter via FIELDS lookup
+    if(rankStateFilter||rankTypeFilter){
+      var field=FIELDS.find(function(f){return String(f.id)===String(p.pid);});
+      if(rankStateFilter&&(!field||field.state!==rankStateFilter))return false;
+      if(rankTypeFilter&&(!field||field.type!==rankTypeFilter))return false;
+    }
     if(activeRankCat==='overall')return p.count>=3&&p.overall!==null;
     var catKey=catKeyMap[activeRankCat];
     return rows.filter(function(r){return String(r.park_id)===String(p.pid)&&r[catKey]!==null;}).length>=3;
