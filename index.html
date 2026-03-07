@@ -94,7 +94,15 @@
   input[type=date],select,.time-sel{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;background:#fff;color:var(--text-1);-webkit-appearance:none;appearance:none;}
   input[type=date]:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow);}
   /* SURFACE */
-  #surface-wrap{margin-bottom:18px;}
+  #surface-wrap{margin-bottom:14px;}
+  #conditions-wrap{margin-bottom:18px;}
+  #conditions-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .cond-btn{padding:9px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;text-align:left;transition:all .15s;font-family:'Outfit',sans-serif;}
+  .cond-btn.active{border-color:var(--green);background:rgba(0,200,83,0.06);box-shadow:0 0 0 1px var(--green);}
+  .cond-btn.active.cond-damp{border-color:#f59e0b;background:rgba(245,158,11,0.06);box-shadow:0 0 0 1px #f59e0b;}
+  .cond-btn.active.cond-sat{border-color:#f43f5e;background:rgba(244,63,94,0.06);box-shadow:0 0 0 1px #f43f5e;}
+  .cn{font-size:12px;font-weight:800;color:#0b1929;display:flex;align-items:center;gap:5px;}
+  .cd{font-size:10px;color:#64748b;margin-top:2px;line-height:1.3;}
   #surface-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .surf-btn{padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#f8fafc;cursor:pointer;text-align:left;transition:all .15s;font-family:'Outfit',sans-serif;}
   .surf-btn.active{border-color:var(--green);background:rgba(0,200,83,0.06);box-shadow:0 0 0 1px var(--green);}
@@ -336,6 +344,14 @@
         <button type="button" class="surf-btn" data-surface="allDirt"><div class="sn"><span class="sdot" style="background:#a16207"></span>All Dirt Infield</div><div class="sd">Grass outfield / Full dirt infield</div></button>
         <button type="button" class="surf-btn" data-surface="infieldTurf"><div class="sn"><span class="sdot" style="background:#0891b2"></span>Infield Turf</div><div class="sd">Grass outfield / Turf infield</div></button>
         <button type="button" class="surf-btn" data-surface="fullTurf"><div class="sn"><span class="sdot" style="background:#2563eb"></span>Full Turf</div><div class="sd">100% artificial turf surface</div></button>
+      </div>
+    </div>
+    <div id="conditions-wrap">
+      <label class="sec-label">Field Conditions <span style="font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0;">(optional override)</span></label>
+      <div id="conditions-grid">
+        <button type="button" class="cond-btn active" data-cond="dry"><div class="cn">&#9728; Dry</div><div class="cd">Normal conditions</div></button>
+        <button type="button" class="cond-btn cond-damp" data-cond="damp"><div class="cn">&#128167; Damp</div><div class="cd">Recent rain, soft spots</div></button>
+        <button type="button" class="cond-btn cond-sat" data-cond="saturated"><div class="cn">&#127754; Saturated</div><div class="cd">Standing water or 1"+ recent rain</div></button>
       </div>
     </div>
     <div id="filter-wrap">
@@ -680,7 +696,7 @@ function saveFavs(s){try{localStorage.setItem(FAV_KEY,JSON.stringify([...s]));}c
 var favorites=loadFavs();
 
 var FIELDS=[];
-var selectedFieldId=null,activeState='OK',activeRegion='all',activeType='all',selectedSurface='standard';
+var selectedFieldId=null,activeState='OK',activeRegion='all',activeType='all',selectedSurface='standard',selectedCondition='dry';
 
 // ══════════════════════════════════════════
 //  PARK SEARCH
@@ -970,6 +986,13 @@ function checkReady(){
   document.querySelectorAll('.surf-btn').forEach(function(btn){
     btn.addEventListener('click',function(){selectedSurface=btn.dataset.surface;document.querySelectorAll('.surf-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');});
   });
+  document.querySelectorAll('.cond-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      selectedCondition=btn.dataset.cond;
+      document.querySelectorAll('.cond-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+    });
+  });
   document.getElementById('state-sel').addEventListener('change',function(){activeState=this.value;activeRegion='all';activeType='all';buildRegionChips();buildTypeChips();renderGrids();});
   buildRegionChips();buildTypeChips();
   document.getElementById('sticky-check-wrap').style.display='block';
@@ -1023,7 +1046,7 @@ async function fetchWeather(lat,lon,date,hour){
   };
 }
 
-function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential,pre7to48h){
+function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunderstorm,lightningPotential,pre7to48h,fieldCond){
   var cfg=SURFACE_CFG[surface]||SURFACE_CFG.standard,s=100;
   // During-game rain
   s-=rainPct*0.72*cfg.duringMult;
@@ -1040,6 +1063,10 @@ function getProb(rainPct,precipMm,windKph,surface,preGameMm,windChillF,isThunder
   if(sat>=51)           satPenalty=Math.min(65+(sat-51)*0.4, 82);    // 65-82pt cap
   s-=satPenalty*cfg.preMult;
   // Wind chill
+  var condPenalty=0;
+  if(fieldCond==='damp')condPenalty=20;
+  else if(fieldCond==='saturated')condPenalty=45;
+  s-=condPenalty*cfg.preMult;
   s-=Math.max(0,(windKph-32)*0.5)*cfg.windMult;
   if(windChillF<40){s-=Math.min((40-windChillF)*2.5,40);}
   // Lightning / storms always override
@@ -1061,7 +1088,9 @@ async function doCheck(){
   var field=FIELDS[selectedFieldId];
   try{
     var wx=await fetchWeather(field.lat,field.lon,dateVal,timeOpt.hour);
-    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential,wx.pre7to48h);
+    console.log('[WEP] wx=',JSON.stringify(wx));
+    var prob=getProb(wx.rainPct,wx.precipMm,wx.windKph,selectedSurface,wx.preGameMm,wx.windChillF,wx.isThunderstorm,wx.lightningPotential,wx.pre7to48h,selectedCondition);
+    console.log('[WEP] prob=',prob,'pre7to48h=',wx.pre7to48h,'preGameMm=',wx.preGameMm);
     renderResult(field,dateVal,timeOpt.label,wx,prob,selectedSurface);
     loadDirectorStatus(field.id, dateVal);
     // Update URL for sharing
@@ -1110,6 +1139,8 @@ function getFunMessage(wx, prob, surface) {
   if (wx.windKph > 32) {
     return { msg: "💨 Winds are up. Outfielders better have their legs under them.", bg: '#f8fafc', color: '#475569' };
   }
+  if(selectedCondition==='saturated'){return{msg:"\uD83C\uDF0A Fields marked saturated. Expect delays or cancellations \u2014 confirm with your director before heading out.",bg:'#fff0f3',color:'#be123c'};}
+  if(selectedCondition==='damp'){return{msg:"\uD83D\uDCA7 Fields are damp. Play may go, but conditions will be soft \u2014 watch for delays.",bg:'#fefce8',color:'#854d0e'};}
   // Antecedent saturation messages — checked before short-range pre-game
   if ((wx.pre7to48h || 0) >= 51) {
     return { msg: "🌊 2+ inches in the last 48 hours. Fields are likely saturated — expect delays or cancellations even if skies clear.", bg: '#fff0f3', color: '#be123c' };
@@ -1187,7 +1218,8 @@ function renderResult(field,dateVal,timeLabel,wx,prob,surface){
   } else {
     prior24pill.style.display='none';
   }
-  document.getElementById('result-coords').textContent='Surface: '+sl.name+' ('+sl.desc+')\nWeather: Open-Meteo \xb7 '+field.lat.toFixed(4)+', '+field.lon.toFixed(4)+' \xb7 Always confirm with your league director.';
+  var condLabel={dry:'Dry',damp:'Damp',saturated:'Saturated'};
+  document.getElementById('result-coords').textContent='Surface: '+sl.name+' ('+sl.desc+') · Field: '+(condLabel[selectedCondition]||'Dry')+'\nWeather: Open-Meteo · '+field.lat.toFixed(4)+', '+field.lon.toFixed(4)+' · Always confirm with your league director.';
   var ltngPill=document.getElementById('pill-lightning');
   if(wx.isThunderstorm){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent='WARNING';}
   else if(wx.lightningPotential>10){ltngPill.style.display='';ltngPill.classList.add('lightning');document.getElementById('pv-lightning').textContent=wx.lightningPotential>100?'HIGH':'POSSIBLE';}
